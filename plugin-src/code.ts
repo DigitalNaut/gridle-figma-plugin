@@ -39,7 +39,7 @@ function generateSquarePattern(msg: GenerateSquaresMessage) {
     const layerNodes: RectangleNode[] = [];
 
     for (let x = 0; x < horizontalCount; x++) {
-      if (Math.random() < 1 - verticalPosition) continue;
+      if (Math.random() > verticalPosition) continue;
       const opacity = Math.random() * verticalPosition;
       if (opacity < alphaThreshold) continue;
 
