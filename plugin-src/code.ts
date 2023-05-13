@@ -50,6 +50,10 @@ function generateSquarePattern(msg: GenerateSquaresMessage) {
       newRect.opacity = opacity;
 
       newRect.name = `${y}-${x}`;
+      newRect.constraints = {
+        horizontal: "SCALE",
+        vertical: "SCALE",
+      };
       layerNodes.push(newRect);
     }
 
