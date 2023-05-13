@@ -7,6 +7,7 @@
     "skipLibCheck": false,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
@@ -14,6 +15,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react"
+    "jsx": "react",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./components/*"]
+    },
+    "types": ["node"]
   }
 }

@@ -1,8 +1,10 @@
 import React, { useRef, useEffect } from "react";
-import Logo from "./Logo";
+
+import Logo from "@/Logo";
+import Input from "@/Input";
+import Button from "@/Button";
+
 import "./index.css";
-import Input from "./components/Input";
-import Button from "./components/Button";
 
 function hexToRGB(hex: string) {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
