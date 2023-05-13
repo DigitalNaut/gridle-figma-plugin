@@ -1,10 +1,6 @@
 import React from "react";
 
-type Props = {
-  className?: string;
-};
-
-export default function Logo({ className }: Props) {
+export default function Logo({ className }: { className?: string }) {
   return (
     <svg
       className={className}
