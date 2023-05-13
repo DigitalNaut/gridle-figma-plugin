@@ -4,6 +4,7 @@
     "iframe",
     "outfile",
     "patterner",
-    "singlefile"
+    "singlefile",
+    "tailwindcss"
   ]
 }
