@@ -1,6 +1,4 @@
 import React, { useRef } from "react";
-import logoPng from "./logo.png";
-import logoSvg from "./logo.svg?raw";
 import Logo from "./Logo";
 import "./App.css";
 
@@ -23,10 +21,6 @@ function App() {
   return (
     <main>
       <header>
-        <img src={logoPng} />
-        &nbsp;
-        <img src={`data:image/svg+xml;utf8,${logoSvg}`} />
-        &nbsp;
         <Logo />
         <h2>Rectangle Creator</h2>
       </header>
