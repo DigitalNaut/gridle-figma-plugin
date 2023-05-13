@@ -1,59 +1,70 @@
-figma.showUI(__html__, { height: 300 });
+figma.showUI(__html__, { height: 580 });
 
-figma.ui.onmessage = (msg) => {
-  if (msg.type === "create-rectangles") {
-    const {
-      width,
-      height,
-      horizontalCount,
-      verticalCount,
-      padding,
-      alphaThreshold,
+function generateSquarePattern(msg: GenerateSquaresMessage) {
+  const {
+    width,
+    height,
+    horizontalCount,
+    verticalCount,
+    padding,
+    color,
+    alphaThreshold,
+  } = msg;
+
+  const halfPadding = padding * 0.5;
+  const nodes: RectangleNode[] = [];
+
+  const squareWidth = width / horizontalCount;
+  const squareHeight = height / verticalCount;
+
+  const frame = figma.createFrame();
+  frame.expanded = false;
+  frame.name = "Square Pattern";
+  frame.resize(width, height);
+  figma.currentPage.appendChild(frame);
+  frame.fills = [];
+
+  const rect = figma.createRectangle();
+  rect.resize(squareWidth - padding, squareHeight - padding);
+  rect.fills = [
+    {
+      type: "SOLID",
       color,
-    } = msg;
-    const halfPadding = padding * 0.5;
-    const nodes = [];
+    },
+  ];
 
-    const squareWidth = width / horizontalCount;
-    const squareHeight = height / verticalCount;
+  for (let y = 0; y < verticalCount; y++) {
+    const verticalPosition = y / verticalCount;
 
-    const frame = figma.createFrame();
-    frame.resize(width, height);
-    figma.currentPage.appendChild(frame);
-    frame.fills = [];
+    const layerNodes: RectangleNode[] = [];
 
-    const rect = figma.createRectangle();
-    rect.resize(squareWidth - padding, squareHeight - padding);
-    rect.fills = [
-      {
-        type: "SOLID",
-        color,
-      },
-    ];
+    for (let x = 0; x < horizontalCount; x++) {
+      if (Math.random() < 1 - verticalPosition) continue;
+      const opacity = Math.random() * verticalPosition;
+      if (opacity < alphaThreshold) continue;
 
-    for (let y = 0; y < verticalCount; y++) {
-      for (let x = 0; x < horizontalCount; x++) {
-        const verticalPosition = y / verticalCount;
+      const newRect = rect.clone();
 
-        if (Math.random() < 1 - verticalPosition) continue;
-        const opacity = Math.random() * verticalPosition;
-        if (opacity < alphaThreshold) continue;
+      newRect.x = x * squareWidth + halfPadding;
+      newRect.y = y * squareHeight + halfPadding;
+      newRect.opacity = opacity;
 
-        const newRect = rect.clone();
-
-        newRect.x = x * squareWidth + halfPadding;
-        newRect.y = y * squareHeight + halfPadding;
-        newRect.opacity = opacity;
-
-        newRect.name = `${y}-${x}`;
-        nodes.push(newRect);
-        frame.appendChild(newRect);
-      }
+      newRect.name = `${y}-${x}`;
+      layerNodes.push(newRect);
     }
 
-    figma.viewport.scrollAndZoomIntoView(nodes);
-    rect.remove();
+    if (layerNodes.length === 0) continue;
+    const layer = figma.group(layerNodes, frame);
+    layer.name = `Layer ${y}`;
+    layer.expanded = false;
+    frame.appendChild(layer);
   }
 
+  figma.viewport.scrollAndZoomIntoView(nodes);
+  rect.remove();
+}
+
+figma.ui.onmessage = (msg) => {
+  if (msg.type === "generate-squares") generateSquarePattern(msg);
   figma.closePlugin();
 };

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import Logo from "./Logo";
 import "./index.css";
 import Input from "./components/Input";
@@ -12,6 +12,16 @@ function hexToRGB(hex: string) {
   return { r, g, b };
 }
 
+function useWindowKeyDownEvent(event: (event: KeyboardEvent) => void) {
+  useEffect(() => {
+    window.addEventListener("keydown", event);
+
+    return () => {
+      window.removeEventListener("keydown", event);
+    };
+  }, []);
+}
+
 export default function App() {
   const inputWidthRef = useRef<HTMLInputElement>(null);
   const inputHeightRef = useRef<HTMLInputElement>(null);
@@ -22,26 +32,29 @@ export default function App() {
   const inputColorRef = useRef<HTMLInputElement>(null);
 
   const onCreate = () => {
-    parent.postMessage(
-      {
-        pluginMessage: {
-          type: "create-rectangles",
-          width: Number(inputWidthRef.current?.value || 100),
-          height: Number(inputHeightRef.current?.value || 100),
-          horizontalCount: Number(inputHorizontalCountRef.current?.value || 10),
-          verticalCount: Number(inputVerticalCountRef.current?.value || 10),
-          padding: Number(inputPaddingRef.current?.value || 0),
-          alphaThreshold: Number(inputAlphaThresholdRef.current?.value || 0),
-          color: hexToRGB(inputColorRef.current?.value || "#000000"),
-        },
-      },
-      "*"
-    );
+    const pluginMessage: GenerateSquaresMessage = {
+      type: "generate-squares",
+      width: Number(inputWidthRef.current?.value || 100),
+      height: Number(inputHeightRef.current?.value || 100),
+      horizontalCount: Number(inputHorizontalCountRef.current?.value || 10),
+      verticalCount: Number(inputVerticalCountRef.current?.value || 10),
+      padding: Number(inputPaddingRef.current?.value || 0),
+      alphaThreshold: Number(inputAlphaThresholdRef.current?.value || 0),
+      color: hexToRGB(inputColorRef.current?.value || "#000000"),
+    };
+
+    parent.postMessage({ pluginMessage }, "*");
   };
 
-  const onCancel = () => {
-    parent.postMessage({ pluginMessage: { type: "cancel" } }, "*");
+  const onCancel = () =>
+    void parent.postMessage({ pluginMessage: { type: "cancel" } }, "*");
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Enter") onCreate();
+    if (event.key === "Escape") onCancel();
   };
+
+  useWindowKeyDownEvent(onKeyDown);
 
   return (
     <main className="flex flex-col items-center gap-2 w-full p-4">
