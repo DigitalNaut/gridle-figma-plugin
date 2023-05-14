@@ -6,13 +6,18 @@ import Button from "@/Button";
 import { useWindowKeyDownEvent } from "./hooks/WindowEvents";
 import "./index.css";
 
+enum ActionType {
+  Update = "update",
+  Reset = "reset",
+}
+
 type UpdateAction = {
-  type: "update";
+  type: ActionType.Update;
   payload: Partial<GenerateSquaresMessage>;
 };
 
 type ResetAction = {
-  type: "reset";
+  type: ActionType.Reset;
   payload: GenerateSquaresMessage;
 };
 
@@ -42,14 +47,14 @@ export default function App() {
     colors: "#86198f",
     removeRandom: true,
   };
-  const [pluginMessage, dispatch] = useReducer(
+  const [pluginMessage, inputDispatch] = useReducer(
     inputReducer,
     initialInputValues
   );
 
   const onCreate = () => parent.postMessage({ pluginMessage }, "*");
   const onReset = () =>
-    dispatch({ type: "reset", payload: initialInputValues });
+    inputDispatch({ type: ActionType.Reset, payload: initialInputValues });
   const onCancel = () =>
     parent.postMessage({ pluginMessage: { type: "close" } }, "*");
 
@@ -69,13 +74,13 @@ export default function App() {
         ? event.currentTarget.value
         : event.currentTarget.checked;
 
-    dispatch({
-      type: "update",
+    inputDispatch({
+      type: ActionType.Update,
       payload: { [event.currentTarget.name]: newValue },
     });
   };
 
-  const clampValues = () => {
+  const validateInputs = () => {
     const {
       frameWidth,
       frameHeight,
@@ -84,14 +89,14 @@ export default function App() {
     } = pluginMessage;
 
     if (horizontalSquaresCount > Math.floor(frameWidth / 10))
-      dispatch({
-        type: "update",
+      inputDispatch({
+        type: ActionType.Update,
         payload: { horizontalSquaresCount: Math.floor(frameWidth / 10) },
       });
 
     if (verticalSquaresCount > Math.floor(frameHeight / 10))
-      dispatch({
-        type: "update",
+      inputDispatch({
+        type: ActionType.Update,
         payload: { verticalSquaresCount: Math.floor(frameHeight / 10) },
       });
   };
@@ -115,7 +120,7 @@ export default function App() {
             min="0"
             value={pluginMessage.frameWidth}
             onChange={handleInputChange}
-            onBlur={clampValues}
+            onBlur={validateInputs}
             title="Width of the frame in pixels."
           />
           <Input
@@ -126,7 +131,7 @@ export default function App() {
             min="0"
             value={pluginMessage.frameHeight}
             onChange={handleInputChange}
-            onBlur={clampValues}
+            onBlur={validateInputs}
             title="Height of the frame in pixels."
           />
         </div>
