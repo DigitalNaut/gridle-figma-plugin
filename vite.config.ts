@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [react(), viteSingleFile()],
   resolve: {
     alias: {
-      "@": resolve(__dirname, "./ui-src/components"),
+      "@": resolve(__dirname, "ui-src/components"),
     },
   },
   build: {
@@ -22,7 +22,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         inlineDynamicImports: true,
-        // manualChunks: () => "everything.js",
       },
     },
   },
