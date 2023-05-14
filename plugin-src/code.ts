@@ -1,59 +1,56 @@
-figma.showUI(__html__, { height: 580 });
+import { hexToRGB } from "./utils/color";
+
+figma.showUI(__html__, { height: 740 });
 
 function generateSquarePattern(msg: GenerateSquaresMessage) {
   const {
-    width,
-    height,
-    horizontalCount,
-    verticalCount,
+    frameWidth,
+    frameHeight,
+    horizontalSquaresCount,
+    verticalSquaresCount,
     padding,
-    color,
+    colors,
     alphaThreshold,
+    alphaThresholdMode,
+    removeRandom,
   } = msg;
 
-  const halfPadding = padding * 0.5;
-  const nodes: RectangleNode[] = [];
-
-  const squareWidth = width / horizontalCount;
-  const squareHeight = height / verticalCount;
+  const squareWidth = frameWidth / horizontalSquaresCount;
+  const squareHeight = frameHeight / verticalSquaresCount;
 
   const frame = figma.createFrame();
-  frame.expanded = false;
   frame.name = "Square Pattern";
-  frame.resize(width, height);
-  figma.currentPage.appendChild(frame);
+  frame.resize(Number(frameWidth), Number(frameHeight));
   frame.fills = [];
+  frame.clipsContent = false;
+  figma.currentPage.appendChild(frame);
 
   const rect = figma.createRectangle();
   rect.resize(squareWidth - padding, squareHeight - padding);
-  rect.fills = [
-    {
-      type: "SOLID",
-      color,
-    },
-  ];
 
-  for (let y = 0; y < verticalCount; y++) {
-    const verticalPosition = y / verticalCount;
+  for (let y = 0; y < verticalSquaresCount; y++) {
+    const verticalPosition = y / verticalSquaresCount;
 
     const layerNodes: RectangleNode[] = [];
 
-    for (let x = 0; x < horizontalCount; x++) {
-      if (Math.random() > verticalPosition) continue;
-      const opacity = Math.random() * verticalPosition;
-      if (opacity < alphaThreshold) continue;
+    for (let x = 0; x < horizontalSquaresCount; x++) {
+      if (removeRandom && Math.random() > verticalPosition) continue;
+
+      let opacity = Math.random() * verticalPosition;
+      if (opacity < alphaThreshold) {
+        if (alphaThresholdMode === "remove") continue;
+        else if (alphaThresholdMode === "clamp")
+          opacity = Number(alphaThreshold);
+      }
 
       const newRect = rect.clone();
 
-      newRect.x = x * squareWidth + halfPadding;
-      newRect.y = y * squareHeight + halfPadding;
-      newRect.opacity = opacity;
+      newRect.x = x * squareWidth + padding * 0.5;
+      newRect.y = y * squareHeight + padding * 0.5;
+      newRect.fills = [{ type: "SOLID", color: hexToRGB(colors), opacity }];
 
       newRect.name = `${y}-${x}`;
-      newRect.constraints = {
-        horizontal: "SCALE",
-        vertical: "SCALE",
-      };
+      newRect.constraints = { horizontal: "SCALE", vertical: "SCALE" };
       layerNodes.push(newRect);
     }
 
@@ -64,11 +61,15 @@ function generateSquarePattern(msg: GenerateSquaresMessage) {
     frame.appendChild(layer);
   }
 
-  figma.viewport.scrollAndZoomIntoView(nodes);
+  frame.x = figma.viewport.center.x - frameWidth * 0.5;
+  frame.y = figma.viewport.center.y - frameHeight * 0.5;
+  figma.currentPage.selection = [frame];
+  frame.expanded = false;
+
   rect.remove();
 }
 
 figma.ui.onmessage = (msg) => {
   if (msg.type === "generate-squares") generateSquarePattern(msg);
-  figma.closePlugin();
+  if (msg.type === "close") figma.closePlugin();
 };

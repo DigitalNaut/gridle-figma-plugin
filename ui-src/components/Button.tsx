@@ -9,17 +9,20 @@ export default function Button({
   className,
   children,
   onClick,
+  filled,
 }: DetailedHTMLProps<
   ButtonHTMLAttributes<HTMLButtonElement>,
   HTMLButtonElement
 > &
   PropsWithChildren<{
     className?: string;
-    onClick: () => void;
+    filled?: true;
   }>) {
   return (
     <button
-      className={`bg-white text-black px-2 py-1 rounded-sm w-full ${className}`}
+      className={`py-1 ${
+        filled ? "rounded-sm bg-white px-4 text-black" : "px-2 underline"
+      } ${className}`}
       onClick={onClick}
     >
       {children}

@@ -1,16 +1,12 @@
-interface RGB {
-  readonly r: number;
-  readonly g: number;
-  readonly b: number;
-}
-
 interface GenerateSquaresMessage {
   type: "generate-squares";
-  width: number;
-  height: number;
-  horizontalCount: number;
-  verticalCount: number;
+  frameWidth: number;
+  frameHeight: number;
+  horizontalSquaresCount: number;
+  verticalSquaresCount: number;
   padding: number;
-  color: RGB;
+  colors: string;
   alphaThreshold: number;
+  alphaThresholdMode: "remove" | "clamp";
+  removeRandom: boolean;
 }

@@ -1,31 +1,46 @@
-import type { DetailedHTMLProps, InputHTMLAttributes } from "react";
+import type {
+  DetailedHTMLProps,
+  InputHTMLAttributes,
+  PropsWithChildren,
+} from "react";
 import React, { RefObject } from "react";
 
 export default function Input({
   label,
   id,
-  className = "bg-inherit text-inherit border-white border-b-2",
+  className,
   forwardRef,
+  children,
+  columns,
+  title,
+  type,
   ...props
-}: DetailedHTMLProps<
-  InputHTMLAttributes<HTMLInputElement>,
-  HTMLInputElement
-> & {
-  label: string;
-  id: string;
-  forwardRef: RefObject<HTMLInputElement>;
-}) {
+}: DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> &
+  PropsWithChildren<{
+    label: string;
+    id: string;
+    forwardRef?: RefObject<HTMLInputElement>;
+    columns?: true;
+  }>) {
   return (
-    <div className="flex w-full">
-      <label htmlFor={id} className="shrink">
-        {label}&nbsp;
-      </label>
+    <label
+      htmlFor={id}
+      className={`flex gap-2 ${columns ? "flex-col" : "items-center"}`}
+      title={title}
+    >
+      <span className="whitespace-nowrap">
+        {label}
+        {children ? ` (${children})` : ""}:
+      </span>
       <input
         id={id}
-        className={`grow ${className}`}
+        className={`grow bg-inherit text-inherit ${
+          type === "color" ? "" : "border-b-2 border-white"
+        } ${className}`}
         ref={forwardRef}
+        type={type}
         {...props}
       />
-    </div>
+    </label>
   );
 }
