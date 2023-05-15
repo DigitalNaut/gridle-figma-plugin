@@ -53,6 +53,7 @@ export default function App() {
     colors: ["#86198f"],
     shape: "square",
     removeRandom: true,
+    verticalFadeMode: "ascending",
   };
   const [pluginMessage, inputDispatch] = useReducer(
     inputReducer,
@@ -181,15 +182,16 @@ export default function App() {
             title="Padding between elements in pixels."
           />
         </Subsection>
-        <Subsection title="Colors">
-          <label
-            className="flex w-full items-center"
-            title="Colors to use for the elements."
-          >
-            {pluginMessage.colors.map((color, colorIndex) => (
-              <div key={colorIndex} className="group relative h-10 w-1/5">
+        <Subsection
+          rows
+          noGap
+          title={`Colors (${pluginMessage.colors.length})`}
+        >
+          {pluginMessage.colors.map((color, colorIndex) => (
+            <div key={colorIndex} className="group relative h-10 w-1/5">
+              <label title="Color to use for the elements.">
                 <input
-                  className="h-full w-full rounded-sm bg-slate-700"
+                  className="h-full w-full rounded-sm bg-zinc-700"
                   id="colorsInput"
                   name="colors"
                   type="color"
@@ -207,7 +209,7 @@ export default function App() {
                 />
                 {colorIndex > 0 && (
                   <button
-                    className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-slate-600 group-hover:shadow-md"
+                    className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-zinc-600 group-hover:shadow-md"
                     title="Remove color"
                     role="button"
                     onClick={() =>
@@ -221,38 +223,38 @@ export default function App() {
                       })
                     }
                   >
-                    -
+                    ×
                   </button>
                 )}
-              </div>
-            ))}
-            {pluginMessage.colors.length < 5 && (
-              <button
-                className="flex h-full w-1/5 items-center justify-center rounded-md bg-slate-200 text-xl font-bold text-slate-900"
-                title="Add color"
-                role="button"
-                onClick={() =>
-                  inputDispatch({
-                    type: ActionType.Update,
-                    payload: {
-                      colors: pluginMessage.colors.concat(
-                        pluginMessage.colors[pluginMessage.colors.length - 1]
-                      ),
-                    },
-                  })
-                }
-              >
-                +
-              </button>
-            )}
-          </label>
+              </label>
+            </div>
+          ))}
+          {pluginMessage.colors.length < 5 && (
+            <button
+              className="flex h-full w-1/5 items-center justify-center rounded-md border border-zinc-200 text-xl font-bold text-zinc-200"
+              title="Add color"
+              role="button"
+              onClick={() =>
+                inputDispatch({
+                  type: ActionType.Update,
+                  payload: {
+                    colors: pluginMessage.colors.concat(
+                      pluginMessage.colors[pluginMessage.colors.length - 1]
+                    ),
+                  },
+                })
+              }
+            >
+              +
+            </button>
+          )}
         </Subsection>
         <Subsection title="Options">
-          <label htmlFor="shapeInput" title="Shape of the elements:">
-            Shape:
+          <label htmlFor="shapeSelect" title="Shape of the elements:">
+            Shape:&nbsp;
             <select
-              className="rounded-sm bg-slate-700 p-2"
-              id="shapeInput"
+              className="rounded-sm bg-zinc-700 p-2"
+              id="shapeSelect"
               name="shape"
               value={pluginMessage.shape}
               onChange={handleInputChange}
@@ -277,14 +279,13 @@ export default function App() {
             {`${(pluginMessage.alphaThreshold * 100).toFixed(0)}%`}
           </Input>
           <label
-            className="text-sm"
-            htmlFor="alphaThresholdModeInput"
+            htmlFor="alphaThresholdModeSelect"
             title="How to handle elements with alpha value below the threshold."
           >
-            Elements below threshold:
+            Below threshold:&nbsp;
             <select
-              className="rounded-sm bg-slate-700 p-2"
-              id="alphaThresholdModeInput"
+              className="rounded-sm bg-zinc-700 p-2"
+              id="alphaThresholdModeSelect"
               name="alphaThresholdMode"
               value={pluginMessage.alphaThresholdMode}
               onChange={handleInputChange}
@@ -302,6 +303,23 @@ export default function App() {
             onChange={handleInputChange}
             title="Remove random elements to create a more organic look."
           />
+          <label
+            htmlFor="verticalFadeModeSelect"
+            title="Create a vertical fade by changing the alpha values of the elements in the direction selected."
+          >
+            Vertical fade:&nbsp;
+            <select
+              className="rounded-sm bg-zinc-700 p-2"
+              id="verticalFadeModeSelect"
+              name="verticalFadeMode"
+              value={pluginMessage.verticalFadeMode}
+              onChange={handleInputChange}
+            >
+              <option value="ascending">Ascending</option>
+              <option value="descending">Descending</option>
+              <option value="none">None</option>
+            </select>
+          </label>
         </Subsection>
         <footer className="flex w-full justify-end gap-2">
           <Button onClick={onCancel}>Close</Button>

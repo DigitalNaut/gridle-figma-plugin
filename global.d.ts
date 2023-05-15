@@ -10,4 +10,5 @@ interface GeneratePatternMessage {
   alphaThreshold: number;
   alphaThresholdMode: "remove" | "clamp";
   removeRandom: boolean;
+  verticalFadeMode: "ascending" | "descending" | "none";
 }

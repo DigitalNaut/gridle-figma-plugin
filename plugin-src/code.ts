@@ -14,6 +14,7 @@ function generatePattern(msg: GeneratePatternMessage) {
     alphaThreshold,
     alphaThresholdMode,
     removeRandom,
+    verticalFadeMode,
   } = msg;
 
   const elementWidth = frameWidth / horizontalElementsCount;
@@ -38,7 +39,12 @@ function generatePattern(msg: GeneratePatternMessage) {
     for (let x = 0; x < horizontalElementsCount; x++) {
       if (removeRandom && Math.random() > verticalPosition) continue;
 
-      let opacity = Math.random() * verticalPosition;
+      let opacity = Math.random();
+
+      if (verticalFadeMode === "ascending") opacity *= verticalPosition;
+      else if (verticalFadeMode === "descending")
+        opacity *= 1 - verticalPosition;
+
       if (opacity < alphaThreshold) {
         if (alphaThresholdMode === "remove") continue;
         else if (alphaThresholdMode === "clamp")
