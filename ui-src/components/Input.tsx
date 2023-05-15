@@ -13,7 +13,7 @@ export default function Input({
   columns,
   title,
   type,
-  // ^?
+  disabled,
   ...props
 }: DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> &
   PropsWithChildren<{
@@ -22,24 +22,23 @@ export default function Input({
     forwardRef?: RefObject<HTMLInputElement>;
     columns?: true;
   }>) {
+  const hasBorder = !disabled && type !== "color";
   return (
     <label
       htmlFor={id}
       className={`flex gap-2 ${columns ? "flex-col" : "items-center"}`}
       title={title}
     >
-      <span className="whitespace-nowrap">
-        {label}
-        {children ? ` (${children})` : ""}:
-      </span>
+      <span className="whitespace-nowrap">{label}</span>
       <input
         className={`grow bg-inherit text-inherit ${
-          type === "color" ? "" : "border-b-2 border-white"
+          hasBorder ? "border-b-2 border-white" : ""
         } ${className}`}
         id={id}
         type={type}
         {...props}
       />
+      {children}
     </label>
   );
 }

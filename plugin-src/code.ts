@@ -8,7 +8,8 @@ function generatePattern(msg: GeneratePatternMessage) {
     frameHeight,
     horizontalElementsCount,
     verticalElementsCount,
-    padding,
+    paddingX,
+    paddingY,
     colors,
     shape,
     alphaThreshold,
@@ -29,7 +30,7 @@ function generatePattern(msg: GeneratePatternMessage) {
 
   const element = figma.createRectangle();
   if (shape === "circle") element.cornerRadius = elementWidth * 0.5;
-  element.resize(elementWidth - padding, elementHeight - padding);
+  element.resize(elementWidth - paddingX, elementHeight - paddingY);
 
   for (let y = 0; y < verticalElementsCount; y++) {
     const verticalPosition = y / verticalElementsCount;
@@ -53,8 +54,8 @@ function generatePattern(msg: GeneratePatternMessage) {
 
       const newElement = element.clone();
 
-      newElement.x = x * elementWidth + padding * 0.5;
-      newElement.y = y * elementHeight + padding * 0.5;
+      newElement.x = x * elementWidth + paddingX * 0.5;
+      newElement.y = y * elementHeight + paddingY * 0.5;
       const randomColor =
         colors.length === 1
           ? colors[0]

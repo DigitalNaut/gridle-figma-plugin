@@ -10,6 +10,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(__dirname, "ui-src/components"),
+      hooks: resolve(__dirname, "ui-src/hooks"),
+      utils: resolve(__dirname, "ui-src/utils"),
     },
   },
   build: {

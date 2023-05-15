@@ -1,115 +1,51 @@
-import React, {
-  FormEvent,
-  Fragment,
-  PropsWithChildren,
-  useReducer,
-} from "react";
+import React, { ChangeEventHandler, useState } from "react";
 
 import Logo from "@/Logo";
 import Input from "@/Input";
 import Button from "@/Button";
 import Subsection from "@/Subsection";
-import { useWindowKeyDownEvent } from "./hooks/WindowEvents";
+import { useWindowKeyDownEvent } from "hooks/WindowEvents";
+import { useAppEvents } from "hooks/AppEvents";
+import { useBasicInputs, useManagedInputs } from "hooks/useUserInputs";
+import {
+  MIN_FRAME_SIZE,
+  MAX_FRAME_SIZE,
+  initialInputValues,
+} from "./constants";
 import "./index.css";
-
-enum ActionType {
-  Update = "update",
-  Reset = "reset",
-}
-
-type UpdateAction = {
-  type: ActionType.Update;
-  payload: Partial<GeneratePatternMessage>;
-};
-
-type ResetAction = {
-  type: ActionType.Reset;
-  payload: GeneratePatternMessage;
-};
-
-type Action = UpdateAction | ResetAction;
-
-function inputReducer(state: GeneratePatternMessage, action: Action) {
-  switch (action.type) {
-    case "update":
-      return { ...state, ...action.payload };
-    case "reset":
-      return action.payload;
-    default:
-      throw new Error();
-  }
-}
+import { useColorHandlers } from "hooks/useColorHandlers";
 
 export default function App() {
-  const initialInputValues: GeneratePatternMessage = {
-    type: "generate-pattern",
-    frameWidth: 300,
-    frameHeight: 300,
-    horizontalElementsCount: 30,
-    verticalElementsCount: 30,
-    padding: 2,
-    alphaThreshold: 0.05,
-    alphaThresholdMode: "remove",
-    colors: ["#86198f"],
-    shape: "square",
-    removeRandom: true,
-    verticalFadeMode: "ascending",
-  };
-  const [pluginMessage, inputDispatch] = useReducer(
-    inputReducer,
-    initialInputValues
-  );
+  const [pluginMessage, setPluginMessage] = useState(initialInputValues);
 
-  const onCreate = () => parent.postMessage({ pluginMessage }, "*");
-  const onReset = () =>
-    inputDispatch({ type: ActionType.Reset, payload: initialInputValues });
-  const onCancel = () =>
-    parent.postMessage({ pluginMessage: { type: "close" } }, "*");
+  const { onCreate, onClose } = useAppEvents();
+  const onReset = () => setPluginMessage(initialInputValues);
 
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") onCreate();
-    if (event.key === "Escape") onCancel();
-  };
+  useWindowKeyDownEvent((event: KeyboardEvent) => {
+    if (event.key === "Enter") onCreate(pluginMessage);
+    if (event.key === "Escape") onClose();
+  });
 
-  const handleInputChange = (
-    event: FormEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    // use the target's value in case of a select element, or an input element of type other than checkbox
-    // This is needed to appease TypeScript
-    const newValue =
-      event.currentTarget instanceof HTMLSelectElement ||
-      event.currentTarget.type !== "checkbox"
-        ? event.currentTarget.value
-        : event.currentTarget.checked;
+  const {
+    handleFrameWidthChange,
+    handleFrameHeightChange,
+    handleHorizontalElementsCountChange,
+    handleVerticalElementsCountChange,
+    handlePaddingXChange,
+    handlePaddingYChange,
+  } = useManagedInputs(setPluginMessage);
 
-    inputDispatch({
-      type: ActionType.Update,
-      payload: { [event.currentTarget.name]: newValue },
-    });
-  };
+  const { handleSelectChange, handleInputChange, handleCheckboxChange } =
+    useBasicInputs(setPluginMessage);
 
-  const validateInputs = () => {
-    const {
-      frameWidth,
-      frameHeight,
-      horizontalElementsCount,
-      verticalElementsCount,
-    } = pluginMessage;
+  const { handleColorChange, handleAddColor, handleRemoveColor } =
+    useColorHandlers(setPluginMessage, pluginMessage);
 
-    if (horizontalElementsCount > Math.floor(frameWidth / 10))
-      inputDispatch({
-        type: ActionType.Update,
-        payload: { horizontalElementsCount: Math.floor(frameWidth / 10) },
-      });
+  const elementWidth =
+    pluginMessage.frameWidth / pluginMessage.horizontalElementsCount;
 
-    if (verticalElementsCount > Math.floor(frameHeight / 10))
-      inputDispatch({
-        type: ActionType.Update,
-        payload: { verticalElementsCount: Math.floor(frameHeight / 10) },
-      });
-  };
-
-  useWindowKeyDownEvent(onKeyDown);
+  const elementHeight =
+    pluginMessage.frameHeight / pluginMessage.verticalElementsCount;
 
   return (
     <main className="flex w-full flex-col items-center gap-2 p-4">
@@ -124,11 +60,11 @@ export default function App() {
             id="frameWidthInput"
             name="frameWidth"
             type="number"
-            min="0"
-            max="1920"
+            min={MIN_FRAME_SIZE}
+            max={MAX_FRAME_SIZE}
             value={pluginMessage.frameWidth}
-            onChange={handleInputChange}
-            onBlur={validateInputs}
+            onChange={handleFrameWidthChange}
+            onInvalid={(event) => console.log(event.currentTarget)}
             title="Width of the frame in pixels."
           />
           <Input
@@ -136,24 +72,30 @@ export default function App() {
             id="frameHeightInput"
             name="frameHeight"
             type="number"
-            min="0"
-            max="1920"
+            min={MIN_FRAME_SIZE}
+            max={MAX_FRAME_SIZE}
             value={pluginMessage.frameHeight}
-            onChange={handleInputChange}
-            onBlur={validateInputs}
+            onChange={handleFrameHeightChange}
             title="Height of the frame in pixels."
           />
         </Subsection>
         <Subsection title="Elements">
+          <span>
+            {`Element size: ${parseFloat(
+              (elementWidth - pluginMessage.paddingX).toFixed(2)
+            )} x ${parseFloat(
+              (elementHeight - pluginMessage.paddingY).toFixed(2)
+            )} px`}
+          </span>
           <Input
             label="Horizontal count"
             id="horizontalCountInput"
             name="horizontalElementsCount"
             type="number"
-            min="0"
-            max={(Number(pluginMessage.frameWidth) ?? 0) / 10}
+            min={1}
+            max={pluginMessage.frameWidth.toFixed(0)}
             value={pluginMessage.horizontalElementsCount}
-            onChange={handleInputChange}
+            onChange={handleHorizontalElementsCountChange}
             title="Number of elements to create horizontally."
           />
           <Input
@@ -161,24 +103,32 @@ export default function App() {
             id="verticalCountInput"
             name="verticalElementsCount"
             type="number"
-            min="0"
-            max={(Number(pluginMessage.frameHeight) ?? 0) / 10}
+            min={1}
+            max={pluginMessage.frameHeight.toFixed(0)}
             value={pluginMessage.verticalElementsCount}
-            onChange={handleInputChange}
+            onChange={handleVerticalElementsCountChange}
             title="Number of elements to create vertically."
           />
           <Input
-            label="Padding (px)"
-            id="paddingInput"
-            name="padding"
+            label="Padding X (px)"
+            id="paddingXInput"
+            name="paddingX"
             type="number"
-            min="0"
-            max={Math.min(
-              (Number(pluginMessage.frameHeight) ?? 0) / 10 - 1,
-              (Number(pluginMessage.frameWidth) ?? 0) / 10 - 1
-            )}
-            value={pluginMessage.padding}
-            onChange={handleInputChange}
+            min={0}
+            max={(elementWidth - 1).toFixed(0)}
+            value={parseFloat(pluginMessage.paddingX.toFixed(2))}
+            onChange={handlePaddingXChange}
+            title="Padding between elements in pixels."
+          />
+          <Input
+            label="Padding Y (px)"
+            id="paddingYInput"
+            name="paddingY"
+            type="number"
+            min={0}
+            max={(elementHeight - 1).toFixed(0)}
+            value={parseFloat(pluginMessage.paddingY.toFixed(2))}
+            onChange={handlePaddingYChange}
             title="Padding between elements in pixels."
           />
         </Subsection>
@@ -196,32 +146,16 @@ export default function App() {
                   name="colors"
                   type="color"
                   value={color}
-                  onChange={(event) => {
-                    inputDispatch({
-                      type: ActionType.Update,
-                      payload: {
-                        colors: pluginMessage.colors.map((color, i) =>
-                          i === colorIndex ? event.currentTarget.value : color
-                        ),
-                      },
-                    });
-                  }}
+                  onChange={({ currentTarget }) =>
+                    handleColorChange(currentTarget.value, colorIndex)
+                  }
                 />
                 {colorIndex > 0 && (
                   <button
                     className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-zinc-600 group-hover:shadow-md"
                     title="Remove color"
                     role="button"
-                    onClick={() =>
-                      inputDispatch({
-                        type: ActionType.Update,
-                        payload: {
-                          colors: pluginMessage.colors.filter(
-                            (_, i) => i !== colorIndex
-                          ),
-                        },
-                      })
-                    }
+                    onClick={() => handleRemoveColor(colorIndex)}
                   >
                     ×
                   </button>
@@ -234,16 +168,7 @@ export default function App() {
               className="flex h-full w-1/5 items-center justify-center rounded-md border border-zinc-200 text-xl font-bold text-zinc-200"
               title="Add color"
               role="button"
-              onClick={() =>
-                inputDispatch({
-                  type: ActionType.Update,
-                  payload: {
-                    colors: pluginMessage.colors.concat(
-                      pluginMessage.colors[pluginMessage.colors.length - 1]
-                    ),
-                  },
-                })
-              }
+              onClick={handleAddColor}
             >
               +
             </button>
@@ -257,52 +182,12 @@ export default function App() {
               id="shapeSelect"
               name="shape"
               value={pluginMessage.shape}
-              onChange={handleInputChange}
+              onChange={handleSelectChange}
             >
               <option value="square">Square</option>
               <option value="circle">Circle</option>
             </select>
           </label>
-          <Input
-            columns
-            label="Alpha threshold"
-            id="alphaThresholdInput"
-            name="alphaThreshold"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={pluginMessage.alphaThreshold}
-            onChange={handleInputChange}
-            title="Minimum alpha value to be considered as a filled pixel."
-          >
-            {`${(pluginMessage.alphaThreshold * 100).toFixed(0)}%`}
-          </Input>
-          <label
-            htmlFor="alphaThresholdModeSelect"
-            title="How to handle elements with alpha value below the threshold."
-          >
-            Below threshold:&nbsp;
-            <select
-              className="rounded-sm bg-zinc-700 p-2"
-              id="alphaThresholdModeSelect"
-              name="alphaThresholdMode"
-              value={pluginMessage.alphaThresholdMode}
-              onChange={handleInputChange}
-            >
-              <option value="remove">Remove</option>
-              <option value="clamp">Clamp</option>
-            </select>
-          </label>
-          <Input
-            label="Remove random elements"
-            id="removeRandomInput"
-            name="removeRandom"
-            type="checkbox"
-            checked={pluginMessage.removeRandom}
-            onChange={handleInputChange}
-            title="Remove random elements to create a more organic look."
-          />
           <label
             htmlFor="verticalFadeModeSelect"
             title="Create a vertical fade by changing the alpha values of the elements in the direction selected."
@@ -313,18 +198,60 @@ export default function App() {
               id="verticalFadeModeSelect"
               name="verticalFadeMode"
               value={pluginMessage.verticalFadeMode}
-              onChange={handleInputChange}
+              onChange={handleSelectChange}
             >
               <option value="ascending">Ascending</option>
               <option value="descending">Descending</option>
               <option value="none">None</option>
             </select>
           </label>
+          <Input
+            columns
+            className="cursor-pointer accent-current"
+            label={`Alpha threshold ${(
+              pluginMessage.alphaThreshold * 100
+            ).toFixed(0)}%`}
+            id="alphaThresholdInput"
+            name="alphaThreshold"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={pluginMessage.alphaThreshold}
+            onChange={handleInputChange}
+            title="Minimum alpha value to be considered as a filled pixel."
+          />
+          <label
+            htmlFor="alphaThresholdModeSelect"
+            title="How to handle elements with alpha value below the threshold."
+          >
+            Below threshold:&nbsp;
+            <select
+              className="rounded-sm bg-zinc-700 p-2"
+              id="alphaThresholdModeSelect"
+              name="alphaThresholdMode"
+              value={pluginMessage.alphaThresholdMode}
+              onChange={handleSelectChange}
+            >
+              <option value="remove">Remove</option>
+              <option value="clamp">Clamp</option>
+            </select>
+          </label>
+          <Input
+            className="accent-current"
+            label="Remove random elements"
+            id="removeRandomInput"
+            name="removeRandom"
+            type="checkbox"
+            checked={pluginMessage.removeRandom}
+            onChange={handleCheckboxChange}
+            title="Remove random elements to create a more organic look."
+          />
         </Subsection>
         <footer className="flex w-full justify-end gap-2">
-          <Button onClick={onCancel}>Close</Button>
+          <Button onClick={onClose}>Close</Button>
           <Button onClick={onReset}>Reset</Button>
-          <Button filled onClick={onCreate}>
+          <Button filled onClick={() => onCreate(pluginMessage)}>
             Create
           </Button>
         </footer>

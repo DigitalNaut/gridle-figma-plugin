@@ -4,7 +4,8 @@ interface GeneratePatternMessage {
   frameHeight: number;
   horizontalElementsCount: number;
   verticalElementsCount: number;
-  padding: number;
+  paddingX: number;
+  paddingY: number;
   colors: string[];
   shape: "square" | "circle";
   alphaThreshold: number;
