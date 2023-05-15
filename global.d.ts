@@ -5,7 +5,7 @@ interface GenerateSquaresMessage {
   horizontalSquaresCount: number;
   verticalSquaresCount: number;
   padding: number;
-  colors: string;
+  colors: string[];
   alphaThreshold: number;
   alphaThresholdMode: "remove" | "clamp";
   removeRandom: boolean;

@@ -47,7 +47,13 @@ function generateSquarePattern(msg: GenerateSquaresMessage) {
 
       newRect.x = x * squareWidth + padding * 0.5;
       newRect.y = y * squareHeight + padding * 0.5;
-      newRect.fills = [{ type: "SOLID", color: hexToRGB(colors), opacity }];
+      const randomColor =
+        colors.length === 1
+          ? colors[0]
+          : colors[Math.floor(Math.random() * colors.length)];
+      newRect.fills = [
+        { type: "SOLID", color: hexToRGB(randomColor), opacity },
+      ];
 
       newRect.name = `${y}-${x}`;
       newRect.constraints = { horizontal: "SCALE", vertical: "SCALE" };
