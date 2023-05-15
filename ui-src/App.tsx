@@ -181,8 +181,7 @@ export default function App() {
             title="Padding between elements in pixels."
           />
         </Subsection>
-        <h3 className="text-xl">Colors</h3>
-        <div className="flex w-full items-center gap-2 rounded-sm bg-slate-700 p-2">
+        <Subsection title="Colors">
           <label
             className="flex w-full items-center"
             title="Colors to use for the elements."
@@ -247,7 +246,7 @@ export default function App() {
               </button>
             )}
           </label>
-        </div>
+        </Subsection>
         <Subsection title="Options">
           <label htmlFor="shapeInput" title="Shape of the elements:">
             Shape:
