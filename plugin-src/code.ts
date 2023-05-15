@@ -1,6 +1,6 @@
 import { hexToRGB } from "./utils/color";
 
-figma.showUI(__html__, { height: 780 });
+figma.showUI(__html__, { height: 650 });
 
 function generatePattern(msg: GeneratePatternMessage) {
   const {

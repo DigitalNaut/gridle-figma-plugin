@@ -1,4 +1,4 @@
-# Patterner Plugin for Figma
+# Gridle Plugin for Figma
 
 ## Description
 

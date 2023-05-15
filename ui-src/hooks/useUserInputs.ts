@@ -1,4 +1,4 @@
-import type { ChangeEventHandler, Dispatch, SetStateAction } from "react";
+import { ChangeEventHandler, Dispatch, SetStateAction, useState } from "react";
 
 import { clamp } from "utils/math";
 import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "../constants";
@@ -25,9 +25,22 @@ export function useBasicInputs(
   };
 }
 
+function calculateLength(callback: (result: number) => void) {
+  return function (length: number, parts: number) {
+    const result = length / parts;
+    callback(result);
+    return result;
+  };
+}
+
 export function useManagedInputs(
-  setState: Dispatch<SetStateAction<GeneratePatternMessage>>
+  setState: Dispatch<SetStateAction<GeneratePatternMessage>>,
+  onRecalculateElementWidth: (elementWidth: number) => void,
+  onRecalculateElementHeight: (elementHeight: number) => void
 ) {
+  const calculateElementWidth = calculateLength(onRecalculateElementWidth);
+  const calculateElementHeight = calculateLength(onRecalculateElementHeight);
+
   const handleFrameWidthChange: ChangeEventHandler<HTMLInputElement> = ({
     currentTarget,
   }) => {
@@ -35,20 +48,28 @@ export function useManagedInputs(
     const frameWidth = clamp(value, MIN_FRAME_SIZE, MAX_FRAME_SIZE);
 
     setState((prev) => {
-      const horizontalElementsCount = clamp(
-        prev.horizontalElementsCount,
-        1,
-        frameWidth
-      );
-      const paddingX = clamp(
-        prev.paddingX,
-        0,
-        frameWidth / horizontalElementsCount - 1
-      );
-
       return {
         ...prev,
         frameWidth,
+      };
+    });
+  };
+
+  const handleFrameWidthChangeDerivedProperties = () => {
+    setState((prev) => {
+      const horizontalElementsCount = clamp(
+        prev.horizontalElementsCount,
+        1,
+        prev.frameWidth
+      );
+      const elementWidth = calculateElementWidth(
+        prev.frameWidth,
+        horizontalElementsCount
+      );
+      const paddingX = clamp(prev.paddingX, 0, elementWidth - 1);
+
+      return {
+        ...prev,
         horizontalElementsCount,
         paddingX,
       };
@@ -62,20 +83,28 @@ export function useManagedInputs(
     const frameHeight = clamp(value, MIN_FRAME_SIZE, MAX_FRAME_SIZE);
 
     setState((prev) => {
-      const verticalElementsCount = clamp(
-        prev.verticalElementsCount,
-        1,
-        frameHeight
-      );
-      const paddingY = clamp(
-        prev.paddingY,
-        0,
-        frameHeight / verticalElementsCount - 1
-      );
-
       return {
         ...prev,
         frameHeight,
+      };
+    });
+  };
+
+  const handleFrameHeightChangeDerivedProperties = () => {
+    setState((prev) => {
+      const verticalElementsCount = clamp(
+        prev.verticalElementsCount,
+        1,
+        prev.frameHeight
+      );
+      const elementHeight = calculateElementHeight(
+        prev.frameHeight,
+        verticalElementsCount
+      );
+      const paddingY = clamp(prev.paddingY, 0, elementHeight - 1);
+
+      return {
+        ...prev,
         verticalElementsCount,
         paddingY,
       };
@@ -89,7 +118,12 @@ export function useManagedInputs(
 
     setState((prev) => {
       const horizontalElementsCount = clamp(value, 1, prev.frameWidth);
-      const maxPaddingX = prev.frameWidth / horizontalElementsCount - 1;
+      const elementWidth = calculateElementWidth(
+        prev.frameWidth,
+        horizontalElementsCount
+      );
+      const maxPaddingX = elementWidth - 1;
+
       return {
         ...prev,
         horizontalElementsCount,
@@ -105,7 +139,12 @@ export function useManagedInputs(
 
     setState((prev) => {
       const verticalElementsCount = clamp(value, 1, prev.frameHeight);
-      const maxPaddingY = prev.frameHeight / verticalElementsCount - 1;
+      const elementHeight = calculateElementHeight(
+        prev.frameHeight,
+        verticalElementsCount
+      );
+      const maxPaddingY = elementHeight - 1;
+
       return {
         ...prev,
         verticalElementsCount,
@@ -120,8 +159,13 @@ export function useManagedInputs(
     const value = parseFloat(currentTarget.value);
 
     setState((prev) => {
-      const maxPaddingX = prev.frameWidth / prev.horizontalElementsCount - 1;
+      const elementWidth = calculateElementWidth(
+        prev.frameWidth,
+        prev.horizontalElementsCount
+      );
+      const maxPaddingX = elementWidth - 1;
       const paddingX = clamp(value, 0, maxPaddingX);
+
       return {
         ...prev,
         paddingX,
@@ -135,8 +179,13 @@ export function useManagedInputs(
     const value = parseFloat(currentTarget.value);
 
     setState((prev) => {
-      const maxPaddingY = prev.frameHeight / prev.verticalElementsCount - 1;
+      const elementHeight = calculateElementHeight(
+        prev.frameHeight,
+        prev.verticalElementsCount
+      );
+      const maxPaddingY = elementHeight - 1;
       const paddingY = clamp(value, 0, maxPaddingY);
+
       return {
         ...prev,
         paddingY,
@@ -147,6 +196,8 @@ export function useManagedInputs(
   return {
     handleFrameWidthChange,
     handleFrameHeightChange,
+    handleFrameWidthChangeDerivedProperties,
+    handleFrameHeightChangeDerivedProperties,
     handleHorizontalElementsCountChange,
     handleVerticalElementsCountChange,
     handlePaddingXChange,

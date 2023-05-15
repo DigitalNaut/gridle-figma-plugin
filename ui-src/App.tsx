@@ -3,7 +3,7 @@ import React, { ChangeEventHandler, useState } from "react";
 import Logo from "@/Logo";
 import Input from "@/Input";
 import Button from "@/Button";
-import Subsection from "@/Subsection";
+import { CollapsibleSubsection, Subsection } from "@/Subsection";
 import { useWindowKeyDownEvent } from "hooks/WindowEvents";
 import { useAppEvents } from "hooks/AppEvents";
 import { useBasicInputs, useManagedInputs } from "hooks/useUserInputs";
@@ -17,23 +17,23 @@ import { useColorHandlers } from "hooks/useColorHandlers";
 
 export default function App() {
   const [pluginMessage, setPluginMessage] = useState(initialInputValues);
-
-  const { onCreate, onClose } = useAppEvents();
-  const onReset = () => setPluginMessage(initialInputValues);
-
-  useWindowKeyDownEvent((event: KeyboardEvent) => {
-    if (event.key === "Enter") onCreate(pluginMessage);
-    if (event.key === "Escape") onClose();
-  });
+  const [elementWidth, setElementWidth] = useState(
+    pluginMessage.frameWidth / pluginMessage.horizontalElementsCount
+  );
+  const [elementHeight, setElementHeight] = useState(
+    pluginMessage.frameHeight / pluginMessage.verticalElementsCount
+  );
 
   const {
     handleFrameWidthChange,
     handleFrameHeightChange,
+    handleFrameHeightChangeDerivedProperties,
+    handleFrameWidthChangeDerivedProperties,
     handleHorizontalElementsCountChange,
     handleVerticalElementsCountChange,
     handlePaddingXChange,
     handlePaddingYChange,
-  } = useManagedInputs(setPluginMessage);
+  } = useManagedInputs(setPluginMessage, setElementWidth, setElementHeight);
 
   const { handleSelectChange, handleInputChange, handleCheckboxChange } =
     useBasicInputs(setPluginMessage);
@@ -41,17 +41,19 @@ export default function App() {
   const { handleColorChange, handleAddColor, handleRemoveColor } =
     useColorHandlers(setPluginMessage, pluginMessage);
 
-  const elementWidth =
-    pluginMessage.frameWidth / pluginMessage.horizontalElementsCount;
+  const { onCreate, onClose } = useAppEvents();
+  const onReset = () => setPluginMessage(initialInputValues);
 
-  const elementHeight =
-    pluginMessage.frameHeight / pluginMessage.verticalElementsCount;
+  useWindowKeyDownEvent(async (event: KeyboardEvent) => {
+    // if (event.key === "Enter") onCreate(pluginMessage); // TODO: Bugfix - Enter key does not update the plugin message before creating the pattern.
+    if (event.key === "Escape") onClose();
+  });
 
   return (
     <main className="flex w-full flex-col items-center gap-2 p-4">
       <header className="flex items-center justify-center gap-2">
         <Logo />
-        <h2 className="text-2xl">Patterner</h2>
+        <h2 className="text-2xl">Gridle</h2>
       </header>
       <section className="flex w-full flex-col gap-4">
         <Subsection title="Frame">
@@ -64,6 +66,7 @@ export default function App() {
             max={MAX_FRAME_SIZE}
             value={pluginMessage.frameWidth}
             onChange={handleFrameWidthChange}
+            onBlur={handleFrameWidthChangeDerivedProperties}
             onInvalid={(event) => console.log(event.currentTarget)}
             title="Width of the frame in pixels."
           />
@@ -76,6 +79,7 @@ export default function App() {
             max={MAX_FRAME_SIZE}
             value={pluginMessage.frameHeight}
             onChange={handleFrameHeightChange}
+            onBlur={handleFrameHeightChangeDerivedProperties}
             title="Height of the frame in pixels."
           />
         </Subsection>
@@ -174,7 +178,7 @@ export default function App() {
             </button>
           )}
         </Subsection>
-        <Subsection title="Options">
+        <CollapsibleSubsection title="Options">
           <label htmlFor="shapeSelect" title="Shape of the elements:">
             Shape:&nbsp;
             <select
@@ -247,7 +251,7 @@ export default function App() {
             onChange={handleCheckboxChange}
             title="Remove random elements to create a more organic look."
           />
-        </Subsection>
+        </CollapsibleSubsection>
         <footer className="flex w-full justify-end gap-2">
           <Button onClick={onClose}>Close</Button>
           <Button onClick={onReset}>Reset</Button>
