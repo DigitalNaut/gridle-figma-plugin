@@ -1,4 +1,9 @@
-import React, { FormEvent, useReducer } from "react";
+import React, {
+  FormEvent,
+  Fragment,
+  PropsWithChildren,
+  useReducer,
+} from "react";
 
 import Logo from "@/Logo";
 import Input from "@/Input";
@@ -13,17 +18,17 @@ enum ActionType {
 
 type UpdateAction = {
   type: ActionType.Update;
-  payload: Partial<GenerateSquaresMessage>;
+  payload: Partial<GeneratePatternMessage>;
 };
 
 type ResetAction = {
   type: ActionType.Reset;
-  payload: GenerateSquaresMessage;
+  payload: GeneratePatternMessage;
 };
 
 type Action = UpdateAction | ResetAction;
 
-function inputReducer(state: GenerateSquaresMessage, action: Action) {
+function inputReducer(state: GeneratePatternMessage, action: Action) {
   switch (action.type) {
     case "update":
       return { ...state, ...action.payload };
@@ -35,16 +40,17 @@ function inputReducer(state: GenerateSquaresMessage, action: Action) {
 }
 
 export default function App() {
-  const initialInputValues: GenerateSquaresMessage = {
-    type: "generate-squares",
+  const initialInputValues: GeneratePatternMessage = {
+    type: "generate-pattern",
     frameWidth: 300,
     frameHeight: 300,
-    horizontalSquaresCount: 30,
-    verticalSquaresCount: 30,
+    horizontalElementsCount: 30,
+    verticalElementsCount: 30,
     padding: 2,
     alphaThreshold: 0.05,
     alphaThresholdMode: "remove",
-    colors: "#86198f",
+    colors: ["#86198f"],
+    shape: "square",
     removeRandom: true,
   };
   const [pluginMessage, inputDispatch] = useReducer(
@@ -84,24 +90,44 @@ export default function App() {
     const {
       frameWidth,
       frameHeight,
-      horizontalSquaresCount,
-      verticalSquaresCount,
+      horizontalElementsCount,
+      verticalElementsCount,
     } = pluginMessage;
 
-    if (horizontalSquaresCount > Math.floor(frameWidth / 10))
+    if (horizontalElementsCount > Math.floor(frameWidth / 10))
       inputDispatch({
         type: ActionType.Update,
-        payload: { horizontalSquaresCount: Math.floor(frameWidth / 10) },
+        payload: { horizontalElementsCount: Math.floor(frameWidth / 10) },
       });
 
-    if (verticalSquaresCount > Math.floor(frameHeight / 10))
+    if (verticalElementsCount > Math.floor(frameHeight / 10))
       inputDispatch({
         type: ActionType.Update,
-        payload: { verticalSquaresCount: Math.floor(frameHeight / 10) },
+        payload: { verticalElementsCount: Math.floor(frameHeight / 10) },
       });
   };
 
   useWindowKeyDownEvent(onKeyDown);
+
+  function Subsection({
+    title,
+    children,
+    rows,
+    noGap,
+  }: PropsWithChildren<{ title: string; rows?: true; noGap?: true }>) {
+    return (
+      <>
+        <h3 className="text-xl">{title}</h3>
+        <div
+          className={`flex w-full rounded-sm bg-slate-700 p-2 ${
+            rows ? "items-center" : "flex-col"
+          } ${noGap ? "" : "gap-2"}`}
+        >
+          {children}
+        </div>
+      </>
+    );
+  }
 
   return (
     <main className="flex w-full flex-col items-center gap-2 p-4">
@@ -110,14 +136,14 @@ export default function App() {
         <h2 className="text-2xl">Patterner</h2>
       </header>
       <section className="flex w-full flex-col gap-4">
-        <h3 className="text-xl">Frame size</h3>
-        <div className="flex w-full flex-col gap-2 rounded-sm bg-slate-700 p-2">
+        <Subsection title="Frame">
           <Input
             label="Width (px)"
             id="frameWidthInput"
             name="frameWidth"
             type="number"
             min="0"
+            max="1920"
             value={pluginMessage.frameWidth}
             onChange={handleInputChange}
             onBlur={validateInputs}
@@ -129,35 +155,35 @@ export default function App() {
             name="frameHeight"
             type="number"
             min="0"
+            max="1920"
             value={pluginMessage.frameHeight}
             onChange={handleInputChange}
             onBlur={validateInputs}
             title="Height of the frame in pixels."
           />
-        </div>
-        <h3 className="text-xl">Squares</h3>
-        <div className="flex w-full flex-col gap-2 rounded-sm bg-slate-700 p-2">
+        </Subsection>
+        <Subsection title="Elements">
           <Input
             label="Horizontal count"
             id="horizontalCountInput"
-            name="horizontalSquaresCount"
+            name="horizontalElementsCount"
             type="number"
             min="0"
             max={(Number(pluginMessage.frameWidth) ?? 0) / 10}
-            value={pluginMessage.horizontalSquaresCount}
+            value={pluginMessage.horizontalElementsCount}
             onChange={handleInputChange}
-            title="Number of squares to create horizontally."
+            title="Number of elements to create horizontally."
           />
           <Input
             label="Vertical count"
             id="verticalCountInput"
-            name="verticalSquaresCount"
+            name="verticalElementsCount"
             type="number"
             min="0"
             max={(Number(pluginMessage.frameHeight) ?? 0) / 10}
-            value={pluginMessage.verticalSquaresCount}
+            value={pluginMessage.verticalElementsCount}
             onChange={handleInputChange}
-            title="Number of squares to create vertically."
+            title="Number of elements to create vertically."
           />
           <Input
             label="Padding (px)"
@@ -171,25 +197,90 @@ export default function App() {
             )}
             value={pluginMessage.padding}
             onChange={handleInputChange}
-            title="Padding between squares in pixels."
+            title="Padding between elements in pixels."
           />
-        </div>
+        </Subsection>
         <h3 className="text-xl">Colors</h3>
-        <div className="flex w-full flex-col gap-2 rounded-sm bg-slate-700 p-2">
-          <Input
-            label="Colors"
-            id="colorsInput"
-            name="colors"
-            type="color"
-            value={pluginMessage.colors}
-            onChange={handleInputChange}
-          />
+        <div className="flex w-full items-center gap-2 rounded-sm bg-slate-700 p-2">
+          <label
+            className="flex w-full items-center"
+            title="Colors to use for the elements."
+          >
+            {pluginMessage.colors.map((color, colorIndex) => (
+              <div key={colorIndex} className="group relative h-10 w-1/5">
+                <input
+                  className="h-full w-full rounded-sm bg-slate-700"
+                  id="colorsInput"
+                  name="colors"
+                  type="color"
+                  value={color}
+                  onChange={(event) => {
+                    inputDispatch({
+                      type: ActionType.Update,
+                      payload: {
+                        colors: pluginMessage.colors.map((color, i) =>
+                          i === colorIndex ? event.currentTarget.value : color
+                        ),
+                      },
+                    });
+                  }}
+                />
+                {colorIndex > 0 && (
+                  <button
+                    className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-slate-600 group-hover:shadow-md"
+                    title="Remove color"
+                    role="button"
+                    onClick={() =>
+                      inputDispatch({
+                        type: ActionType.Update,
+                        payload: {
+                          colors: pluginMessage.colors.filter(
+                            (_, i) => i !== colorIndex
+                          ),
+                        },
+                      })
+                    }
+                  >
+                    -
+                  </button>
+                )}
+              </div>
+            ))}
+            {pluginMessage.colors.length < 5 && (
+              <button
+                className="flex h-full w-1/5 items-center justify-center rounded-md bg-slate-200 text-xl font-bold text-slate-900"
+                title="Add color"
+                role="button"
+                onClick={() =>
+                  inputDispatch({
+                    type: ActionType.Update,
+                    payload: {
+                      colors: pluginMessage.colors.concat(
+                        pluginMessage.colors[pluginMessage.colors.length - 1]
+                      ),
+                    },
+                  })
+                }
+              >
+                +
+              </button>
+            )}
+          </label>
         </div>
-        <h3 className="text-xl">Options</h3>
-        <div
-          className="flex w-full flex-col gap-2 rounded-sm bg-slate-700 p-2"
-          title="How to handle elements with alpha value below the threshold."
-        >
+        <Subsection title="Options">
+          <label htmlFor="shapeInput" title="Shape of the elements:">
+            Shape:
+            <select
+              className="rounded-sm bg-slate-700 p-2"
+              id="shapeInput"
+              name="shape"
+              value={pluginMessage.shape}
+              onChange={handleInputChange}
+            >
+              <option value="square">Square</option>
+              <option value="circle">Circle</option>
+            </select>
+          </label>
           <Input
             columns
             label="Alpha threshold"
@@ -210,7 +301,7 @@ export default function App() {
             htmlFor="alphaThresholdModeInput"
             title="How to handle elements with alpha value below the threshold."
           >
-            Squares below threshold:
+            Elements below threshold:
             <select
               className="rounded-sm bg-slate-700 p-2"
               id="alphaThresholdModeInput"
@@ -218,22 +309,20 @@ export default function App() {
               value={pluginMessage.alphaThresholdMode}
               onChange={handleInputChange}
             >
-              <option selected value="remove">
-                Remove
-              </option>
+              <option value="remove">Remove</option>
               <option value="clamp">Clamp</option>
             </select>
           </label>
           <Input
-            label="Remove random squares"
+            label="Remove random elements"
             id="removeRandomInput"
             name="removeRandom"
             type="checkbox"
             checked={pluginMessage.removeRandom}
             onChange={handleInputChange}
-            title="Remove random squares to create a more organic look."
+            title="Remove random elements to create a more organic look."
           />
-        </div>
+        </Subsection>
         <footer className="flex w-full justify-end gap-2">
           <Button onClick={onCancel}>Close</Button>
           <Button onClick={onReset}>Reset</Button>

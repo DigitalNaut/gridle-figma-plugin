@@ -1,39 +1,41 @@
 import { hexToRGB } from "./utils/color";
 
-figma.showUI(__html__, { height: 740 });
+figma.showUI(__html__, { height: 780 });
 
-function generateSquarePattern(msg: GenerateSquaresMessage) {
+function generatePattern(msg: GeneratePatternMessage) {
   const {
     frameWidth,
     frameHeight,
-    horizontalSquaresCount,
-    verticalSquaresCount,
+    horizontalElementsCount,
+    verticalElementsCount,
     padding,
     colors,
+    shape,
     alphaThreshold,
     alphaThresholdMode,
     removeRandom,
   } = msg;
 
-  const squareWidth = frameWidth / horizontalSquaresCount;
-  const squareHeight = frameHeight / verticalSquaresCount;
+  const elementWidth = frameWidth / horizontalElementsCount;
+  const elementHeight = frameHeight / verticalElementsCount;
 
   const frame = figma.createFrame();
-  frame.name = "Square Pattern";
+  frame.name = "Generated Pattern";
   frame.resize(Number(frameWidth), Number(frameHeight));
   frame.fills = [];
   frame.clipsContent = false;
   figma.currentPage.appendChild(frame);
 
-  const rect = figma.createRectangle();
-  rect.resize(squareWidth - padding, squareHeight - padding);
+  const element = figma.createRectangle();
+  if (shape === "circle") element.cornerRadius = elementWidth * 0.5;
+  element.resize(elementWidth - padding, elementHeight - padding);
 
-  for (let y = 0; y < verticalSquaresCount; y++) {
-    const verticalPosition = y / verticalSquaresCount;
+  for (let y = 0; y < verticalElementsCount; y++) {
+    const verticalPosition = y / verticalElementsCount;
 
     const layerNodes: RectangleNode[] = [];
 
-    for (let x = 0; x < horizontalSquaresCount; x++) {
+    for (let x = 0; x < horizontalElementsCount; x++) {
       if (removeRandom && Math.random() > verticalPosition) continue;
 
       let opacity = Math.random() * verticalPosition;
@@ -43,21 +45,21 @@ function generateSquarePattern(msg: GenerateSquaresMessage) {
           opacity = Number(alphaThreshold);
       }
 
-      const newRect = rect.clone();
+      const newElement = element.clone();
 
-      newRect.x = x * squareWidth + padding * 0.5;
-      newRect.y = y * squareHeight + padding * 0.5;
+      newElement.x = x * elementWidth + padding * 0.5;
+      newElement.y = y * elementHeight + padding * 0.5;
       const randomColor =
         colors.length === 1
           ? colors[0]
           : colors[Math.floor(Math.random() * colors.length)];
-      newRect.fills = [
+      newElement.fills = [
         { type: "SOLID", color: hexToRGB(randomColor), opacity },
       ];
 
-      newRect.name = `${y}-${x}`;
-      newRect.constraints = { horizontal: "SCALE", vertical: "SCALE" };
-      layerNodes.push(newRect);
+      newElement.name = `${y}-${x}`;
+      newElement.constraints = { horizontal: "SCALE", vertical: "SCALE" };
+      layerNodes.push(newElement);
     }
 
     if (layerNodes.length === 0) continue;
@@ -72,10 +74,10 @@ function generateSquarePattern(msg: GenerateSquaresMessage) {
   figma.currentPage.selection = [frame];
   frame.expanded = false;
 
-  rect.remove();
+  element.remove();
 }
 
 figma.ui.onmessage = (msg) => {
-  if (msg.type === "generate-squares") generateSquarePattern(msg);
+  if (msg.type === "generate-pattern") generatePattern(msg);
   if (msg.type === "close") figma.closePlugin();
 };

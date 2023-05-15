@@ -1,11 +1,12 @@
-interface GenerateSquaresMessage {
-  type: "generate-squares";
+interface GeneratePatternMessage {
+  type: "generate-pattern";
   frameWidth: number;
   frameHeight: number;
-  horizontalSquaresCount: number;
-  verticalSquaresCount: number;
+  horizontalElementsCount: number;
+  verticalElementsCount: number;
   padding: number;
   colors: string[];
+  shape: "square" | "circle";
   alphaThreshold: number;
   alphaThresholdMode: "remove" | "clamp";
   removeRandom: boolean;

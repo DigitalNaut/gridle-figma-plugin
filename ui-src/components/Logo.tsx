@@ -10,20 +10,20 @@ export default function Logo({ className }: { className?: string }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <rect width="10" height="10" fill="currentColor" fill-opacity="0.82" />
+      <rect width="10" height="10" fill="currentColor" fillOpacity="0.82" />
       <rect
         x="11"
         width="10"
         height="10"
         fill="currentColor"
-        fill-opacity="0.2"
+        fillOpacity="0.2"
       />
       <rect
         y="11"
         width="10"
         height="10"
         fill="currentColor"
-        fill-opacity="0.45"
+        fillOpacity="0.45"
       />
       <rect
         x="11"
@@ -31,7 +31,7 @@ export default function Logo({ className }: { className?: string }) {
         width="10"
         height="10"
         fill="currentColor"
-        fill-opacity="0.7"
+        fillOpacity="0.7"
       />
     </svg>
   );

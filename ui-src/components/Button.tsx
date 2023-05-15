@@ -20,6 +20,7 @@ export default function Button({
   }>) {
   return (
     <button
+      role="button"
       className={`py-1 ${
         filled ? "rounded-sm bg-white px-4 text-black" : "px-2 underline"
       } ${className}`}

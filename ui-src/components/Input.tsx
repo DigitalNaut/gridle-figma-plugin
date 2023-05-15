@@ -9,11 +9,11 @@ export default function Input({
   label,
   id,
   className,
-  forwardRef,
   children,
   columns,
   title,
   type,
+  // ^?
   ...props
 }: DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> &
   PropsWithChildren<{
@@ -33,11 +33,10 @@ export default function Input({
         {children ? ` (${children})` : ""}:
       </span>
       <input
-        id={id}
         className={`grow bg-inherit text-inherit ${
           type === "color" ? "" : "border-b-2 border-white"
         } ${className}`}
-        ref={forwardRef}
+        id={id}
         type={type}
         {...props}
       />
