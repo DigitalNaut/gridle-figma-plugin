@@ -7,5 +7,5 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [require("./plugins/tailwind.vendors.js")],
 };
