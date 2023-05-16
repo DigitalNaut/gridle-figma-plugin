@@ -1,4 +1,27 @@
-interface GeneratePatternMessage {
+declare enum supportedShapes {
+  square,
+  circle,
+}
+
+declare enum alphaThresholdModes {
+  remove,
+  clamp,
+}
+
+declare enum verticalFadeModes {
+  ascending,
+  descending,
+  none,
+}
+
+declare enum removeRandomMode {
+  ascending,
+  descending,
+  uniform,
+  none,
+}
+
+type GeneratePatternMessage = {
   type: "generate-pattern";
   frameWidth: number;
   frameHeight: number;
@@ -7,9 +30,10 @@ interface GeneratePatternMessage {
   paddingX: number;
   paddingY: number;
   colors: string[];
-  shape: "square" | "circle";
+  shape: keyof typeof supportedShapes;
   alphaThreshold: number;
-  alphaThresholdMode: "remove" | "clamp";
+  alphaThresholdMode: keyof typeof alphaThresholdModes;
+  verticalFadeMode: keyof typeof verticalFadeModes;
   removeRandom: boolean;
-  verticalFadeMode: "ascending" | "descending" | "none";
-}
+  removeRandomMode: keyof typeof removeRandomMode;
+};
