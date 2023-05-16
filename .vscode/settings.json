@@ -1,10 +1,18 @@
 {
   "cSpell.words": [
+    "cloudflare",
     "figma",
+    "gridle",
     "iframe",
     "outfile",
-    "gridle",
     "singlefile",
-    "tailwindcss"
-  ]
+    "tailwindcss",
+    "xmark"
+  ],
+  // See https://stackoverflow.com/questions/66614875/how-can-i-enable-tailwind-intellisense-outside-of-classname
+  "tailwindCSS.experimental.classRegex": [
+    ["Style \\=([^;]*);", "'([^']*)'"],
+    ["Style \\=([^;]*);", "\"([^\"]*)\""],
+    ["Style \\=([^;]*);", "\\`([^\\`]*)\\`"]
+  ],
 }
