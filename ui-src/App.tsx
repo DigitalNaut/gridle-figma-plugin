@@ -57,7 +57,7 @@ export default function App() {
       </header>
       <section className="flex w-full flex-col gap-4">
         <Subsection title="Frame">
-          <Input
+          <Input<GeneratePatternMessage, number>
             label="Width (px)"
             id="frameWidthInput"
             name="frameWidth"
@@ -70,7 +70,7 @@ export default function App() {
             onInvalid={(event) => console.log(event.currentTarget)}
             title="Width of the frame in pixels."
           />
-          <Input
+          <Input<GeneratePatternMessage, number>
             label="Height (px)"
             id="frameHeightInput"
             name="frameHeight"
@@ -91,7 +91,7 @@ export default function App() {
               (elementHeight - pluginMessage.paddingY).toFixed(2)
             )} px`}
           </span>
-          <Input
+          <Input<GeneratePatternMessage, number>
             label="Horizontal count"
             id="horizontalCountInput"
             name="horizontalElementsCount"
@@ -102,7 +102,7 @@ export default function App() {
             onChange={handleHorizontalElementsCountChange}
             title="Number of elements to create horizontally."
           />
-          <Input
+          <Input<GeneratePatternMessage, number>
             label="Vertical count"
             id="verticalCountInput"
             name="verticalElementsCount"
@@ -113,7 +113,7 @@ export default function App() {
             onChange={handleVerticalElementsCountChange}
             title="Number of elements to create vertically."
           />
-          <Input
+          <Input<GeneratePatternMessage, number>
             label="Padding X (px)"
             id="paddingXInput"
             name="paddingX"
@@ -124,7 +124,7 @@ export default function App() {
             onChange={handlePaddingXChange}
             title="Padding between elements in pixels."
           />
-          <Input
+          <Input<GeneratePatternMessage, number>
             label="Padding Y (px)"
             id="paddingYInput"
             name="paddingY"
@@ -209,7 +209,7 @@ export default function App() {
               <option value="none">None</option>
             </select>
           </label>
-          <Input
+          <Input<GeneratePatternMessage, number>
             columns
             className="cursor-pointer accent-current"
             label={`Alpha threshold ${(
@@ -241,7 +241,7 @@ export default function App() {
               <option value="clamp">Clamp</option>
             </select>
           </label>
-          <Input
+          <Input<GeneratePatternMessage, boolean>
             className="accent-current"
             label="Remove random elements"
             id="removeRandomInput"
