@@ -14,7 +14,7 @@ declare enum verticalFadeModes {
   none,
 }
 
-declare enum removeRandomMode {
+declare enum noiseModes {
   ascending,
   descending,
   uniform,
@@ -34,6 +34,5 @@ type GeneratePatternMessage = {
   alphaThreshold: number;
   alphaThresholdMode: keyof typeof alphaThresholdModes;
   verticalFadeMode: keyof typeof verticalFadeModes;
-  removeRandom: boolean;
-  removeRandomMode: keyof typeof removeRandomMode;
+  noiseMode: keyof typeof noiseModes;
 };

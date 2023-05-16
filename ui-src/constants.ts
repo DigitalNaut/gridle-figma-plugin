@@ -14,7 +14,6 @@ export const initialInputValues: GeneratePatternMessage = {
   alphaThresholdMode: "remove",
   colors: defaultColors,
   shape: "square",
-  removeRandom: true,
   verticalFadeMode: "ascending",
-  removeRandomMode: "ascending",
+  noiseMode: "ascending",
 };

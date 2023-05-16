@@ -14,7 +14,7 @@ function generatePattern(msg: GeneratePatternMessage) {
     shape,
     alphaThreshold,
     alphaThresholdMode,
-    removeRandom,
+    noiseMode,
     verticalFadeMode,
   } = msg;
 
@@ -38,7 +38,14 @@ function generatePattern(msg: GeneratePatternMessage) {
     const layerNodes: RectangleNode[] = [];
 
     for (let x = 0; x < horizontalElementsCount; x++) {
-      if (removeRandom && Math.random() > verticalPosition) continue;
+      if (noiseMode === "ascending" && Math.random() > verticalPosition)
+        continue;
+      if (
+        noiseMode === "descending" &&
+        Math.random() > 1 - verticalPosition
+      )
+        continue;
+      if (noiseMode === "uniform" && Math.random() > 0.5) continue;
 
       let opacity = Math.random();
 

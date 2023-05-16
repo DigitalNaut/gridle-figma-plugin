@@ -35,7 +35,7 @@ export default function App() {
     handlePaddingYChange,
   } = useManagedInputs(setPluginMessage, setElementWidth, setElementHeight);
 
-  const { handleSelectChange, handleInputChange, handleCheckboxChange } =
+  const { handleSelectChange, handleInputChange } =
     useBasicInputs(setPluginMessage);
 
   const { handleColorChange, handleAddColor, handleRemoveColor } =
@@ -209,6 +209,24 @@ export default function App() {
               <option value="none">None</option>
             </select>
           </label>
+          <label
+            htmlFor="noiseModeInput"
+            title="Remove random elements to add noise and create a more organic look."
+          >
+            Add noise:&nbsp;
+            <select
+              className="rounded-sm bg-zinc-700 p-2"
+              id="noiseModeInput"
+              name="noiseMode"
+              value={pluginMessage.noiseMode}
+              onChange={handleSelectChange}
+            >
+              <option value="ascending">Ascending</option>
+              <option value="descending">Descending</option>
+              <option value="uniform">Uniform</option>
+              <option value="none">None</option>
+            </select>
+          </label>
           <Input<GeneratePatternMessage, number>
             columns
             className="cursor-pointer accent-current"
@@ -241,16 +259,6 @@ export default function App() {
               <option value="clamp">Clamp</option>
             </select>
           </label>
-          <Input<GeneratePatternMessage, boolean>
-            className="accent-current"
-            label="Remove random elements"
-            id="removeRandomInput"
-            name="removeRandom"
-            type="checkbox"
-            checked={pluginMessage.removeRandom}
-            onChange={handleCheckboxChange}
-            title="Remove random elements to create a more organic look."
-          />
         </CollapsibleSubsection>
         <footer className="flex w-full justify-end gap-2">
           <Button onClick={onClose}>Close</Button>
