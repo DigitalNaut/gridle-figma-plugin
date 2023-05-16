@@ -1,6 +1,35 @@
 import { hexToRGB } from "./utils/color";
 
-figma.showUI(__html__, { height: 650 });
+figma.showUI(__html__, { width: 340, height: 650 });
+
+function noiseFilter(
+  noiseMode: GeneratePatternMessage["noiseMode"],
+  verticalPosition: number
+) {
+  switch (noiseMode) {
+    case "ascending":
+      return Math.random() > verticalPosition;
+    case "descending":
+      return Math.random() > 1 - verticalPosition;
+    case "uniform":
+      return Math.random() > 0.5;
+    default:
+      return false;
+  }
+}
+
+function fadeFilter(
+  verticalFadeMode: GeneratePatternMessage["verticalFadeMode"],
+  verticalPosition: number
+) {
+  if (verticalFadeMode === "ascending") return verticalPosition;
+  if (verticalFadeMode === "descending") return 1 - verticalPosition;
+  return 1;
+}
+
+function transformRange(rawRange: [number, number], base: number) {
+  return [rawRange[0] / base, rawRange[1] / base];
+}
 
 function generatePattern(msg: GeneratePatternMessage) {
   const {
@@ -12,8 +41,8 @@ function generatePattern(msg: GeneratePatternMessage) {
     paddingY,
     colors,
     shape,
-    alphaThreshold,
-    alphaThresholdMode,
+    opacityRange,
+    opacityThresholdMode,
     noiseMode,
     verticalFadeMode,
   } = msg;
@@ -32,32 +61,25 @@ function generatePattern(msg: GeneratePatternMessage) {
   if (shape === "circle") element.cornerRadius = elementWidth * 0.5;
   element.resize(elementWidth - paddingX, elementHeight - paddingY);
 
+  const [opacityMin, opacityMax] = transformRange(opacityRange, 100);
+  const opacityDelta = opacityMax - opacityMin;
+
   for (let y = 0; y < verticalElementsCount; y++) {
-    const verticalPosition = y / verticalElementsCount;
+    const verticalPosition = y / (verticalElementsCount - 1);
 
     const layerNodes: RectangleNode[] = [];
 
     for (let x = 0; x < horizontalElementsCount; x++) {
-      if (noiseMode === "ascending" && Math.random() > verticalPosition)
-        continue;
-      if (
-        noiseMode === "descending" &&
-        Math.random() > 1 - verticalPosition
-      )
-        continue;
-      if (noiseMode === "uniform" && Math.random() > 0.5) continue;
+      if (noiseFilter(noiseMode, verticalPosition)) continue;
 
-      let opacity = Math.random();
+      let opacity = Math.random() * opacityDelta + opacityMin;
 
-      if (verticalFadeMode === "ascending") opacity *= verticalPosition;
-      else if (verticalFadeMode === "descending")
-        opacity *= 1 - verticalPosition;
+      opacity *= fadeFilter(verticalFadeMode, verticalPosition);
 
-      if (opacity < alphaThreshold) {
-        if (alphaThresholdMode === "remove") continue;
-        else if (alphaThresholdMode === "clamp")
-          opacity = Number(alphaThreshold);
-      }
+      if (opacityThresholdMode === "clamp")
+        opacity = Math.min(Math.max(opacity, opacityMin), opacityMax);
+      if (opacityThresholdMode === "remove")
+        if (opacity < opacityMin || opacity > opacityMax) continue;
 
       const newElement = element.clone();
 

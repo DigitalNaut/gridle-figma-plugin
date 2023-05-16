@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler, useState } from "react";
+import React, { useState } from "react";
 
 import Logo from "@/Logo";
 import Input from "@/Input";
@@ -14,6 +14,7 @@ import {
 } from "./constants";
 import "./index.css";
 import { useColorHandlers } from "hooks/useColorHandlers";
+import MultiRangeSlider from "@/MultiRangeSlider";
 
 export default function App() {
   const [pluginMessage, setPluginMessage] = useState(initialInputValues);
@@ -35,8 +36,10 @@ export default function App() {
     handlePaddingYChange,
   } = useManagedInputs(setPluginMessage, setElementWidth, setElementHeight);
 
-  const { handleSelectChange, handleInputChange } =
-    useBasicInputs(setPluginMessage);
+  const handleRangeSliderChange = (opacityRange: [number, number]) =>
+    setPluginMessage((prev) => ({ ...prev, opacityRange }));
+
+  const { handleSelectChange } = useBasicInputs(setPluginMessage);
 
   const { handleColorChange, handleAddColor, handleRemoveColor } =
     useColorHandlers(setPluginMessage, pluginMessage);
@@ -136,49 +139,7 @@ export default function App() {
             title="Padding between elements in pixels."
           />
         </Subsection>
-        <Subsection
-          rows
-          noGap
-          title={`Colors (${pluginMessage.colors.length})`}
-        >
-          {pluginMessage.colors.map((color, colorIndex) => (
-            <div key={colorIndex} className="group relative h-10 w-1/5">
-              <label title="Color to use for the elements.">
-                <input
-                  className="h-full w-full rounded-sm bg-zinc-700"
-                  id="colorsInput"
-                  name="colors"
-                  type="color"
-                  value={color}
-                  onChange={({ currentTarget }) =>
-                    handleColorChange(currentTarget.value, colorIndex)
-                  }
-                />
-                {colorIndex > 0 && (
-                  <button
-                    className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-zinc-600 group-hover:shadow-md"
-                    title="Remove color"
-                    role="button"
-                    onClick={() => handleRemoveColor(colorIndex)}
-                  >
-                        <i className="fa-solid fa-xmark"></i>
-                  </button>
-                )}
-              </label>
-            </div>
-          ))}
-          {pluginMessage.colors.length < 5 && (
-            <button
-              className="flex h-full w-1/5 items-center justify-center rounded-md border border-zinc-200 text-xl font-bold text-zinc-200"
-              title="Add color"
-              role="button"
-              onClick={handleAddColor}
-            >
-                  <i className="fa-solid fa-plus text-sm"></i>
-            </button>
-          )}
-        </Subsection>
-        <CollapsibleSubsection title="Options">
+        <Subsection title={`Appearance`}>
           <label htmlFor="shapeSelect" title="Shape of the elements:">
             Shape:&nbsp;
             <select
@@ -192,9 +153,63 @@ export default function App() {
               <option value="circle">Circle</option>
             </select>
           </label>
+          <MultiRangeSlider
+            label="Opacity range"
+            id="opacityRangeInput"
+            title="Range of opacity values to use for the elements."
+            minVal={pluginMessage.opacityRange[0]}
+            maxVal={pluginMessage.opacityRange[1]}
+            min={0}
+            max={100}
+            units="%"
+            onChange={handleRangeSliderChange}
+          />
+          <div className="flex w-full flex-col gap-2">
+            {`Colors (${pluginMessage.colors.length})`}
+            <div className="flex w-full">
+              {pluginMessage.colors.map((color, colorIndex) => (
+                <div key={colorIndex} className="group relative h-10 w-1/5">
+                  <label title="Color to use for the elements.">
+                    <input
+                      className="h-full w-full rounded-sm bg-zinc-700"
+                      id="colorsInput"
+                      name="colors"
+                      type="color"
+                      value={color}
+                      onChange={({ currentTarget }) =>
+                        handleColorChange(currentTarget.value, colorIndex)
+                      }
+                    />
+                    {colorIndex > 0 && (
+                      <button
+                        className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-zinc-600 group-hover:shadow-md"
+                        title="Remove color"
+                        role="button"
+                        onClick={() => handleRemoveColor(colorIndex)}
+                      >
+                        <i className="fa-solid fa-xmark"></i>
+                      </button>
+                    )}
+                  </label>
+                </div>
+              ))}
+              {pluginMessage.colors.length < 5 && (
+                <button
+                  className="flex h-9 w-1/5 items-center justify-center rounded-md border border-zinc-200 text-xl font-bold text-zinc-200"
+                  title="Add color"
+                  role="button"
+                  onClick={handleAddColor}
+                >
+                  <i className="fa-solid fa-plus text-sm"></i>
+                </button>
+              )}
+            </div>
+          </div>
+        </Subsection>
+        <CollapsibleSubsection title="Options">
           <label
             htmlFor="verticalFadeModeSelect"
-            title="Create a vertical fade by changing the alpha values of the elements in the direction selected."
+            title="Create a vertical fade by changing the opacity values of the elements in the direction selected."
           >
             Vertical fade:&nbsp;
             <select
@@ -227,32 +242,16 @@ export default function App() {
               <option value="none">None</option>
             </select>
           </label>
-          <Input<GeneratePatternMessage, number>
-            columns
-            className="cursor-pointer accent-current"
-            label={`Alpha threshold ${(
-              pluginMessage.alphaThreshold * 100
-            ).toFixed(0)}%`}
-            id="alphaThresholdInput"
-            name="alphaThreshold"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={pluginMessage.alphaThreshold}
-            onChange={handleInputChange}
-            title="Minimum alpha value to be considered as a filled pixel."
-          />
           <label
-            htmlFor="alphaThresholdModeSelect"
-            title="How to handle elements with alpha value below the threshold."
+            htmlFor="opacityThresholdModeSelect"
+            title="How to handle elements with opacity value below the threshold."
           >
-            Below threshold:&nbsp;
+            Outside opacity range:&nbsp;
             <select
               className="rounded-sm bg-zinc-700 p-2"
-              id="alphaThresholdModeSelect"
-              name="alphaThresholdMode"
-              value={pluginMessage.alphaThresholdMode}
+              id="opacityThresholdModeSelect"
+              name="opacityThresholdMode"
+              value={pluginMessage.opacityThresholdMode}
               onChange={handleSelectChange}
             >
               <option value="remove">Remove</option>

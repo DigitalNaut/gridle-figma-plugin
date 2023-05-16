@@ -3,7 +3,7 @@ declare enum supportedShapes {
   circle,
 }
 
-declare enum alphaThresholdModes {
+declare enum opacityThresholdModes {
   remove,
   clamp,
 }
@@ -31,8 +31,8 @@ type GeneratePatternMessage = {
   paddingY: number;
   colors: string[];
   shape: keyof typeof supportedShapes;
-  alphaThreshold: number;
-  alphaThresholdMode: keyof typeof alphaThresholdModes;
+  opacityRange: [number, number]
+  opacityThresholdMode: keyof typeof opacityThresholdModes;
   verticalFadeMode: keyof typeof verticalFadeModes;
   noiseMode: keyof typeof noiseModes;
 };
