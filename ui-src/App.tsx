@@ -161,7 +161,7 @@ export default function App() {
                     role="button"
                     onClick={() => handleRemoveColor(colorIndex)}
                   >
-                    ×
+                        <i className="fa-solid fa-xmark"></i>
                   </button>
                 )}
               </label>
@@ -174,7 +174,7 @@ export default function App() {
               role="button"
               onClick={handleAddColor}
             >
-              +
+                  <i className="fa-solid fa-plus text-sm"></i>
             </button>
           )}
         </Subsection>
