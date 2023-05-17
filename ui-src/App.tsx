@@ -15,6 +15,7 @@ import {
   MIN_FRAME_SIZE,
   MAX_FRAME_SIZE,
   initialInputValues,
+  presetInputs,
 } from "./constants";
 import "./index.css";
 
@@ -29,7 +30,7 @@ enum AppState {
 const messageTitles = {
   [AppState.ABORTED]: "Generation aborted",
   [AppState.ERROR]: "Generation error",
-}
+};
 
 function Main() {
   const [state, setState] = useState<AppState>(AppState.IDLE);
@@ -95,7 +96,6 @@ function Main() {
   };
 
   const { onCreate, onClose } = usePluginMessaging(handleMessages);
-  const onReset = () => setPluginMessage(initialInputValues);
 
   useWindowKeyboardEvents(async (event: KeyboardEvent) => {
     // TODO: Bugfix - Enter key does not update the plugin message before creating the pattern.
@@ -103,31 +103,30 @@ function Main() {
     if (event.key === "Escape") onClose();
   });
 
-    if (state === AppState.GENERATING || state === AppState.COMPLETE)
-      return (
-        <>
-          <Subsection title="Generating...">
-            <div>{`Progress: ${(progress * 100).toFixed(1)}%`}</div>
-            <progress className="w-full" value={progress} max={1} />
-          </Subsection>
-          <Footer>
-            <Button
-              appearance="actionStyle"
-              disabled={state === AppState.COMPLETE}
-              onClick={() => {
-                parent.postMessage(
-                  { pluginMessage: { type: "generate-abort" } },
-                  "*"
-                );
-              }}
-            >
-              {state === AppState.COMPLETE ? "Done!" : "Cancel generation"}
-            </Button>
-          </Footer>
-        </>
-      );
+  if (state === AppState.GENERATING || state === AppState.COMPLETE)
+    return (
+      <>
+        <Subsection title="Generating...">
+          <div>{`Progress: ${(progress * 100).toFixed(1)}%`}</div>
+          <progress className="w-full" value={progress} max={1} />
+        </Subsection>
+        <Footer>
+          <Button
+            appearance="actionStyle"
+            disabled={state === AppState.COMPLETE}
+            onClick={() => {
+              parent.postMessage(
+                { pluginMessage: { type: "generate-abort" } },
+                "*"
+              );
+            }}
+          >
+            {state === AppState.COMPLETE ? "Done!" : "Cancel generation"}
+          </Button>
+        </Footer>
+      </>
+    );
 
-  
   if (state === AppState.ABORTED || state === AppState.ERROR) {
     const title = messageTitles[state];
 
@@ -153,10 +152,32 @@ function Main() {
       </>
     );
   }
-  
 
   return (
     <>
+      <Subsection title="Presets">
+        <label htmlFor="presetSelect" title="Presets">
+          Predefined settings:&nbsp;
+          <select
+            className="rounded-sm bg-zinc-700 p-2"
+            id="presetSelect"
+            name="presets"
+            onChange={({ currentTarget }) => {
+              setPluginMessage(presetInputs[currentTarget.value]);
+            }}
+          >
+            {Object.entries(presetInputs).map(([name], index) => (
+              <option
+                key={index}
+                className="rounded-sm bg-zinc-700 p-2"
+                value={name}
+              >
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </Subsection>
       <Subsection title="Frame">
         <Input<GeneratePatternMessage, number>
           label="Width (px)"
@@ -362,7 +383,6 @@ function Main() {
       <Footer>
         <div className="bottom-0 flex w-full justify-end">
           <Button onClick={onClose}>Close</Button>
-          <Button onClick={onReset}>Reset</Button>
           <Button
             appearance="filledStyle"
             onClick={() => onCreate(pluginMessage)}
