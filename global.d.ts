@@ -31,7 +31,8 @@ type GeneratePatternMessage = {
   paddingY: number;
   colors: string[];
   shape: keyof typeof supportedShapes;
-  opacityRange: [number, number]
+  opacityRange: [number, number];
+  opacityRangeLimits: [number, number];
   opacityThresholdMode: keyof typeof opacityThresholdModes;
   verticalFadeMode: keyof typeof verticalFadeModes;
   noiseMode: keyof typeof noiseModes;

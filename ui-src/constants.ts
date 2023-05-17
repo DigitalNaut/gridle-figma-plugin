@@ -11,6 +11,7 @@ export const initialInputValues: GeneratePatternMessage = {
   paddingX: 2,
   paddingY: 2,
   opacityRange: [0, 100],
+  opacityRangeLimits: [0, 100],
   opacityThresholdMode: "remove",
   colors: defaultColors,
   shape: "square",
