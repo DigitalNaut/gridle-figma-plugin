@@ -1,12 +1,13 @@
 {
   "name": "Gridle",
-  "id": "react-sample",
+  "id": "girdle",
   "api": "1.0.0",
   "editorType": ["figma"],
   "permissions": [],
   "main": "dist/code.js",
   "ui": "dist/index.html",
   "networkAccess": {
-    "allowedDomains": ["cdnjs.cloudflare.com"]
+    "allowedDomains": ["https://cdnjs.cloudflare.com/ajax/libs/font-awesome/"],
+    "reasoning": "We need to load font-awesome from cdnjs to use icons in our UI."
   }
 }
