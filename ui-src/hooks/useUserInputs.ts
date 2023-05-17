@@ -1,7 +1,15 @@
-import { ChangeEventHandler, Dispatch, SetStateAction, useState } from "react";
+import type {
+  ChangeEvent,
+  ChangeEventHandler,
+  Dispatch,
+  SetStateAction,
+} from "react";
 
 import { clamp } from "utils/math";
 import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "../constants";
+import { KeysOfType } from "types/utils";
+
+type StateSetter = Dispatch<SetStateAction<GeneratePatternMessage>>;
 
 export function useBasicInputs(
   setState: Dispatch<SetStateAction<GeneratePatternMessage>>
@@ -33,165 +41,174 @@ function calculateLength(callback: (result: number) => void) {
   };
 }
 
+function createFrameLengthHandler(
+  setState: StateSetter,
+  propertyName: keyof GeneratePatternMessage
+) {
+  return ({ currentTarget }: ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(currentTarget.value);
+    const clampedValue = clamp(value, MIN_FRAME_SIZE, MAX_FRAME_SIZE);
+
+    setState((prev) => {
+      return {
+        ...prev,
+        [propertyName]: clampedValue,
+      };
+    });
+  };
+}
+
+type NumberKeys = KeysOfType<GeneratePatternMessage, number>;
+
+function createDerivedPropertiesAfterLengthChangeHandler(
+  setState: StateSetter,
+  calculateElementLength: (length: number, parts: number) => number,
+  lengthPropertyName: NumberKeys,
+  countPropertyName: NumberKeys,
+  paddingPropertyName: NumberKeys
+) {
+  return () => {
+    setState((prev) => {
+      const prevCount = prev[countPropertyName];
+      const prevLength = prev[lengthPropertyName];
+      const prevPadding = prev[paddingPropertyName];
+
+      const newCount = clamp(prevCount, 1, prevLength);
+      const newLength = calculateElementLength(prevLength, newCount);
+      const newPadding = clamp(prevPadding, 0, newLength - 1);
+
+      return {
+        ...prev,
+        [countPropertyName]: newCount,
+        [paddingPropertyName]: newPadding,
+      };
+    });
+  };
+}
+
+function createLengthCountChangeHandler(
+  setState: StateSetter,
+  calculateElementLength: (length: number, parts: number) => number,
+  countPropertyName: NumberKeys,
+  paddingPropertyName: NumberKeys,
+  lengthPropertyName: NumberKeys
+) {
+  return ({ currentTarget }: ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(currentTarget.value);
+
+    setState((prev) => {
+      const prevLength = prev[lengthPropertyName];
+      const prevPadding = prev[paddingPropertyName];
+
+      const lengthElementsCount = clamp(value, 1, prevLength);
+      const elementWidth = calculateElementLength(
+        prevLength,
+        lengthElementsCount
+      );
+      const maxPadding = elementWidth - 1;
+
+      return {
+        ...prev,
+        [countPropertyName]: lengthElementsCount,
+        [paddingPropertyName]: clamp(prevPadding, 0, maxPadding),
+      };
+    });
+  };
+}
+
+function createLengthPaddingHandler(
+  setState: StateSetter,
+  calculateElementLength: (length: number, parts: number) => number,
+  paddingPropertyName: NumberKeys,
+  lengthPropertyName: NumberKeys,
+  countPropertyName: NumberKeys
+) {
+  return ({ currentTarget }: ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(currentTarget.value);
+
+    setState((prev) => {
+      const prevLength = prev[lengthPropertyName];
+      const prevCount = prev[countPropertyName];
+
+      const newElementLength = calculateElementLength(prevLength, prevCount);
+      const maxPadding = newElementLength - 1;
+      const newPadding = clamp(value, 0, maxPadding);
+
+      return {
+        ...prev,
+        [paddingPropertyName]: newPadding,
+      };
+    });
+  };
+}
+
 export function useManagedInputs(
-  setState: Dispatch<SetStateAction<GeneratePatternMessage>>,
+  setState: StateSetter,
   onRecalculateElementWidth: (elementWidth: number) => void,
   onRecalculateElementHeight: (elementHeight: number) => void
 ) {
   const calculateElementWidth = calculateLength(onRecalculateElementWidth);
   const calculateElementHeight = calculateLength(onRecalculateElementHeight);
 
-  const handleFrameWidthChange: ChangeEventHandler<HTMLInputElement> = ({
-    currentTarget,
-  }) => {
-    const value = parseInt(currentTarget.value);
-    const frameWidth = clamp(value, MIN_FRAME_SIZE, MAX_FRAME_SIZE);
+  const handleFrameWidthChange = createFrameLengthHandler(
+    setState,
+    "frameWidth"
+  );
 
-    setState((prev) => {
-      return {
-        ...prev,
-        frameWidth,
-      };
-    });
-  };
+  const handleFrameHeightChange = createFrameLengthHandler(
+    setState,
+    "frameHeight"
+  );
 
-  const handleFrameWidthChangeDerivedProperties = () => {
-    setState((prev) => {
-      const horizontalElementsCount = clamp(
-        prev.horizontalElementsCount,
-        1,
-        prev.frameWidth
-      );
-      const elementWidth = calculateElementWidth(
-        prev.frameWidth,
-        horizontalElementsCount
-      );
-      const paddingX = clamp(prev.paddingX, 0, elementWidth - 1);
+  const handleFrameWidthChangeDerivedProperties =
+    createDerivedPropertiesAfterLengthChangeHandler(
+      setState,
+      calculateElementWidth,
+      "frameWidth",
+      "horizontalElementsCount",
+      "paddingX"
+    );
 
-      return {
-        ...prev,
-        horizontalElementsCount,
-        paddingX,
-      };
-    });
-  };
+  const handleFrameHeightChangeDerivedProperties =
+    createDerivedPropertiesAfterLengthChangeHandler(
+      setState,
+      calculateElementHeight,
+      "frameHeight",
+      "verticalElementsCount",
+      "paddingY"
+    );
 
-  const handleFrameHeightChange: ChangeEventHandler<HTMLInputElement> = ({
-    currentTarget,
-  }) => {
-    const value = parseInt(currentTarget.value);
-    const frameHeight = clamp(value, MIN_FRAME_SIZE, MAX_FRAME_SIZE);
+  const handleHorizontalElementsCountChange = createLengthCountChangeHandler(
+    setState,
+    calculateElementWidth,
+    "horizontalElementsCount",
+    "paddingX",
+    "frameWidth"
+  );
 
-    setState((prev) => {
-      return {
-        ...prev,
-        frameHeight,
-      };
-    });
-  };
+  const handleVerticalElementsCountChange = createLengthCountChangeHandler(
+    setState,
+    calculateElementHeight,
+    "verticalElementsCount",
+    "paddingY",
+    "frameHeight"
+  );
 
-  const handleFrameHeightChangeDerivedProperties = () => {
-    setState((prev) => {
-      const verticalElementsCount = clamp(
-        prev.verticalElementsCount,
-        1,
-        prev.frameHeight
-      );
-      const elementHeight = calculateElementHeight(
-        prev.frameHeight,
-        verticalElementsCount
-      );
-      const paddingY = clamp(prev.paddingY, 0, elementHeight - 1);
+  const handlePaddingXChange = createLengthPaddingHandler(
+    setState,
+    calculateElementWidth,
+    "paddingX",
+    "frameWidth",
+    "horizontalElementsCount"
+  );
 
-      return {
-        ...prev,
-        verticalElementsCount,
-        paddingY,
-      };
-    });
-  };
-
-  const handleHorizontalElementsCountChange: ChangeEventHandler<
-    HTMLInputElement
-  > = ({ currentTarget }) => {
-    const value = parseInt(currentTarget.value);
-
-    setState((prev) => {
-      const horizontalElementsCount = clamp(value, 1, prev.frameWidth);
-      const elementWidth = calculateElementWidth(
-        prev.frameWidth,
-        horizontalElementsCount
-      );
-      const maxPaddingX = elementWidth - 1;
-
-      return {
-        ...prev,
-        horizontalElementsCount,
-        paddingX: clamp(prev.paddingX, 0, maxPaddingX),
-      };
-    });
-  };
-
-  const handleVerticalElementsCountChange: ChangeEventHandler<
-    HTMLInputElement
-  > = ({ currentTarget }) => {
-    const value = parseInt(currentTarget.value);
-
-    setState((prev) => {
-      const verticalElementsCount = clamp(value, 1, prev.frameHeight);
-      const elementHeight = calculateElementHeight(
-        prev.frameHeight,
-        verticalElementsCount
-      );
-      const maxPaddingY = elementHeight - 1;
-
-      return {
-        ...prev,
-        verticalElementsCount,
-        paddingY: clamp(prev.paddingY, 0, maxPaddingY),
-      };
-    });
-  };
-
-  const handlePaddingXChange: ChangeEventHandler<HTMLInputElement> = ({
-    currentTarget,
-  }) => {
-    const value = parseFloat(currentTarget.value);
-
-    setState((prev) => {
-      const elementWidth = calculateElementWidth(
-        prev.frameWidth,
-        prev.horizontalElementsCount
-      );
-      const maxPaddingX = elementWidth - 1;
-      const paddingX = clamp(value, 0, maxPaddingX);
-
-      return {
-        ...prev,
-        paddingX,
-      };
-    });
-  };
-
-  const handlePaddingYChange: ChangeEventHandler<HTMLInputElement> = ({
-    currentTarget,
-  }) => {
-    const value = parseFloat(currentTarget.value);
-
-    setState((prev) => {
-      const elementHeight = calculateElementHeight(
-        prev.frameHeight,
-        prev.verticalElementsCount
-      );
-      const maxPaddingY = elementHeight - 1;
-      const paddingY = clamp(value, 0, maxPaddingY);
-
-      return {
-        ...prev,
-        paddingY,
-      };
-    });
-  };
+  const handlePaddingYChange = createLengthPaddingHandler(
+    setState,
+    calculateElementHeight,
+    "paddingY",
+    "frameHeight",
+    "verticalElementsCount"
+  );
 
   return {
     handleFrameWidthChange,
