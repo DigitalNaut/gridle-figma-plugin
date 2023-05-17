@@ -12,11 +12,18 @@ I'm working on getting this plugin into the Figma Community so it can be install
 
 ## Planned features
 
-[ ] Seeds for randomness generation
-[ ] Saving, loading and default presets
-[ ] More shape options (triangles, hexagons, custom shapes, etc.)
-[ ] UI options based on icon buttons rather than dropdowns
-[ ] Loading indicator and async (it current blocks the main thread, whoops!)
-[ ] Option to limit range of opacity for generated elements
-[ ] Option to turn off randomness in favor of a color pattern
-[ ] Lock certain proportions (like when image editors lock aspect ratios) for horizontal and vertical element counts
+✅ Loading indicator and async (it current blocks the main thread, whoops!)
+
+✅ Multiple range slider for element opacity
+
+🟨 Saving, loading and default presets
+
+🟨 Seeds for randomness generation
+
+🟨 More shape options (triangles, hexagons, custom shapes, etc.)
+
+🟨 UI options based on icon buttons rather than dropdowns
+
+🟨 Option to use a color pattern instead of random color selection
+
+🟨 Lock certain proportions (like when image editors lock aspect ratios) for horizontal and vertical element counts
