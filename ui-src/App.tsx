@@ -5,8 +5,8 @@ import { NotificationAborted, NotificationError } from "@/Notifications";
 import MultiRangeSlider from "@/MultiRangeSlider";
 import Input from "@/Input";
 import Button from "@/Button";
-import { useWindowKeyDownEvent } from "hooks/WindowEvents";
-import { usePluginMessages } from "hooks/AppEvents";
+import { useWindowKeyboardEvents } from "hooks/useWindowKeyboardEvents";
+import { usePluginMessaging } from "hooks/usePluginMessaging";
 import { useBasicInputs, useManagedInputs } from "hooks/useUserInputs";
 import { useColorHandlers } from "hooks/useColorHandlers";
 import { sleep } from "utils/time";
@@ -94,10 +94,10 @@ function Main() {
     }
   };
 
-  const { onCreate, onClose } = usePluginMessages(handleMessages);
+  const { onCreate, onClose } = usePluginMessaging(handleMessages);
   const onReset = () => setPluginMessage(initialInputValues);
 
-  useWindowKeyDownEvent(async (event: KeyboardEvent) => {
+  useWindowKeyboardEvents(async (event: KeyboardEvent) => {
     // TODO: Bugfix - Enter key does not update the plugin message before creating the pattern.
     // if (event.key === "Enter") onCreate(pluginMessage);
     if (event.key === "Escape") onClose();

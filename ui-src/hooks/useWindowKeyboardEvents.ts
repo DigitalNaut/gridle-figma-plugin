@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export function useWindowKeyDownEvent(event: (event: KeyboardEvent) => void) {
+export function useWindowKeyboardEvents(event: (event: KeyboardEvent) => void) {
   useEffect(() => {
     window.addEventListener("keydown", event);
 

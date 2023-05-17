@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export function usePluginMessages(messageHandler: typeof onmessage) {
+export function usePluginMessaging(messageHandler: typeof onmessage) {
   const onCreate = (pluginMessage: GeneratePatternMessage) =>
     parent.postMessage({ pluginMessage }, "*");
 
