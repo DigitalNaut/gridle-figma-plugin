@@ -34,6 +34,7 @@ import {
 } from "./constants";
 import "./index.css";
 import Select from "@components/Select";
+import MultiColorPicker from "@components/MultiColorPicker";
 
 enum AppState {
   IDLE = "idle",
@@ -282,47 +283,12 @@ function Main() {
           units="%"
           onChange={handleRangeSliderChange}
         />
-        <div className="flex w-full flex-col gap-2">
-          {`Colors (${pluginMessage.colors.length})`}
-          <div className="flex w-full">
-            {pluginMessage.colors.map((color, colorIndex) => (
-              <div key={colorIndex} className="group relative h-10 w-1/5">
-                <label title="Color to use for the elements.">
-                  <input
-                    className="h-full w-full rounded-sm bg-zinc-700"
-                    id="colorsInput"
-                    name="colors"
-                    type="color"
-                    value={color}
-                    onChange={({ currentTarget }) =>
-                      handleColorChange(currentTarget.value, colorIndex)
-                    }
-                  />
-                  {colorIndex > 0 && (
-                    <button
-                      className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-zinc-600 group-hover:shadow-md"
-                      title="Remove color"
-                      role="button"
-                      onClick={() => handleRemoveColor(colorIndex)}
-                    >
-                      <i className="fa-solid fa-xmark"></i>
-                    </button>
-                  )}
-                </label>
-              </div>
-            ))}
-            {pluginMessage.colors.length < 5 && (
-              <button
-                className="flex h-9 w-1/5 items-center justify-center rounded-md border border-zinc-200 text-xl font-bold text-zinc-200"
-                title="Add color"
-                role="button"
-                onClick={handleAddColor}
-              >
-                <i className="fa-solid fa-plus text-sm"></i>
-              </button>
-            )}
-          </div>
-        </div>
+        <MultiColorPicker
+          colors={pluginMessage.colors}
+          handleAddColor={handleAddColor}
+          handleColorChange={handleColorChange}
+          handleRemoveColor={handleRemoveColor}
+        />
       </Subsection>
       <CollapsibleSubsection title="Options">
         <Select<GeneratePatternMessage, string>
