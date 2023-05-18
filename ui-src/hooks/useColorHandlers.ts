@@ -1,3 +1,4 @@
+import type { GeneratePatternMessage } from "@common/index";
 import { Dispatch, SetStateAction } from "react";
 
 export function useColorHandlers(

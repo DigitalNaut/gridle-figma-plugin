@@ -2,15 +2,7 @@
 // Article: https://dev.to/sandra_lewis/building-a-multi-range-slider-in-react-from-scratch-4dl1
 // Sandbox: https://codesandbox.io/s/b9l0g
 
-import React, {
-  ChangeEvent,
-  useCallback,
-  useEffect,
-  useState,
-  useRef,
-} from "react";
-
-import type { ExtractKeysByValueType } from "../types/utils";
+import React, { ChangeEvent, useCallback, useEffect, useRef } from "react";
 
 // TODO: Fix the webkit-thumb:reset-range-thumb style
 // it's not working for some reason so the thumb style doesn't reset on Electron

@@ -1,3 +1,5 @@
+import type { GeneratePatternMessage } from "@common/index";
+
 export const MIN_FRAME_SIZE = 1;
 export const MAX_FRAME_SIZE = 1920;
 export const defaultColors = ["#86198f"];

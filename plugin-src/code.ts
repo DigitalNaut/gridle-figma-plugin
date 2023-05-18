@@ -1,3 +1,5 @@
+import type { GeneratePatternMessage } from "@common/index";
+import { hexToRGB, lastUpdateTracker, sleep } from "@common/utils/index";
 import {
   postGenerationProgress,
   postGenerationStart,
@@ -5,7 +7,6 @@ import {
   postGenerationAborted,
   postGenerationError,
 } from "./messages";
-import { hexToRGB, lastUpdateTracker, sleep } from "./utils/index";
 
 figma.showUI(__html__, { width: 340, height: 650, position: { x: 0, y: 0 } });
 

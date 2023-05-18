@@ -1,0 +1,11 @@
+{
+  "name": "plugin-shared",
+  "version": "1.0.0",
+  "description": "Shared configuration files for the Gridler plugin that includes types, utils and constant declarations for the whole project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "DigitalNaut",
+  "license": "Copyright 2023 DigitalNaut"
+}

@@ -18,10 +18,11 @@
     "jsx": "react",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./components/*"],
-      "hooks/*": ["./hooks/*"],
-      "utils/*": ["./utils/*"],
+      "@components/*": ["./components/*"],
+      "@hooks/*": ["./hooks/*"],
+      "@common/*": ["../common/*"],
     },
-    "types": ["node"]
-  }
+    "types": ["node"],
+  },
+  "references": [{ "path": "../common/tsconfig.json" }]
 }

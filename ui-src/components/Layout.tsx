@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from "react";
 import React, { useState } from "react";
 
-import Logo from "@/Logo";
+import Logo from "@components/Logo";
 
 export function Layout({ children }: PropsWithChildren) {
   return (

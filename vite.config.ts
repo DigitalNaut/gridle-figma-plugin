@@ -9,9 +9,9 @@ export default defineConfig({
   plugins: [react(), viteSingleFile()],
   resolve: {
     alias: {
-      "@": resolve(__dirname, "ui-src/components"),
-      hooks: resolve(__dirname, "ui-src/hooks"),
-      utils: resolve(__dirname, "ui-src/utils"),
+      "@components": resolve(__dirname, "ui-src/components"),
+      "@hooks": resolve(__dirname, "ui-src/hooks"),
+      "@common": resolve(__dirname, 'common'),
     },
   },
   build: {

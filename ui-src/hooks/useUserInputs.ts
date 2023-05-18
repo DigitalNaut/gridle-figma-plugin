@@ -5,9 +5,10 @@ import type {
   SetStateAction,
 } from "react";
 
-import { clamp } from "utils/math";
+import { KeysOfType } from "@common/utils/types";
+import { clamp } from "@common/utils/index";
+import { GeneratePatternMessage } from "@common/index";
 import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "../constants";
-import { KeysOfType } from "types/utils";
 
 type StateSetter = Dispatch<SetStateAction<GeneratePatternMessage>>;
 

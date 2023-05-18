@@ -4,5 +4,9 @@
     "lib": ["es6"],
     "strict": true,
     "typeRoots": ["../node_modules/@figma"],
-  }
+    "paths": {
+      "@common/*": ["../common/*"],
+    },
+  },
+  "references": [{ "path": "../common/tsconfig.json" }]
 }

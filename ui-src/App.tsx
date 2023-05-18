@@ -1,16 +1,31 @@
 import React, { useState } from "react";
 
-import { Layout, CollapsibleSubsection, Subsection, Footer } from "@/Layout";
-import { NotificationAborted, NotificationError } from "@/Notifications";
-import MultiRangeSlider from "@/MultiRangeSlider";
-import Input from "@/Input";
-import Button from "@/Button";
-import { useWindowKeyboardEvents } from "hooks/useWindowKeyboardEvents";
-import { usePluginMessaging } from "hooks/usePluginMessaging";
-import { useBasicInputs, useManagedInputs } from "hooks/useUserInputs";
-import { useColorHandlers } from "hooks/useColorHandlers";
-import { sleep } from "utils/time";
+import {
+  Layout,
+  CollapsibleSubsection,
+  Subsection,
+  Footer,
+} from "@components/Layout";
+import {
+  NotificationAborted,
+  NotificationError,
+} from "@components/Notifications";
+import MultiRangeSlider from "@components/MultiRangeSlider";
+import Input from "@components/Input";
+import Button from "@components/Button";
+import { useWindowKeyboardEvents } from "@hooks/useWindowKeyboardEvents";
+import { usePluginMessaging } from "@hooks/usePluginMessaging";
+import { useBasicInputs, useManagedInputs } from "@hooks/useUserInputs";
+import { useColorHandlers } from "@hooks/useColorHandlers";
+import { sleep } from "@common/utils/index";
 
+import type { GeneratePatternMessage } from "@common/index";
+import {
+  noiseModes,
+  opacityThresholdModes,
+  supportedShapes,
+  verticalFadeModes,
+} from "@common/settings";
 import {
   MIN_FRAME_SIZE,
   MAX_FRAME_SIZE,
@@ -268,10 +283,11 @@ function Main() {
             value={pluginMessage.shape}
             onChange={handleSelectChange}
           >
-            <option className="rounded-sm bg-zinc-700 p-2" value="square">
-              Square
-            </option>
-            <option value="circle">Circle</option>
+            {Object.values(supportedShapes || {}).map((shape) => (
+              <option key={shape} className="capitalize" value={shape}>
+                {shape}
+              </option>
+            ))}
           </select>
         </label>
         <MultiRangeSlider
@@ -340,9 +356,11 @@ function Main() {
             value={pluginMessage.verticalFadeMode}
             onChange={handleSelectChange}
           >
-            <option value="ascending">Ascending</option>
-            <option value="descending">Descending</option>
-            <option value="none">None</option>
+            {Object.values(verticalFadeModes).map((shape) => (
+              <option key={shape} className="capitalize" value={shape}>
+                {shape}
+              </option>
+            ))}
           </select>
         </label>
         <label
@@ -357,10 +375,11 @@ function Main() {
             value={pluginMessage.noiseMode}
             onChange={handleSelectChange}
           >
-            <option value="ascending">Ascending</option>
-            <option value="descending">Descending</option>
-            <option value="uniform">Uniform</option>
-            <option value="none">None</option>
+            {Object.values(noiseModes).map((shape) => (
+              <option key={shape} className="capitalize" value={shape}>
+                {shape}
+              </option>
+            ))}
           </select>
         </label>
         <label
@@ -375,8 +394,11 @@ function Main() {
             value={pluginMessage.opacityThresholdMode}
             onChange={handleSelectChange}
           >
-            <option value="remove">Remove</option>
-            <option value="clamp">Clamp</option>
+            {Object.values(opacityThresholdModes).map((shape) => (
+              <option key={shape} className="capitalize" value={shape}>
+                {shape}
+              </option>
+            ))}
           </select>
         </label>
       </CollapsibleSubsection>
