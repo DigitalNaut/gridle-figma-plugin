@@ -6,7 +6,7 @@
  * type Keys = ExtractKeysByValueType<typeof Obj, string, string>; // "a" | "c"
  * type Keys2 = ExtractKeysByValueType<typeof Obj, boolean, number>; // 42
  */
-export type ExtractKeysByValueType<Obj, ValueType, KeyType> = {
+export type ExtractKeysByValueType<Obj, ValueType, KeyType = string> = {
   [Key in keyof Obj]: Obj[Key] extends ValueType ? Key : never;
 }[Extract<keyof Obj, KeyType>];
 

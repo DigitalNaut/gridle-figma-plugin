@@ -1,4 +1,4 @@
-import type { GeneratePatternMessage } from "@common/index";
+import { GeneratePatternMessage, supportedShapes } from "@common/index";
 import { hexToRGB, lastUpdateTracker, sleep } from "@common/utils/index";
 import {
   postGenerationProgress,

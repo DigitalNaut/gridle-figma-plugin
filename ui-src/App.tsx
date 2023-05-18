@@ -25,7 +25,7 @@ import {
   opacityThresholdModes,
   supportedShapes,
   verticalFadeModes,
-} from "@common/settings";
+} from "@common/index";
 import {
   MIN_FRAME_SIZE,
   MAX_FRAME_SIZE,
@@ -33,6 +33,7 @@ import {
   presetInputs,
 } from "./constants";
 import "./index.css";
+import Select from "@components/Select";
 
 enum AppState {
   IDLE = "idle",
@@ -171,27 +172,14 @@ function Main() {
   return (
     <>
       <Subsection title="Presets">
-        <label htmlFor="presetSelect" title="Presets">
-          Predefined settings:&nbsp;
-          <select
-            className="rounded-sm bg-zinc-700 p-2"
-            id="presetSelect"
-            name="presets"
-            onChange={({ currentTarget }) => {
-              setPluginMessage(presetInputs[currentTarget.value]);
-            }}
-          >
-            {Object.entries(presetInputs).map(([name], index) => (
-              <option
-                key={index}
-                className="rounded-sm bg-zinc-700 p-2"
-                value={name}
-              >
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select
+          options={Object.keys(presetInputs)}
+          id="presetSelect"
+          onChange={({ currentTarget }) => {
+            setPluginMessage(presetInputs[currentTarget.value]);
+          }}
+          title="Predefined settings."
+        />
       </Subsection>
       <Subsection title="Frame">
         <Input<GeneratePatternMessage, number>
@@ -274,22 +262,15 @@ function Main() {
         />
       </Subsection>
       <Subsection title={`Appearance`}>
-        <label htmlFor="shapeSelect" title="Shape of the elements:">
-          Shape:&nbsp;
-          <select
-            className="rounded-sm bg-zinc-700 p-2"
-            id="shapeSelect"
-            name="shape"
-            value={pluginMessage.shape}
-            onChange={handleSelectChange}
-          >
-            {Object.values(supportedShapes || {}).map((shape) => (
-              <option key={shape} className="capitalize" value={shape}>
-                {shape}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select<GeneratePatternMessage, string>
+          name="shape"
+          options={supportedShapes}
+          id="shapeSelect"
+          label="Shape"
+          value={pluginMessage.shape}
+          onChange={handleSelectChange}
+          title="Shape of the elements."
+        />
         <MultiRangeSlider
           label="Opacity range"
           id="opacityRangeInput"
@@ -344,63 +325,33 @@ function Main() {
         </div>
       </Subsection>
       <CollapsibleSubsection title="Options">
-        <label
-          htmlFor="verticalFadeModeSelect"
+        <Select<GeneratePatternMessage, string>
+          name="verticalFadeMode"
+          options={verticalFadeModes}
+          id="verticalFadeModeSelect"
+          label="Vertical fade"
+          value={pluginMessage.verticalFadeMode}
+          onChange={handleSelectChange}
           title="Create a vertical fade by changing the opacity values of the elements in the direction selected."
-        >
-          Vertical fade:&nbsp;
-          <select
-            className="rounded-sm bg-zinc-700 p-2"
-            id="verticalFadeModeSelect"
-            name="verticalFadeMode"
-            value={pluginMessage.verticalFadeMode}
-            onChange={handleSelectChange}
-          >
-            {Object.values(verticalFadeModes).map((shape) => (
-              <option key={shape} className="capitalize" value={shape}>
-                {shape}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label
-          htmlFor="noiseModeInput"
+        />
+        <Select<GeneratePatternMessage, string>
+          name="noiseMode"
+          options={noiseModes}
+          label="Noise mode:"
+          id="noiseModeSelect"
+          value={pluginMessage.noiseMode}
+          onChange={handleSelectChange}
           title="Remove random elements to add noise and create a more organic look."
-        >
-          Add noise:&nbsp;
-          <select
-            className="rounded-sm bg-zinc-700 p-2"
-            id="noiseModeInput"
-            name="noiseMode"
-            value={pluginMessage.noiseMode}
-            onChange={handleSelectChange}
-          >
-            {Object.values(noiseModes).map((shape) => (
-              <option key={shape} className="capitalize" value={shape}>
-                {shape}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label
-          htmlFor="opacityThresholdModeSelect"
+        />
+        <Select<GeneratePatternMessage, string>
+          name="opacityThresholdMode"
+          options={opacityThresholdModes}
+          label="Outside opacity range:"
+          id="opacityThresholdModeSelect"
+          value={pluginMessage.opacityThresholdMode}
+          onChange={handleSelectChange}
           title="How to handle elements with opacity value below the threshold."
-        >
-          Outside opacity range:&nbsp;
-          <select
-            className="rounded-sm bg-zinc-700 p-2"
-            id="opacityThresholdModeSelect"
-            name="opacityThresholdMode"
-            value={pluginMessage.opacityThresholdMode}
-            onChange={handleSelectChange}
-          >
-            {Object.values(opacityThresholdModes).map((shape) => (
-              <option key={shape} className="capitalize" value={shape}>
-                {shape}
-              </option>
-            ))}
-          </select>
-        </label>
+        />
       </CollapsibleSubsection>
       <Footer>
         <div className="bottom-0 flex w-full justify-end">

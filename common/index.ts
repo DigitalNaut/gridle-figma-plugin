@@ -1,4 +1,2 @@
-export type * from "./main";
-export type * from "./settings";
-
+export * from "./main";
 export * from "./utils";

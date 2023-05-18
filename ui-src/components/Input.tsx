@@ -26,7 +26,7 @@ export default function Input<T extends Record<string, unknown>, U>({
     id: string;
     forwardRef?: RefObject<HTMLInputElement>;
     columns?: true;
-    name: ExtractKeysByValueType<T, U, string>;
+    name: ExtractKeysByValueType<T, U>;
   }>) {
   const hasBorder = !disabled && type !== "color";
   return (
