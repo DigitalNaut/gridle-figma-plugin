@@ -8,7 +8,7 @@ import type {
 import { KeysOfType } from "@common/utils/types";
 import { clamp, toInteger } from "@common/utils/index";
 import { PatternDataMessage } from "@common/index";
-import { MIN_FRAME_SIZE, MAX_FRAME_SIZE, presetInputs } from "../constants";
+import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "../constants";
 
 type StateSetter = Dispatch<SetStateAction<PatternDataMessage>>;
 
@@ -189,15 +189,6 @@ export function useManagedInputs(setState: StateSetter) {
     "paddingY"
   );
 
-  const applyPreset: ChangeEventHandler<HTMLSelectElement> = ({
-    currentTarget,
-  }) => {
-    setState((prev) => ({
-      ...prev,
-      ...presetInputs[currentTarget.value],
-    }));
-  };
-
   return {
     handleFrameWidthChange,
     handleFrameHeightChange,
@@ -207,6 +198,5 @@ export function useManagedInputs(setState: StateSetter) {
     handleVerticalElementsCountChange,
     handlePaddingXChange,
     handlePaddingYChange,
-    applyPreset,
   };
 }

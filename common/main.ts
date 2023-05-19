@@ -36,3 +36,20 @@ export type PatternDataMessage = {
   noiseMode: (typeof noiseModes)[number];
   noiseAmount: number;
 };
+
+export const messageTypes = {
+  generationProgress: "generation-progress",
+  generationComplete: "generation-complete",
+  generationStarted: "generation-started",
+  generationStopped: "generation-stopped",
+  generationError: "generation-error",
+  generationStart: "generation-start",
+  generationAbort: "generation-abort",
+  generationStop: "generation-stop",
+  presetLoaded: "preset-loaded",
+  UIStarted: "UI-started",
+  savePreset: "save-preset",
+  loadPreset: "load-preset",
+  clearPreset: "clear-preset",
+  close: "close",
+};

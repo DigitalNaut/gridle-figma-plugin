@@ -8,6 +8,7 @@ import React, {
 
 export default function Select<T, U extends string | number>({
   label,
+  prompt,
   id,
   className,
   children,
@@ -28,12 +29,13 @@ export default function Select<T, U extends string | number>({
       : ExtractKeysByValueType<T, U>;
     options: readonly U[];
     value?: U;
+    prompt?: string;
   }>) {
   return (
     <label htmlFor={id} className="flex gap-2" title={title}>
       {label && <span className="grow whitespace-nowrap">{label}</span>}
       <select
-        className={`rounded-sm bg-zinc-700 p-2 capitalize ${
+        className={`rounded-sm bg-zinc-700 p-2 ${
           label ? "" : "grow"
         } ${className}`}
         id={id}
@@ -41,6 +43,7 @@ export default function Select<T, U extends string | number>({
         value={value}
         {...props}
       >
+        {prompt?.length && <option value="" className="normal-case">{`--${prompt}--`}</option>}
         {options.map((optionName, index) => (
           <option key={index} className="capitalize" value={optionName}>
             {optionName}

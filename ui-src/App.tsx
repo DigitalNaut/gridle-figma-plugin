@@ -13,14 +13,18 @@ import {
 import MultiRangeSlider from "@components/MultiRangeSlider";
 import Input from "@components/Input";
 import Button from "@components/Button";
+import Select from "@components/Select";
+import MultiColorPicker from "@components/MultiColorPicker";
 import { useWindowKeyboardEvents } from "@hooks/useWindowKeyboardEvents";
 import { usePluginMessaging } from "@hooks/usePluginMessaging";
 import { useBasicInputs, useManagedInputs } from "@hooks/useUserInputs";
 import { useColorHandlers } from "@hooks/useColorHandlers";
 import { formatSeconds, sleep, toFloat, toPercent } from "@common/utils/index";
 
+import type { PresetRecord } from "./constants";
 import type { PatternDataMessage } from "@common/index";
 import {
+  messageTypes,
   noiseModes,
   opacityThresholdModes,
   supportedShapes,
@@ -29,12 +33,10 @@ import {
 import {
   MIN_FRAME_SIZE,
   MAX_FRAME_SIZE,
-  initialInputValues,
+  defaultInputValues,
   presetInputs,
 } from "./constants";
 import "./index.css";
-import Select from "@components/Select";
-import MultiColorPicker from "@components/MultiColorPicker";
 
 enum AppState {
   IDLE = "idle",
@@ -51,11 +53,12 @@ const messageTitles = {
 
 function Main() {
   const [error, setError] = useState<string>();
-
   const [state, setState] = useState<AppState>(AppState.IDLE);
   const [progress, setProgress] = useState({ percentage: 0, timeElapsed: 0 });
+  const [availablePresets, setAvailablePresets] =
+    useState<PresetRecord>(presetInputs);
   const [patternMessage, setPatternMessage] =
-    useState<PatternDataMessage>(initialInputValues);
+    useState<PatternDataMessage>(defaultInputValues);
 
   const elementWidth = useMemo(
     () => patternMessage.frameWidth / patternMessage.horizontalElementsCount,
@@ -65,6 +68,14 @@ function Main() {
     () => patternMessage.frameHeight / patternMessage.verticalElementsCount,
     [patternMessage.frameHeight, patternMessage.verticalElementsCount]
   );
+
+  const applyPreset = (value: string) =>
+    setPatternMessage((prev) => ({
+      ...prev,
+      ...availablePresets[value],
+    }));
+
+  const applyDefaultPreset = () => setPatternMessage(defaultInputValues);
 
   const handleRangeSliderChange = (opacityRange: [number, number]) =>
     setPatternMessage((prev) => ({ ...prev, opacityRange }));
@@ -81,44 +92,54 @@ function Main() {
     handleVerticalElementsCountChange,
     handlePaddingXChange,
     handlePaddingYChange,
-    applyPreset,
   } = useManagedInputs(setPatternMessage);
 
   const handleMessages: typeof onmessage = async ({
     data: { pluginMessage },
   }) => {
-    const { type } = pluginMessage || {};
-    if (type === "generation-progress") {
-      setProgress(pluginMessage.data);
-      return;
-    }
+    switch (pluginMessage?.type) {
+      case messageTypes.generationProgress:
+        setProgress(pluginMessage.data);
+        break;
 
-    if (type === "generation-complete") {
-      setState(AppState.COMPLETE);
-      await sleep(300);
-      setState(AppState.IDLE);
-      return;
-    }
+      case messageTypes.generationComplete:
+        setState(AppState.COMPLETE);
+        await sleep(300);
+        setState(AppState.IDLE);
+        break;
 
-    if (type === "generation-started") {
-      setState(AppState.GENERATING);
-      return;
-    }
+      case messageTypes.generationStarted:
+        setState(AppState.GENERATING);
+        break;
 
-    if (type === "generation-stopped") {
-      setState(AppState.STOPPED);
-      await sleep(1500);
-      setState(AppState.IDLE);
-      return;
-    }
+      case messageTypes.generationStopped:
+        setState(AppState.STOPPED);
+        await sleep(1500);
+        setState(AppState.IDLE);
+        break;
 
-    if (type === "generation-error") {
-      setState(AppState.ERROR);
-      setError(pluginMessage.error);
+      case messageTypes.generationError:
+        setState(AppState.ERROR);
+        setError(pluginMessage.error);
+        break;
+
+      case messageTypes.presetLoaded:
+        setPatternMessage(pluginMessage.preset);
+        break;
+
+      default:
+        break;
     }
   };
 
-  const { onCreate, onClose } = usePluginMessaging(handleMessages);
+  const {
+    stopGeneration,
+    abortGeneration,
+    startGeneration,
+    savePreset,
+    clearPreset,
+    onClose,
+  } = usePluginMessaging(handleMessages);
 
   useWindowKeyboardEvents(async (event: KeyboardEvent) => {
     // TODO: Bugfix - Enter key does not update the plugin message before creating the pattern.
@@ -140,30 +161,14 @@ function Main() {
               Done!
             </Button>
           ) : (
-            <>
-              <Button
-                appearance="actionStyle"
-                onClick={() => {
-                  parent.postMessage(
-                    { pluginMessage: { type: "generate-stop" } },
-                    "*"
-                  );
-                }}
-              >
+            <div className="flex flex-col">
+              <Button appearance="actionStyle" onClick={stopGeneration}>
                 Stop generation
               </Button>
-              <Button
-                appearance="actionStyle"
-                onClick={() => {
-                  parent.postMessage(
-                    { pluginMessage: { type: "generate-abort" } },
-                    "*"
-                  );
-                }}
-              >
+              <Button appearance="actionStyle" onClick={abortGeneration}>
                 Cancel generation
               </Button>
-            </>
+            </div>
           )}
         </Footer>
       </>
@@ -204,14 +209,30 @@ function Main() {
 
   return (
     <>
-      <Subsection title="Global Presets">
+      <CollapsibleSubsection title="Global Presets">
         <Select
+          prompt="Select a preset"
           options={Object.keys(presetInputs)}
           id="presetSelect"
-          onChange={applyPreset}
+          onChange={({ currentTarget }) => applyPreset(currentTarget.value)}
           title="Predefined settings."
         />
-      </Subsection>
+        <Button appearance="plainStyle" onClick={applyDefaultPreset}>
+          <i className="fa-solid fa-rotate-left"></i> Reset settings
+        </Button>
+        <div className="flex items-center">
+          <span className="grow">Current settings:</span>
+          <Button
+            appearance="plainStyle"
+            onClick={() => savePreset(patternMessage)}
+          >
+            <i className="fa-solid fa-floppy-disk"></i> Save
+          </Button>
+          <Button appearance="plainStyle" onClick={clearPreset}>
+            <i className="fa-solid fa-trash"></i> Delete
+          </Button>
+        </div>
+      </CollapsibleSubsection>
       <Subsection title="Frame">
         <Input<PatternDataMessage, number>
           label="Width (px)"
@@ -372,9 +393,9 @@ function Main() {
           <Button onClick={onClose}>Close</Button>
           <Button
             appearance="filledStyle"
-            onClick={() => onCreate(patternMessage)}
+            onClick={() => startGeneration(patternMessage)}
           >
-            Create
+            Generate
           </Button>
         </div>
       </Footer>

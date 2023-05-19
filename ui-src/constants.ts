@@ -7,7 +7,7 @@ export const MAX_FRAME_SIZE = 1920;
 export const OPACITY_RANGE_LIMITS: [number, number] = [0, 100];
 export const defaultColors = ["#86198f"];
 
-export const initialInputValues: PatternDataMessage = {
+export const defaultInputValues: PatternDataMessage = {
   type: "generate-pattern",
   frameWidth: 300,
   frameHeight: 300,
@@ -61,10 +61,11 @@ const bubbleGumPreset: Partial<Preset> = {
   verticalFadeMode: "none",
 };
 
-export const presetInputs: Record<string, Partial<Preset>> = {
-  Default: initialInputValues,
+export type PresetRecord = Record<string, Partial<Preset>>;
+
+export const presetInputs = {
   "Large Frame": largeFramePreset,
   "Mardi Gras": mardiGrasPreset,
   "Static Noise": staticNoisePreset,
   "Bubble Gum": bubbleGumPreset,
-};
+} satisfies PresetRecord;

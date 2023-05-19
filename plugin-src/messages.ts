@@ -1,7 +1,16 @@
-import { Progress, toPercent, formatSeconds } from "@common/index";
+import {
+  Progress,
+  toPercent,
+  formatSeconds,
+  messageTypes,
+  PatternDataMessage,
+} from "@common/index";
 
-export function postGenerationStart() {
-  figma.ui.postMessage({ type: "generation-started", time: Date.now() });
+export function postGenerationStarted() {
+  figma.ui.postMessage({
+    type: messageTypes.generationStarted,
+    time: Date.now(),
+  });
 }
 
 export function postGenerationCompleted(data: Progress) {
@@ -11,18 +20,18 @@ export function postGenerationCompleted(data: Progress) {
   figma.notify(messageLog);
   console.log(messageLog);
 
-  figma.ui.postMessage({ type: "generation-complete", data });
+  figma.ui.postMessage({ type: messageTypes.generationComplete, data });
 }
 
 export function postGenerationProgress(data: Omit<Progress, "stopFlag">) {
   figma.ui.postMessage({
-    type: "generation-progress",
+    type: messageTypes.generationProgress,
     data,
   });
 }
 
 export function postGenerationError(error: string) {
-  figma.ui.postMessage({ type: "generation-error", error });
+  figma.ui.postMessage({ type: messageTypes.generationError, error });
 }
 
 export function postGenerationStopped(data: Progress) {
@@ -35,5 +44,12 @@ export function postGenerationStopped(data: Progress) {
   figma.notify(messageLog);
   console.log(messageLog);
 
-  figma.ui.postMessage({ type: "generation-stopped", data });
+  figma.ui.postMessage({ type: messageTypes.generationStopped, data });
+}
+
+export function presetLoaded(preset: PatternDataMessage) {
+  figma.ui.postMessage({
+    type: messageTypes.presetLoaded,
+    preset,
+  });
 }
