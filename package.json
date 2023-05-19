@@ -5,9 +5,10 @@
   "scripts": {
     "test": "npm run tsc && npm run build",
     "format": "prettier --write .",
-    "tsc": "npm run tsc:main && npm run tsc:ui",
+    "tsc": "npm run tsc:common && npm run tsc:main && npm run tsc:ui",
     "tsc:main": "tsc --noEmit -p plugin-src",
     "tsc:ui": "tsc --noEmit -p ui-src",
+    "tsc:common": "tsc --emitDeclarationOnly -p common",
     "tsc:watch": "concurrently -n widget,iframe \"npm run tsc:main -- --watch --preserveWatchOutput\" \"npm run tsc:ui -- --watch --preserveWatchOutput\"",
     "build": "npm run build:ui && npm run build:main -- --minify",
     "build:main": "esbuild plugin-src/code.ts --bundle --outfile=dist/code.js",
