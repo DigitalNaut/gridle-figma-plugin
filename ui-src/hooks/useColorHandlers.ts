@@ -1,9 +1,9 @@
-import type { GeneratePatternMessage } from "@common/index";
+import type { PatternDataMessage } from "@common/index";
 import { Dispatch, SetStateAction } from "react";
 
 export function useColorHandlers(
-  setState: Dispatch<SetStateAction<GeneratePatternMessage>>,
-  state: GeneratePatternMessage
+  setState: Dispatch<SetStateAction<PatternDataMessage>>,
+  state: PatternDataMessage
 ) {
   const handleColorChange = (newColor: string, colorIndex: number) =>
     setState((prev) => ({

@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 
+import type { PatternDataMessage } from "@common/main";
+
 export function usePluginMessaging(messageHandler: typeof onmessage) {
-  const onCreate = (pluginMessage: GeneratePatternMessage) =>
+  const onCreate = (pluginMessage: PatternDataMessage) =>
     parent.postMessage({ pluginMessage }, "*");
 
   const onClose = () =>

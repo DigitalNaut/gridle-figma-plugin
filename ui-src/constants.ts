@@ -1,10 +1,13 @@
-import type { GeneratePatternMessage } from "@common/index";
+import type { PatternDataMessage } from "@common/index";
+
+type Preset = Partial<Omit<PatternDataMessage, "opacityRangeLimits" | "type">>;
 
 export const MIN_FRAME_SIZE = 1;
 export const MAX_FRAME_SIZE = 1920;
+export const OPACITY_RANGE_LIMITS: [number, number] = [0, 100];
 export const defaultColors = ["#86198f"];
 
-export const initialInputValues: GeneratePatternMessage = {
+export const initialInputValues: PatternDataMessage = {
   type: "generate-pattern",
   frameWidth: 300,
   frameHeight: 300,
@@ -13,16 +16,16 @@ export const initialInputValues: GeneratePatternMessage = {
   paddingX: 2,
   paddingY: 2,
   opacityRange: [0, 100],
-  opacityRangeLimits: [0, 100],
+  opacityRangeLimits: OPACITY_RANGE_LIMITS,
   opacityThresholdMode: "remove",
   colors: defaultColors,
   shape: "square",
   verticalFadeMode: "ascending",
-  noiseMode: "ascending",
+  noiseMode: "descending",
+  noiseAmount: 0.5,
 };
 
-const largeFramePreset: GeneratePatternMessage = {
-  ...initialInputValues,
+const largeFramePreset: Partial<Preset> = {
   frameWidth: 1920,
   frameHeight: 1080,
   horizontalElementsCount: 192,
@@ -31,13 +34,11 @@ const largeFramePreset: GeneratePatternMessage = {
   paddingY: 2,
 };
 
-const mardiGrasPreset: GeneratePatternMessage = {
-  ...initialInputValues,
+const mardiGrasPreset: Partial<Preset> = {
   colors: ["#86198f", "#f2c80f", "#00917c"],
 };
 
-const staticNoisePreset: GeneratePatternMessage = {
-  ...initialInputValues,
+const staticNoisePreset: Partial<Preset> = {
   frameWidth: 300,
   frameHeight: 300,
   horizontalElementsCount: 50,
@@ -45,21 +46,22 @@ const staticNoisePreset: GeneratePatternMessage = {
   paddingX: 0,
   paddingY: 0,
   colors: ["#000000", "#ffffff"],
+  opacityRange: [0, 100],
   opacityThresholdMode: "clamp",
   noiseMode: "none",
   verticalFadeMode: "none",
 };
 
-const bubbleGumPreset: GeneratePatternMessage = {
-  ...initialInputValues,
+const bubbleGumPreset: Partial<Preset> = {
   shape: "circle",
   colors: ["#f25ec0", "#ffc3c3", "#92f5ff", "#f9ff94", "#87ffb0"],
   opacityRange: [100, 100],
   noiseMode: "uniform",
+  noiseAmount: 0.5,
   verticalFadeMode: "none",
 };
 
-export const presetInputs: Record<string, GeneratePatternMessage> = {
+export const presetInputs: Record<string, Partial<Preset>> = {
   Default: initialInputValues,
   "Large Frame": largeFramePreset,
   "Mardi Gras": mardiGrasPreset,

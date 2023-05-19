@@ -26,7 +26,7 @@ export default function Select<T, U extends string | number>({
     name?: ExtractKeysByValueType<T, U> extends never
       ? string | undefined
       : ExtractKeysByValueType<T, U>;
-    options: U[];
+    options: readonly U[];
     value?: U;
   }>) {
   return (
@@ -37,6 +37,8 @@ export default function Select<T, U extends string | number>({
           label ? "" : "grow"
         } ${className}`}
         id={id}
+        name={name}
+        value={value}
         {...props}
       >
         {options.map((optionName, index) => (

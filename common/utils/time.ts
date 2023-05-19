@@ -9,6 +9,15 @@ export function sleep(ms: number) {
 }
 
 /**
+ * Returns a function that calculates the time elapsed since the function was created.
+ * @returns A function that calculates the time elapsed since the function was created.
+ */
+export function createChronometer() {
+  const lastUpdate = Date.now();
+  return () => Date.now() - lastUpdate;
+}
+
+/**
  * Returns a function that returns true if the interval has passed since the last time the function was called.
  * @param interval The interval in milliseconds.
  * @returns A function that returns true if the interval has passed since the last time the function was called.
@@ -20,4 +29,8 @@ export function lastUpdateTracker(interval: number) {
     if (shouldUpdate) lastUpdate = Date.now();
     return shouldUpdate;
   };
+}
+
+export function formatSeconds(milliseconds: number) {
+  return parseFloat((milliseconds / 1000).toFixed(2));
 }

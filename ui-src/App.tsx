@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import {
   Layout,
@@ -7,7 +7,7 @@ import {
   Footer,
 } from "@components/Layout";
 import {
-  NotificationAborted,
+  NotificationStopped,
   NotificationError,
 } from "@components/Notifications";
 import MultiRangeSlider from "@components/MultiRangeSlider";
@@ -17,9 +17,9 @@ import { useWindowKeyboardEvents } from "@hooks/useWindowKeyboardEvents";
 import { usePluginMessaging } from "@hooks/usePluginMessaging";
 import { useBasicInputs, useManagedInputs } from "@hooks/useUserInputs";
 import { useColorHandlers } from "@hooks/useColorHandlers";
-import { sleep } from "@common/utils/index";
+import { formatSeconds, sleep, toFloat, toPercent } from "@common/utils/index";
 
-import type { GeneratePatternMessage } from "@common/index";
+import type { PatternDataMessage } from "@common/index";
 import {
   noiseModes,
   opacityThresholdModes,
@@ -40,70 +40,76 @@ enum AppState {
   IDLE = "idle",
   GENERATING = "generating",
   COMPLETE = "complete",
-  ABORTED = "aborted",
+  STOPPED = "aborted",
   ERROR = "error",
 }
 
 const messageTitles = {
-  [AppState.ABORTED]: "Generation aborted",
+  [AppState.STOPPED]: "Generation stopped",
   [AppState.ERROR]: "Generation error",
 };
 
 function Main() {
-  const [state, setState] = useState<AppState>(AppState.IDLE);
-  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string>();
-  const [pluginMessage, setPluginMessage] = useState(initialInputValues);
-  const [elementWidth, setElementWidth] = useState(
-    pluginMessage.frameWidth / pluginMessage.horizontalElementsCount
+
+  const [state, setState] = useState<AppState>(AppState.IDLE);
+  const [progress, setProgress] = useState({ percentage: 0, timeElapsed: 0 });
+  const [patternMessage, setPatternMessage] =
+    useState<PatternDataMessage>(initialInputValues);
+
+  const elementWidth = useMemo(
+    () => patternMessage.frameWidth / patternMessage.horizontalElementsCount,
+    [patternMessage.frameWidth, patternMessage.horizontalElementsCount]
   );
-  const [elementHeight, setElementHeight] = useState(
-    pluginMessage.frameHeight / pluginMessage.verticalElementsCount
+  const elementHeight = useMemo(
+    () => patternMessage.frameHeight / patternMessage.verticalElementsCount,
+    [patternMessage.frameHeight, patternMessage.verticalElementsCount]
   );
 
+  const handleRangeSliderChange = (opacityRange: [number, number]) =>
+    setPatternMessage((prev) => ({ ...prev, opacityRange }));
+  const { handleSelectChange, handleInputChange } =
+    useBasicInputs(setPatternMessage);
+  const { handleColorChange, handleAddColor, handleRemoveColor } =
+    useColorHandlers(setPatternMessage, patternMessage);
   const {
     handleFrameWidthChange,
     handleFrameHeightChange,
-    handleFrameHeightChangeDerivedProperties,
-    handleFrameWidthChangeDerivedProperties,
+    handleFrameWidthBlur,
+    handleFrameHeightBlur,
     handleHorizontalElementsCountChange,
     handleVerticalElementsCountChange,
     handlePaddingXChange,
     handlePaddingYChange,
-  } = useManagedInputs(setPluginMessage, setElementWidth, setElementHeight);
-
-  const handleRangeSliderChange = (opacityRange: [number, number]) =>
-    setPluginMessage((prev) => ({ ...prev, opacityRange }));
-
-  const { handleSelectChange } = useBasicInputs(setPluginMessage);
-
-  const { handleColorChange, handleAddColor, handleRemoveColor } =
-    useColorHandlers(setPluginMessage, pluginMessage);
+    applyPreset,
+  } = useManagedInputs(setPatternMessage);
 
   const handleMessages: typeof onmessage = async ({
     data: { pluginMessage },
   }) => {
     const { type } = pluginMessage || {};
-
-    if (type === "generation-progress") setProgress(pluginMessage.progress);
+    if (type === "generation-progress") {
+      setProgress(pluginMessage.data);
+      return;
+    }
 
     if (type === "generation-complete") {
       setState(AppState.COMPLETE);
       await sleep(300);
       setState(AppState.IDLE);
-      console.log("Generation complete.");
+      return;
     }
 
     if (type === "generation-started") {
       setState(AppState.GENERATING);
-      console.log("Generation started.");
+      return;
     }
 
-    if (type === "generation-aborted") {
-      setState(AppState.ABORTED);
+    if (type === "generation-stopped") {
+      setState(AppState.STOPPED);
       await sleep(1500);
       setState(AppState.IDLE);
-      console.log("Generation aborted.");
+      return;
     }
 
     if (type === "generation-error") {
@@ -124,33 +130,52 @@ function Main() {
     return (
       <>
         <Subsection title="Generating...">
-          <div>{`Progress: ${(progress * 100).toFixed(1)}%`}</div>
-          <progress className="w-full" value={progress} max={1} />
+          <div>{`Progress: ${toPercent(progress.percentage)}`}</div>
+          <progress className="w-full" value={progress.percentage} max={1} />
+          <div>{`Time elapsed: ${formatSeconds(progress.timeElapsed)}s`}</div>
         </Subsection>
         <Footer>
-          <Button
-            appearance="actionStyle"
-            disabled={state === AppState.COMPLETE}
-            onClick={() => {
-              parent.postMessage(
-                { pluginMessage: { type: "generate-abort" } },
-                "*"
-              );
-            }}
-          >
-            {state === AppState.COMPLETE ? "Done!" : "Cancel generation"}
-          </Button>
+          {state === AppState.COMPLETE ? (
+            <Button appearance="actionStyle" disabled>
+              Done!
+            </Button>
+          ) : (
+            <>
+              <Button
+                appearance="actionStyle"
+                onClick={() => {
+                  parent.postMessage(
+                    { pluginMessage: { type: "generate-stop" } },
+                    "*"
+                  );
+                }}
+              >
+                Stop generation
+              </Button>
+              <Button
+                appearance="actionStyle"
+                onClick={() => {
+                  parent.postMessage(
+                    { pluginMessage: { type: "generate-abort" } },
+                    "*"
+                  );
+                }}
+              >
+                Cancel generation
+              </Button>
+            </>
+          )}
         </Footer>
       </>
     );
 
-  if (state === AppState.ABORTED || state === AppState.ERROR) {
+  if (state === AppState.STOPPED || state === AppState.ERROR) {
     const title = messageTitles[state];
 
     return (
       <>
         <Subsection title={title}>
-          {state === AppState.ABORTED && <NotificationAborted />}
+          {state === AppState.STOPPED && <NotificationStopped />}
           {state === AppState.ERROR && (
             <NotificationError errorMessage={error} />
           )}
@@ -170,105 +195,114 @@ function Main() {
     );
   }
 
+  const calculatedElementWidth = toFloat(
+    elementWidth - patternMessage.paddingX
+  );
+  const calculatedElementHeight = toFloat(
+    elementHeight - patternMessage.paddingY
+  );
+
   return (
     <>
-      <Subsection title="Presets">
+      <Subsection title="Global Presets">
         <Select
           options={Object.keys(presetInputs)}
           id="presetSelect"
-          onChange={({ currentTarget }) => {
-            setPluginMessage(presetInputs[currentTarget.value]);
-          }}
+          onChange={applyPreset}
           title="Predefined settings."
         />
       </Subsection>
       <Subsection title="Frame">
-        <Input<GeneratePatternMessage, number>
+        <Input<PatternDataMessage, number>
           label="Width (px)"
           id="frameWidthInput"
           name="frameWidth"
           type="number"
           min={MIN_FRAME_SIZE}
           max={MAX_FRAME_SIZE}
-          value={pluginMessage.frameWidth}
+          maxLength={4}
+          value={patternMessage.frameWidth}
           onChange={handleFrameWidthChange}
-          onBlur={handleFrameWidthChangeDerivedProperties}
-          onInvalid={(event) => console.log(event.currentTarget)}
+          onBlur={handleFrameWidthBlur}
           title="Width of the frame in pixels."
         />
-        <Input<GeneratePatternMessage, number>
+        <Input<PatternDataMessage, number>
           label="Height (px)"
           id="frameHeightInput"
           name="frameHeight"
           type="number"
           min={MIN_FRAME_SIZE}
           max={MAX_FRAME_SIZE}
-          value={pluginMessage.frameHeight}
+          maxLength={4}
+          value={patternMessage.frameHeight}
           onChange={handleFrameHeightChange}
-          onBlur={handleFrameHeightChangeDerivedProperties}
+          onBlur={handleFrameHeightBlur}
           title="Height of the frame in pixels."
         />
       </Subsection>
       <Subsection title="Elements">
-        <span>
-          {`Element size: ${parseFloat(
-            (elementWidth - pluginMessage.paddingX).toFixed(2)
-          )} x ${parseFloat(
-            (elementHeight - pluginMessage.paddingY).toFixed(2)
-          )} px`}
-        </span>
-        <Input<GeneratePatternMessage, number>
+        <div className="flex w-full">
+          <span className="grow">Element size:</span>
+          <span>
+            {`${calculatedElementWidth} x ${calculatedElementHeight} px`}
+          </span>
+        </div>
+        <Input<PatternDataMessage, number>
           label="Horizontal count"
           id="horizontalCountInput"
           name="horizontalElementsCount"
           type="number"
           min={1}
-          max={pluginMessage.frameWidth.toFixed(0)}
-          value={pluginMessage.horizontalElementsCount}
+          max={toFloat(patternMessage.frameWidth)}
+          maxLength={4}
+          value={patternMessage.horizontalElementsCount}
           onChange={handleHorizontalElementsCountChange}
           title="Number of elements to create horizontally."
         />
-        <Input<GeneratePatternMessage, number>
+        <Input<PatternDataMessage, number>
           label="Vertical count"
           id="verticalCountInput"
           name="verticalElementsCount"
           type="number"
           min={1}
-          max={pluginMessage.frameHeight.toFixed(0)}
-          value={pluginMessage.verticalElementsCount}
+          max={toFloat(patternMessage.frameHeight)}
+          maxLength={4}
+          value={patternMessage.verticalElementsCount}
           onChange={handleVerticalElementsCountChange}
           title="Number of elements to create vertically."
         />
-        <Input<GeneratePatternMessage, number>
+        <Input<PatternDataMessage, number>
           label="Padding X (px)"
           id="paddingXInput"
           name="paddingX"
           type="number"
           min={0}
-          max={(elementWidth - 1).toFixed(0)}
-          value={parseFloat(pluginMessage.paddingX.toFixed(2))}
+          max={toFloat(elementWidth - 1)}
+          maxLength={8}
+          value={toFloat(patternMessage.paddingX)}
           onChange={handlePaddingXChange}
           title="Padding between elements in pixels."
         />
-        <Input<GeneratePatternMessage, number>
+        <Input<PatternDataMessage, number>
           label="Padding Y (px)"
           id="paddingYInput"
           name="paddingY"
           type="number"
           min={0}
-          max={(elementHeight - 1).toFixed(0)}
-          value={parseFloat(pluginMessage.paddingY.toFixed(2))}
+          max={toFloat(elementHeight - 1)}
+          maxLength={8}
+          value={toFloat(patternMessage.paddingY)}
           onChange={handlePaddingYChange}
           title="Padding between elements in pixels."
         />
       </Subsection>
       <Subsection title={`Appearance`}>
-        <Select<GeneratePatternMessage, string>
+        <Select<PatternDataMessage, string>
           name="shape"
           options={supportedShapes}
           id="shapeSelect"
           label="Shape"
-          value={pluginMessage.shape}
+          value={patternMessage.shape}
           onChange={handleSelectChange}
           title="Shape of the elements."
         />
@@ -276,45 +310,59 @@ function Main() {
           label="Opacity range"
           id="opacityRangeInput"
           title="Range of opacity values to use for the elements."
-          minVal={pluginMessage.opacityRange[0]}
-          maxVal={pluginMessage.opacityRange[1]}
-          min={pluginMessage.opacityRangeLimits[0]}
-          max={pluginMessage.opacityRangeLimits[1]}
+          minVal={patternMessage.opacityRange[0]}
+          maxVal={patternMessage.opacityRange[1]}
+          min={patternMessage.opacityRangeLimits[0]}
+          max={patternMessage.opacityRangeLimits[1]}
           units="%"
           onChange={handleRangeSliderChange}
         />
         <MultiColorPicker
-          colors={pluginMessage.colors}
+          colors={patternMessage.colors}
           handleAddColor={handleAddColor}
           handleColorChange={handleColorChange}
           handleRemoveColor={handleRemoveColor}
         />
       </Subsection>
       <CollapsibleSubsection title="Options">
-        <Select<GeneratePatternMessage, string>
+        <Select<PatternDataMessage, string>
           name="verticalFadeMode"
           options={verticalFadeModes}
           id="verticalFadeModeSelect"
-          label="Vertical fade"
-          value={pluginMessage.verticalFadeMode}
+          label="Vertical fade:"
+          value={patternMessage.verticalFadeMode}
           onChange={handleSelectChange}
           title="Create a vertical fade by changing the opacity values of the elements in the direction selected."
         />
-        <Select<GeneratePatternMessage, string>
+        <Select<PatternDataMessage, string>
           name="noiseMode"
           options={noiseModes}
           label="Noise mode:"
           id="noiseModeSelect"
-          value={pluginMessage.noiseMode}
+          value={patternMessage.noiseMode}
           onChange={handleSelectChange}
           title="Remove random elements to add noise and create a more organic look."
         />
-        <Select<GeneratePatternMessage, string>
+        {patternMessage.noiseMode !== "none" && (
+          <Input<PatternDataMessage, number>
+            label="Noise amount"
+            id="verticalCountInput"
+            name="noiseAmount"
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}
+            value={patternMessage.noiseAmount}
+            onChange={handleInputChange}
+            title="Number of elements to create vertically."
+          />
+        )}
+        <Select<PatternDataMessage, string>
           name="opacityThresholdMode"
           options={opacityThresholdModes}
           label="Outside opacity range:"
           id="opacityThresholdModeSelect"
-          value={pluginMessage.opacityThresholdMode}
+          value={patternMessage.opacityThresholdMode}
           onChange={handleSelectChange}
           title="How to handle elements with opacity value below the threshold."
         />
@@ -324,7 +372,7 @@ function Main() {
           <Button onClick={onClose}>Close</Button>
           <Button
             appearance="filledStyle"
-            onClick={() => onCreate(pluginMessage)}
+            onClick={() => onCreate(patternMessage)}
           >
             Create
           </Button>

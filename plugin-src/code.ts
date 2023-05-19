@@ -1,30 +1,44 @@
-import { GeneratePatternMessage, supportedShapes } from "@common/index";
-import { hexToRGB, lastUpdateTracker, sleep } from "@common/utils/index";
+import type { PatternDataMessage, StopCode } from "@common/index";
+import {
+  createChronometer,
+  hexToRGB,
+  lastUpdateTracker,
+  sleep,
+} from "@common/utils/index";
 import {
   postGenerationProgress,
   postGenerationStart,
   postGenerationCompleted,
-  postGenerationAborted,
+  postGenerationStopped,
   postGenerationError,
 } from "./messages";
+import { SLEEP_INTERVAL } from "./constants";
 
 figma.showUI(__html__, { width: 340, height: 650, position: { x: 0, y: 0 } });
 
-function createNoiseFilter(noiseMode: GeneratePatternMessage["noiseMode"]) {
+function createNoiseFilter(
+  noiseMode: PatternDataMessage["noiseMode"],
+  noiseAmount: number
+) {
   switch (noiseMode) {
     case "ascending":
-      return (verticalPosition: number) => Math.random() > verticalPosition;
+      return (verticalPosition: number) =>
+        Math.random() <
+        Math.min(verticalPosition, noiseAmount * verticalPosition);
     case "descending":
-      return (verticalPosition: number) => Math.random() > 1 - verticalPosition;
+      return (verticalPosition: number) => {
+        const position = 1 - verticalPosition;
+        return Math.random() < Math.min(position, noiseAmount * position);
+      };
     case "uniform":
-      return () => Math.random() > 0.5;
+      return () => Math.random() < noiseAmount;
     default:
       return null;
   }
 }
 
 function createFadeModifier(
-  verticalFadeMode: GeneratePatternMessage["verticalFadeMode"]
+  verticalFadeMode: PatternDataMessage["verticalFadeMode"]
 ) {
   switch (verticalFadeMode) {
     case "ascending":
@@ -37,7 +51,7 @@ function createFadeModifier(
 }
 
 function createOpacityThresholdFilter(
-  opacityThresholdMode: GeneratePatternMessage["opacityThresholdMode"],
+  opacityThresholdMode: PatternDataMessage["opacityThresholdMode"],
   opacityMin: number,
   opacityMax: number
 ) {
@@ -81,7 +95,7 @@ function createOutputFrame(width: number, height: number) {
 }
 
 function createTemplateElement(
-  shape: GeneratePatternMessage["shape"],
+  shape: PatternDataMessage["shape"],
   width: number,
   height: number
 ) {
@@ -142,9 +156,9 @@ function elementCloneGenerator(
   };
 }
 
-let abortFlag = false;
+let stopFlag: StopCode;
 
-async function generatePattern(msg: GeneratePatternMessage) {
+async function generatePattern(msg: PatternDataMessage) {
   const {
     frameWidth,
     frameHeight,
@@ -158,16 +172,16 @@ async function generatePattern(msg: GeneratePatternMessage) {
     opacityRangeLimits,
     opacityThresholdMode,
     noiseMode,
+    noiseAmount,
     verticalFadeMode,
   } = msg;
 
-  abortFlag = false;
+  stopFlag = undefined;
 
   // Elements
   const elementWidth = frameWidth / horizontalElementsCount;
   const elementHeight = frameHeight / verticalElementsCount;
   const outputFrame = createOutputFrame(+frameWidth, +frameHeight);
-  console.log("Output frame created", outputFrame.x, outputFrame.y);
 
   const element = createTemplateElement(
     shape,
@@ -188,7 +202,7 @@ async function generatePattern(msg: GeneratePatternMessage) {
     opacityRangeLimits[1]
   );
   const opacityDelta = opacityMax - opacityMin;
-  const noiseFilter = createNoiseFilter(noiseMode);
+  const noiseFilter = createNoiseFilter(noiseMode, noiseAmount);
   const fadeModifier = createFadeModifier(verticalFadeMode);
   const opacityThresholdFilter = createOpacityThresholdFilter(
     opacityThresholdMode,
@@ -197,11 +211,13 @@ async function generatePattern(msg: GeneratePatternMessage) {
   );
 
   // Utilities
-  let shouldUpdate = lastUpdateTracker(150);
+  let percentage = 0;
+  const chronometer = createChronometer();
+  const shouldUpdate = lastUpdateTracker(150);
   const totalElements = horizontalElementsCount * verticalElementsCount;
 
   for (let y = 0; y < verticalElementsCount; y++) {
-    if (abortFlag) break;
+    if (stopFlag) break;
 
     const verticalPosition =
       verticalElementsCount > 1 ? y / (verticalElementsCount - 1) : 1;
@@ -209,12 +225,14 @@ async function generatePattern(msg: GeneratePatternMessage) {
     const layerNodes: RectangleNode[] = [];
 
     for (let x = 0; x < horizontalElementsCount; x++) {
-      if (abortFlag) break;
+      if (stopFlag) break;
       if (shouldUpdate()) {
-        postGenerationProgress(
-          (y * horizontalElementsCount + x) / totalElements
-        );
-        await sleep(10);
+        percentage = (y * horizontalElementsCount + x) / totalElements;
+        postGenerationProgress({
+          percentage,
+          timeElapsed: chronometer(),
+        });
+        await sleep(SLEEP_INTERVAL);
       }
 
       if (noiseFilter?.(verticalPosition)) continue;
@@ -228,18 +246,23 @@ async function generatePattern(msg: GeneratePatternMessage) {
       layerNodes.push(newElement);
     }
 
+    if (outputFrame === null) stopFlag = "aborted";
     groupNodes(`Layer ${y}`, layerNodes, outputFrame);
 
     if (shouldUpdate()) {
-      postGenerationProgress((y + 1) / verticalElementsCount);
-      await sleep(10);
+      percentage = (y + 1) / verticalElementsCount;
+      postGenerationProgress({
+        percentage,
+        timeElapsed: chronometer(),
+      });
+      await sleep(SLEEP_INTERVAL);
     }
   }
 
   element.remove();
 
-  if (abortFlag) outputFrame.remove();
-  return !abortFlag;
+  if (stopFlag === "aborted") outputFrame.remove();
+  return { percentage, stopFlag, timeElapsed: chronometer() };
 }
 
 figma.ui.onmessage = (msg) => {
@@ -250,14 +273,9 @@ figma.ui.onmessage = (msg) => {
       postGenerationStart();
 
       generatePattern(msg)
-        .then((success) => {
-          if (success) {
-            figma.notify("Pattern generated");
-            postGenerationCompleted();
-          } else {
-            figma.notify("Pattern generation aborted");
-            postGenerationAborted();
-          }
+        .then((result) => {
+          if (result.stopFlag) postGenerationStopped(result);
+          else postGenerationCompleted(result);
         })
         .catch((error) => {
           if (error instanceof Error) postGenerationError(error.message);
@@ -270,7 +288,12 @@ figma.ui.onmessage = (msg) => {
 
     case "generate-abort":
       console.log("Aborting...");
-      abortFlag = true;
+      stopFlag = "aborted";
+      break;
+
+    case "generate-stop":
+      console.log("Stopping...");
+      stopFlag = "stopped";
       break;
 
     case "close":

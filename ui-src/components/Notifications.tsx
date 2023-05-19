@@ -1,6 +1,6 @@
 import React from "react";
 
-export function NotificationAborted() {
+export function NotificationStopped() {
   return (
     <>
       <p>Pattern generation stopped.</p>
