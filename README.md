@@ -16,7 +16,7 @@ I'm working on getting this plugin into the Figma Community so it can be install
 
 ✅ Multiple range slider for element opacity
 
-🟨 Saving, loading and default presets
+⏹ Saving, loading and default presets
 
 🟨 Seeds for randomness generation
 
