@@ -1,10 +1,6 @@
 import type { Progress } from "./generator";
-import {
-  toPercent,
-  formatSeconds,
-  messageTypes,
-  PatternDataMessage,
-} from "@common/index";
+import type { PatternDataMessage } from "@common/index";
+import { toPercent, formatSeconds, messageTypes } from "@common/index";
 
 export function postGenerationStarted() {
   figma.ui.postMessage({

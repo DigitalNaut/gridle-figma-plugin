@@ -1,4 +1,4 @@
-import { PatternDataMessage } from "@common/index";
+import type { PatternDataMessage } from "@common/index";
 
 import { SAVED_SETTINGS_KEY } from "./constants";
 

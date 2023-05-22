@@ -32,6 +32,8 @@ export type PatternDataMessage = {
 };
 
 export const messageTypes = {
+  close: "close",
+  UIStarted: "UI-started",
   generationProgress: "generation-progress",
   generationComplete: "generation-complete",
   generationStarted: "generation-started",
@@ -41,9 +43,7 @@ export const messageTypes = {
   generationAbort: "generation-abort",
   generationStop: "generation-stop",
   presetLoaded: "preset-loaded",
-  UIStarted: "UI-started",
   savePreset: "save-preset",
   loadPreset: "load-preset",
   clearPreset: "clear-preset",
-  close: "close",
 };

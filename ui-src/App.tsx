@@ -160,7 +160,7 @@ function Main() {
               Done!
             </Button>
           ) : (
-            <div className="flex flex-col w-full">
+            <div className="flex w-full flex-col">
               <Button appearance="actionStyle" onClick={stopGeneration}>
                 Stop generation
               </Button>

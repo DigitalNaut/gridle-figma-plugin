@@ -1,11 +1,12 @@
+import type { PatternDataMessage, StopCode } from "@common/main";
 import {
   hexToRGB,
   createChronometer,
   lastUpdateTracker,
   sleep,
 } from "@common/index";
-import { PatternDataMessage, StopCode } from "@common/main";
 
+import type { ShapeNode } from "./types";
 import { AbortController } from "./abortController";
 import { SLEEP_INTERVAL } from "./constants";
 import { postGenerationProgress } from "./messages";
@@ -120,8 +121,8 @@ function groupNodes(name: string, nodes: SceneNode[], parent: FrameNode) {
   parent.appendChild(group);
 }
 
-function createElementCloner(
-  element: RectangleNode,
+function createShapeCloner(
+  shape: ShapeNode,
   getNewColor: () => RGB,
   dimensions: {
     width: number;
@@ -133,11 +134,11 @@ function createElementCloner(
   const { width, height, paddingX, paddingY } = dimensions;
   const halfPaddingX = paddingX * 0.5;
   const halfPaddingY = paddingY * 0.5;
-  let newElement: RectangleNode;
+  let newElement: ShapeNode;
   const constraints: Constraints = { horizontal: "SCALE", vertical: "SCALE" };
 
   return (x: number, y: number, opacity: number) => {
-    newElement = element.clone();
+    newElement = shape.clone();
 
     newElement.x = x * width + halfPaddingX;
     newElement.y = y * height + halfPaddingY;
@@ -192,7 +193,7 @@ async function generatePattern(
     elementHeight - paddingY,
   );
   const getNewColor = colorGenerator(colors.map(hexToRGB));
-  const getElementClone = createElementCloner(element, getNewColor, {
+  const getShapeClone = createShapeCloner(element, getNewColor, {
     width: elementWidth,
     height: elementHeight,
     paddingX,
@@ -233,7 +234,7 @@ async function generatePattern(
     const verticalPosition =
       verticalElementsCount > 1 ? y / (verticalElementsCount - 1) : 1;
 
-    const layerNodes: RectangleNode[] = [];
+    const layerNodes: SceneNode[] = [];
 
     for (let x = 0; x < horizontalElementsCount; x++) {
       if (signal.aborted) break;
@@ -247,7 +248,7 @@ async function generatePattern(
       opacity = opacityThresholdFilter(opacity);
       if (opacity === null) continue;
 
-      const newElement = getElementClone(x, y, opacity);
+      const newElement = getShapeClone(x, y, opacity);
       layerNodes.push(newElement);
     }
 

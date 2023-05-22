@@ -1,4 +1,5 @@
 node_modules
 dist
+typings
 tsconfig.json
 pnpm-lock.yaml

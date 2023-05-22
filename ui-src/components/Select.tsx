@@ -1,5 +1,5 @@
 import type { ExtractKeysByValueType } from "@common/utils/index";
-import {
+import type {
   DetailedHTMLProps,
   InputHTMLAttributes,
   PropsWithChildren,

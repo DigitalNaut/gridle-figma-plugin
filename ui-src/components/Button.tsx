@@ -1,9 +1,9 @@
-import {
+import type {
   DetailedHTMLProps,
   ButtonHTMLAttributes,
   PropsWithChildren,
-  useMemo,
 } from "react";
+import { useMemo } from "react";
 
 const buttonStyles = {
   actionStyle:

@@ -1,5 +1,6 @@
+import type { Dispatch, SetStateAction } from "react";
+
 import type { PatternDataMessage } from "@common/index";
-import { Dispatch, SetStateAction } from "react";
 
 export function useColorHandlers(
   setState: Dispatch<SetStateAction<PatternDataMessage>>,

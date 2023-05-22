@@ -4,6 +4,7 @@ export default {
     "./plugin-src/**/*.{js,ts,jsx,tsx}",
     "./ui-src/**/*.{js,ts,jsx,tsx,html}",
   ],
+  blocklist: ["eslint.config.js", "tailwind.config.js", "postcss.config.js"],
   theme: {
     extend: {},
   },

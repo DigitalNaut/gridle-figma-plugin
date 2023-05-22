@@ -2,8 +2,8 @@ import type {
   DetailedHTMLProps,
   InputHTMLAttributes,
   PropsWithChildren,
+  RefObject,
 } from "react";
-import { RefObject } from "react";
 
 import type { ExtractKeysByValueType } from "@common/utils/types";
 

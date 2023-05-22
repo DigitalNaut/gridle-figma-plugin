@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { PatternDataMessage, messageTypes } from "@common/main";
+import type { PatternDataMessage } from "@common/index";
+import { messageTypes } from "@common/index";
 
 export function usePluginMessaging(messageHandler: typeof onmessage) {
   const [loaded, setLoaded] = useState(false);
