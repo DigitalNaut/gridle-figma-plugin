@@ -1,5 +1,5 @@
+import type { Progress } from "./generator";
 import {
-  Progress,
   toPercent,
   formatSeconds,
   messageTypes,
@@ -23,7 +23,7 @@ export function postGenerationCompleted(data: Progress) {
   figma.ui.postMessage({ type: messageTypes.generationComplete, data });
 }
 
-export function postGenerationProgress(data: Omit<Progress, "stopFlag">) {
+export function postGenerationProgress(data: Omit<Progress, "status">) {
   figma.ui.postMessage({
     type: messageTypes.generationProgress,
     data,
@@ -35,11 +35,13 @@ export function postGenerationError(error: string) {
 }
 
 export function postGenerationStopped(data: Progress) {
-  const { percentage, timeElapsed, stopFlag: stopCode } = data;
+  const { percentage, timeElapsed } = data;
 
-  const messageLog = `Pattern generation ${stopCode} at ${toPercent(
-    percentage
-  )} in ${formatSeconds(timeElapsed)}s`;
+  const messageLog = `Pattern generation halted at ${toPercent(
+    percentage,
+  )} in ${formatSeconds(timeElapsed)}s. Reason: ${
+    data.status ?? "not specified"
+  }`;
 
   figma.notify(messageLog);
   console.log(messageLog);

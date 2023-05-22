@@ -4,14 +4,15 @@ import {
   lastUpdateTracker,
   sleep,
 } from "@common/index";
-import { StopCode, PatternDataMessage } from "@common/main";
+import { PatternDataMessage, StopCode } from "@common/main";
 
+import { AbortController } from "./abortController";
 import { SLEEP_INTERVAL } from "./constants";
 import { postGenerationProgress } from "./messages";
 
 function createNoiseFilter(
   noiseMode: PatternDataMessage["noiseMode"],
-  noiseAmount: number
+  noiseAmount: number,
 ) {
   switch (noiseMode) {
     case "ascending":
@@ -31,7 +32,7 @@ function createNoiseFilter(
 }
 
 function createFadeModifier(
-  verticalFadeMode: PatternDataMessage["verticalFadeMode"]
+  verticalFadeMode: PatternDataMessage["verticalFadeMode"],
 ) {
   switch (verticalFadeMode) {
     case "ascending":
@@ -48,7 +49,7 @@ function createFadeModifier(
 function createOpacityThresholdFilter(
   opacityThresholdMode: PatternDataMessage["opacityThresholdMode"],
   opacityMin: number,
-  opacityMax: number
+  opacityMax: number,
 ) {
   switch (opacityThresholdMode) {
     case "clamp":
@@ -62,8 +63,9 @@ function createOpacityThresholdFilter(
   }
 }
 
-function createOpacityValueGenerator(range: number) {
-  return () => Math.random() * range;
+function createOpacityValueGenerator(min: number, max: number) {
+  const delta = max - min;
+  return () => delta * Math.random() + min;
 }
 
 function colorGenerator(colors: RGB[]) {
@@ -96,7 +98,7 @@ function createOutputFrame(width: number, height: number) {
 function createTemplateElement(
   shape: PatternDataMessage["shape"],
   width: number,
-  height: number
+  height: number,
 ) {
   const element = figma.createRectangle();
   element.resize(width, height);
@@ -126,7 +128,7 @@ function createElementCloner(
     height: number;
     paddingX: number;
     paddingY: number;
-  }
+  },
 ) {
   const { width, height, paddingX, paddingY } = dimensions;
   const halfPaddingX = paddingX * 0.5;
@@ -155,17 +157,12 @@ function createElementCloner(
   };
 }
 
-let stopFlag: StopCode;
+type GeneratorStopCode = StopCode | "completed";
 
-export function stopGeneration() {
-  stopFlag = "stopped";
-}
-
-export function abortGeneration() {
-  stopFlag = "aborted";
-}
-
-export async function generatePattern(msg: PatternDataMessage) {
+async function generatePattern(
+  msg: PatternDataMessage,
+  abortController: AbortController<GeneratorStopCode>,
+) {
   const {
     frameWidth,
     frameHeight,
@@ -182,6 +179,7 @@ export async function generatePattern(msg: PatternDataMessage) {
     noiseAmount,
     verticalFadeMode,
   } = msg;
+  const { signal } = abortController;
 
   // Elements
   const elementWidth = frameWidth / horizontalElementsCount;
@@ -191,7 +189,7 @@ export async function generatePattern(msg: PatternDataMessage) {
   const element = createTemplateElement(
     shape,
     elementWidth - paddingX,
-    elementHeight - paddingY
+    elementHeight - paddingY,
   );
   const getNewColor = colorGenerator(colors.map(hexToRGB));
   const getElementClone = createElementCloner(element, getNewColor, {
@@ -204,26 +202,33 @@ export async function generatePattern(msg: PatternDataMessage) {
   // Properties and filters
   const [opacityMin, opacityMax] = transformRange01(
     opacityRange,
-    opacityRangeLimits[1]
+    opacityRangeLimits[1],
   );
-  const opacityDelta = opacityMax - opacityMin;
   const noiseFilter = createNoiseFilter(noiseMode, noiseAmount);
   const fadeModifier = createFadeModifier(verticalFadeMode);
+  const getOpacityValue = createOpacityValueGenerator(opacityMin, opacityMax);
   const opacityThresholdFilter = createOpacityThresholdFilter(
     opacityThresholdMode,
     opacityMin,
-    opacityMax
+    opacityMax,
   );
 
   // Utilities
-  let percentage = 0;
+  const percentage = 0;
   const chronometer = createChronometer();
   const shouldUpdate = lastUpdateTracker(150);
   const totalElements = horizontalElementsCount * verticalElementsCount;
+  const postUpdate = async (percentage: number) => {
+    postGenerationProgress({
+      percentage,
+      timeElapsed: chronometer(),
+    });
+    await sleep(SLEEP_INTERVAL);
+  };
 
   // Generation
   for (let y = 0; y < verticalElementsCount; y++) {
-    if (stopFlag) break;
+    if (signal.aborted) break;
 
     const verticalPosition =
       verticalElementsCount > 1 ? y / (verticalElementsCount - 1) : 1;
@@ -231,19 +236,13 @@ export async function generatePattern(msg: PatternDataMessage) {
     const layerNodes: RectangleNode[] = [];
 
     for (let x = 0; x < horizontalElementsCount; x++) {
-      if (stopFlag) break;
-      if (shouldUpdate()) {
-        percentage = (y * horizontalElementsCount + x) / totalElements;
-        postGenerationProgress({
-          percentage,
-          timeElapsed: chronometer(),
-        });
-        await sleep(SLEEP_INTERVAL);
-      }
+      if (signal.aborted) break;
+      if (shouldUpdate())
+        await postUpdate((y * horizontalElementsCount + x) / totalElements);
 
       if (noiseFilter?.(verticalPosition)) continue;
 
-      let opacity: number | null = opacityMin + opacityDelta * Math.random();
+      let opacity: number | null = getOpacityValue();
       opacity = fadeModifier(verticalPosition, opacity);
       opacity = opacityThresholdFilter(opacity);
       if (opacity === null) continue;
@@ -253,22 +252,53 @@ export async function generatePattern(msg: PatternDataMessage) {
     }
 
     // Abort clause
-    if (outputFrame === null) stopFlag = "aborted";
+    if (outputFrame === null) {
+      abortController.abort("aborted");
+      layerNodes.forEach((node) => node.remove());
+    }
+
     groupNodes(`Layer ${y}`, layerNodes, outputFrame);
 
     // Update progress
-    if (shouldUpdate()) {
-      percentage = (y + 1) / verticalElementsCount;
-      postGenerationProgress({
-        percentage,
-        timeElapsed: chronometer(),
-      });
-      await sleep(SLEEP_INTERVAL);
-    }
+    if (shouldUpdate()) await postUpdate((y + 1) / verticalElementsCount);
   }
 
   element.remove();
 
-  if (stopFlag === "aborted") outputFrame.remove();
-  return { percentage, stopFlag, timeElapsed: chronometer() };
+  // Abort clause
+  if (signal.aborted && signal.type === "aborted") outputFrame.remove();
+
+  // Results
+  return {
+    percentage,
+    timeElapsed: chronometer(),
+    status: signal.type ?? "completed",
+  };
 }
+
+export default class Generator {
+  private abortController: AbortController<GeneratorStopCode>;
+
+  constructor() {
+    this.abortController = new AbortController<GeneratorStopCode>();
+  }
+
+  start(msg: PatternDataMessage) {
+    return generatePattern(msg, this.abortController);
+  }
+
+  reset() {
+    this.abortController.abort("stopped");
+    this.abortController = new AbortController<GeneratorStopCode>();
+  }
+
+  stop() {
+    this.abortController.abort("stopped");
+  }
+
+  abort() {
+    this.abortController.abort("aborted");
+  }
+}
+
+export type Progress = Awaited<ReturnType<typeof generatePattern>>;

@@ -13,12 +13,6 @@ export const noiseModes = [
 
 export type StopCode = "stopped" | "aborted" | undefined;
 
-export type Progress = {
-  percentage: number;
-  timeElapsed: number;
-  stopFlag: StopCode;
-};
-
 export type PatternDataMessage = {
   type: "generate-pattern";
   frameWidth: number;

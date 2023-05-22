@@ -7,51 +7,57 @@ import {
   postGenerationError,
   presetLoaded,
 } from "./messages";
-import {  DEFAULT_WINDOW_OPTIONS } from "./constants";
+import { DEFAULT_WINDOW_OPTIONS } from "./constants";
 import {
   loadSettingsFromStorage,
   saveSettingsToStorage,
   clearSettingsFromStorage,
 } from "./storage";
-import { generatePattern, abortGeneration, stopGeneration } from "./generator";
+import Generator from "./generator";
 
 figma.showUI(__html__, DEFAULT_WINDOW_OPTIONS);
 
-figma.ui.onmessage = (msg) => {
+const generator = new Generator();
+
+figma.ui.onmessage = async (msg) => {
   const { type } = msg || {};
 
   switch (type) {
     case messageTypes.generationStart:
+      generator.reset();
       postGenerationStarted();
 
-      generatePattern(msg.patternData)
-        .then((result) => {
-          if (result.stopFlag) postGenerationStopped(result);
-          else postGenerationCompleted(result);
-        })
-        .catch((error) => {
-          if (error instanceof Error) postGenerationError(error.message);
-          else postGenerationError("Unknown error");
+      try {
+        const result = await generator.start(msg.patternData);
 
-          figma.notify("Error generating pattern");
-          console.error(error);
-        });
+        if (result.status !== "completed") postGenerationStopped(result);
+        else postGenerationCompleted(result);
+      } catch (error) {
+        if (error instanceof Error) postGenerationError(error.message);
+        else postGenerationError("Unknown error");
+
+        figma.notify("Error generating pattern");
+        console.error(error);
+      } finally {
+        generator.reset();
+      }
       break;
 
     case messageTypes.generationAbort:
       console.log("Aborting...");
-      abortGeneration();
+      generator.abort();
       break;
 
     case messageTypes.generationStop:
       console.log("Stopping...");
-      stopGeneration();
+      generator.stop();
       break;
 
-    case messageTypes.UIStarted:
+    case messageTypes.UIStarted: {
       const preset = loadSettingsFromStorage();
       if (preset) presetLoaded(preset);
       break;
+    }
 
     case messageTypes.savePreset:
       saveSettingsToStorage(msg.preset);
