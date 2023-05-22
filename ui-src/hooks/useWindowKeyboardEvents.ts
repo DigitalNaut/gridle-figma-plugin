@@ -7,7 +7,7 @@ export function useWindowKeyboardEvents(event: (event: KeyboardEvent) => void) {
     return () => {
       window.removeEventListener("keydown", event);
     };
-  }, []);
+  }, [event]);
 
   return null;
 }

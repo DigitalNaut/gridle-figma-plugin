@@ -3,7 +3,7 @@ import type {
   InputHTMLAttributes,
   PropsWithChildren,
 } from "react";
-import React, { RefObject } from "react";
+import { RefObject } from "react";
 
 import type { ExtractKeysByValueType } from "@common/utils/types";
 

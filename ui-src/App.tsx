@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   Layout,
@@ -55,18 +55,17 @@ function Main() {
   const [error, setError] = useState<string>();
   const [state, setState] = useState<AppState>(AppState.IDLE);
   const [progress, setProgress] = useState({ percentage: 0, timeElapsed: 0 });
-  const [availablePresets, setAvailablePresets] =
-    useState<PresetRecord>(presetInputs);
+  const [availablePresets] = useState<PresetRecord>(presetInputs);
   const [patternMessage, setPatternMessage] =
     useState<PatternDataMessage>(defaultInputValues);
 
   const elementWidth = useMemo(
     () => patternMessage.frameWidth / patternMessage.horizontalElementsCount,
-    [patternMessage.frameWidth, patternMessage.horizontalElementsCount]
+    [patternMessage.frameWidth, patternMessage.horizontalElementsCount],
   );
   const elementHeight = useMemo(
     () => patternMessage.frameHeight / patternMessage.verticalElementsCount,
-    [patternMessage.frameHeight, patternMessage.verticalElementsCount]
+    [patternMessage.frameHeight, patternMessage.verticalElementsCount],
   );
 
   const applyPreset = (value: string) =>
@@ -201,10 +200,10 @@ function Main() {
   }
 
   const calculatedElementWidth = toFloat(
-    elementWidth - patternMessage.paddingX
+    elementWidth - patternMessage.paddingX,
   );
   const calculatedElementHeight = toFloat(
-    elementHeight - patternMessage.paddingY
+    elementHeight - patternMessage.paddingY,
   );
 
   return (

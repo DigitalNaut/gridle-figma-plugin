@@ -25,7 +25,7 @@ export function createChronometer() {
 export function lastUpdateTracker(interval: number) {
   let lastUpdate = Date.now();
   return () => {
-    let shouldUpdate = Date.now() - lastUpdate > interval;
+    const shouldUpdate = Date.now() - lastUpdate > interval;
     if (shouldUpdate) lastUpdate = Date.now();
     return shouldUpdate;
   };

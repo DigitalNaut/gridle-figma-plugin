@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "cloudflare",
+    "ecma",
     "figma",
     "gridle",
     "iframe",
@@ -16,4 +17,6 @@
     ["Style \\=([^;]*);", "\"([^\"]*)\""],
     ["Style \\=([^;]*);", "\\`([^\\`]*)\\`"]
   ],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": ["source.formatDocument", "source.fixAll.eslint"]
 }

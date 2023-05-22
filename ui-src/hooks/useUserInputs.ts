@@ -13,7 +13,7 @@ import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "../constants";
 type StateSetter = Dispatch<SetStateAction<PatternDataMessage>>;
 
 export function useBasicInputs(
-  setState: Dispatch<SetStateAction<PatternDataMessage>>
+  setState: Dispatch<SetStateAction<PatternDataMessage>>,
 ) {
   const handleSelectChange: ChangeEventHandler<HTMLSelectElement> = ({
     currentTarget: { name, value },
@@ -41,7 +41,7 @@ function calculateLength(length: number, parts: number) {
 
 function createHandlerFrameLength(
   setState: StateSetter,
-  propertyName: keyof PatternDataMessage
+  propertyName: keyof PatternDataMessage,
 ) {
   return ({ currentTarget }: ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(currentTarget.value);
@@ -62,7 +62,7 @@ function createHandlerDerivePropertiesFromLength(
   setState: StateSetter,
   lengthPropertyName: NumberKeys,
   countPropertyName: NumberKeys,
-  paddingPropertyName: NumberKeys
+  paddingPropertyName: NumberKeys,
 ) {
   return ({ currentTarget }: ChangeEvent<HTMLInputElement>) => {
     const value = toInteger(currentTarget.value);
@@ -88,7 +88,7 @@ function createHandlerDeriveCountFromLength(
   setState: StateSetter,
   lengthPropertyName: NumberKeys,
   countPropertyName: NumberKeys,
-  paddingPropertyName: NumberKeys
+  paddingPropertyName: NumberKeys,
 ) {
   return ({ currentTarget }: ChangeEvent<HTMLInputElement>) => {
     const value = toInteger(currentTarget.value);
@@ -114,7 +114,7 @@ function createHandlerLengthPadding(
   setState: StateSetter,
   lengthPropertyName: NumberKeys,
   countPropertyName: NumberKeys,
-  paddingPropertyName: NumberKeys
+  paddingPropertyName: NumberKeys,
 ) {
   return ({ currentTarget }: ChangeEvent<HTMLInputElement>) => {
     const value = toInteger(currentTarget.value);
@@ -138,26 +138,26 @@ function createHandlerLengthPadding(
 export function useManagedInputs(setState: StateSetter) {
   const handleFrameWidthChange = createHandlerFrameLength(
     setState,
-    "frameWidth"
+    "frameWidth",
   );
 
   const handleFrameHeightChange = createHandlerFrameLength(
     setState,
-    "frameHeight"
+    "frameHeight",
   );
 
   const handleFrameWidthBlur = createHandlerDerivePropertiesFromLength(
     setState,
     "frameWidth",
     "horizontalElementsCount",
-    "paddingX"
+    "paddingX",
   );
 
   const handleFrameHeightBlur = createHandlerDerivePropertiesFromLength(
     setState,
     "frameHeight",
     "verticalElementsCount",
-    "paddingY"
+    "paddingY",
   );
 
   const handleHorizontalElementsCountChange =
@@ -165,28 +165,28 @@ export function useManagedInputs(setState: StateSetter) {
       setState,
       "frameWidth",
       "horizontalElementsCount",
-      "paddingX"
+      "paddingX",
     );
 
   const handleVerticalElementsCountChange = createHandlerDeriveCountFromLength(
     setState,
     "frameHeight",
     "verticalElementsCount",
-    "paddingY"
+    "paddingY",
   );
 
   const handlePaddingXChange = createHandlerLengthPadding(
     setState,
     "frameWidth",
     "horizontalElementsCount",
-    "paddingX"
+    "paddingX",
   );
 
   const handlePaddingYChange = createHandlerLengthPadding(
     setState,
     "frameHeight",
     "verticalElementsCount",
-    "paddingY"
+    "paddingY",
   );
 
   return {

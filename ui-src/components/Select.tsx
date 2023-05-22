@@ -1,9 +1,8 @@
 import type { ExtractKeysByValueType } from "@common/utils/index";
-import React, {
+import {
   DetailedHTMLProps,
   InputHTMLAttributes,
   PropsWithChildren,
-  useMemo,
 } from "react";
 
 export default function Select<T, U extends string | number>({
@@ -43,7 +42,9 @@ export default function Select<T, U extends string | number>({
         value={value}
         {...props}
       >
-        {prompt?.length && <option value="" className="normal-case">{`--${prompt}--`}</option>}
+        {prompt?.length && (
+          <option value="" className="normal-case">{`--${prompt}--`}</option>
+        )}
         {options.map((optionName, index) => (
           <option key={index} className="capitalize" value={optionName}>
             {optionName}

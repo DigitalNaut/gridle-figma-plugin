@@ -4,7 +4,6 @@ import {
   PropsWithChildren,
   useMemo,
 } from "react";
-import React from "react";
 
 const buttonStyles = {
   actionStyle:
@@ -29,7 +28,7 @@ export default function Button({
   const style = useMemo(() => buttonStyles[appearance], [appearance]);
 
   return (
-    <button role="button" className={`py-1 ${style} ${className}`} {...props}>
+    <button className={`py-1 ${style} ${className}`} {...props}>
       {children}
     </button>
   );

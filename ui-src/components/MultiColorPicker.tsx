@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function MultiColorPicker({
   colors,
   handleAddColor,
@@ -32,7 +30,6 @@ export default function MultiColorPicker({
                 <button
                   className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-zinc-600 group-hover:shadow-md"
                   title="Remove color"
-                  role="button"
                   onClick={() => handleRemoveColor(colorIndex)}
                 >
                   <i className="fa-solid fa-xmark"></i>
@@ -45,7 +42,6 @@ export default function MultiColorPicker({
           <button
             className="flex h-9 w-1/5 items-center justify-center rounded-md border border-zinc-200 text-xl font-bold text-zinc-200"
             title="Add color"
-            role="button"
             onClick={handleAddColor}
           >
             <i className="fa-solid fa-plus text-sm"></i>

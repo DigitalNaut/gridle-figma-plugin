@@ -8,39 +8,39 @@ export function usePluginMessaging(messageHandler: typeof onmessage) {
   const startGeneration = (patternData: PatternDataMessage) =>
     parent.postMessage(
       { pluginMessage: { type: messageTypes.generationStart, patternData } },
-      "*"
+      "*",
     );
 
   const stopGeneration = () => {
     parent.postMessage(
       { pluginMessage: { type: messageTypes.generationStop } },
-      "*"
+      "*",
     );
   };
 
   const abortGeneration = () => {
     parent.postMessage(
       { pluginMessage: { type: messageTypes.generationAbort } },
-      "*"
+      "*",
     );
   };
 
   const savePreset = (preset: PatternDataMessage) =>
     parent.postMessage(
       { pluginMessage: { type: messageTypes.savePreset, preset } },
-      "*"
+      "*",
     );
 
   const clearPreset = () =>
     parent.postMessage(
       { pluginMessage: { type: messageTypes.clearPreset } },
-      "*"
+      "*",
     );
 
   const loadPreset = (presetName: string) =>
     parent.postMessage(
       { pluginMessage: { type: messageTypes.loadPreset, presetName } },
-      "*"
+      "*",
     );
 
   const onClose = () =>
@@ -50,7 +50,7 @@ export function usePluginMessaging(messageHandler: typeof onmessage) {
     setLoaded(true);
     parent.postMessage(
       { pluginMessage: { type: messageTypes.UIStarted } },
-      "*"
+      "*",
     );
   };
 
@@ -60,7 +60,7 @@ export function usePluginMessaging(messageHandler: typeof onmessage) {
     if (!loaded) onLoad();
 
     return () => void (onmessage = null);
-  }, []);
+  }, [loaded, messageHandler]);
 
   return {
     stopGeneration,

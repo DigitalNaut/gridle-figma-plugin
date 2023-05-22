@@ -3,13 +3,13 @@ import { Dispatch, SetStateAction } from "react";
 
 export function useColorHandlers(
   setState: Dispatch<SetStateAction<PatternDataMessage>>,
-  state: PatternDataMessage
+  state: PatternDataMessage,
 ) {
   const handleColorChange = (newColor: string, colorIndex: number) =>
     setState((prev) => ({
       ...prev,
       colors: state.colors.map((color, i) =>
-        i === colorIndex ? newColor : color
+        i === colorIndex ? newColor : color,
       ),
     }));
 
