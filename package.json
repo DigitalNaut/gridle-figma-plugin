@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "npm run tsc && npm run build",
-    "prettier": "prettier --check --config ./prettier.config.js .",
+    "prettier": "prettier --check --config ./prettier.config.cjs .",
     "prettier:fix": "prettier --write .",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
