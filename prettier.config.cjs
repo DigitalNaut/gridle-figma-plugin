@@ -1,6 +1,6 @@
 // ts-check
 module.exports = {
-  plugins: [require("prettier-plugin-tailwindcss")],
+  plugins: [import("prettier-plugin-tailwindcss")],
   trailingComma: "all",
   singleQuote: false,
 };

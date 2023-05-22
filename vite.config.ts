@@ -6,13 +6,13 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  root: "./ui-src",
+  root: "./src/ui",
   plugins: [react(), viteSingleFile(), tsconfigPaths()],
   resolve: {
     alias: {
-      "@components": resolve(__dirname, "ui-src/components"),
-      "@hooks": resolve(__dirname, "ui-src/hooks"),
-      "@common": resolve(__dirname, "common"),
+      "@components": resolve(__dirname, "src/ui/components"),
+      "@hooks": resolve(__dirname, "src/ui/hooks"),
+      "@common": resolve(__dirname, "src/common"),
     },
   },
   build: {
@@ -21,7 +21,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 100000000,
     cssCodeSplit: false,
     reportCompressedSize: false,
-    outDir: "../dist",
+    outDir: "../../dist",
     rollupOptions: {
       output: {
         inlineDynamicImports: true,

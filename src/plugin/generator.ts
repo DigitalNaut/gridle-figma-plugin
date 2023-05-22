@@ -1,4 +1,4 @@
-import type { PatternDataMessage, StopCode } from "@common/main";
+import type { PatternDataMessage } from "@common/main";
 import {
   hexToRGB,
   createChronometer,
@@ -6,7 +6,7 @@ import {
   sleep,
 } from "@common/index";
 
-import type { ShapeNode } from "./types";
+import type { GeneratorStopCode, ShapeNode } from "./types";
 import { AbortController } from "./abortController";
 import { SLEEP_INTERVAL } from "./constants";
 import { postGenerationProgress } from "./messages";
@@ -157,8 +157,6 @@ function createShapeCloner(
     return newElement;
   };
 }
-
-type GeneratorStopCode = StopCode | "completed";
 
 async function generatePattern(
   msg: PatternDataMessage,

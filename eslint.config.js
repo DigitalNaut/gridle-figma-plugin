@@ -8,7 +8,7 @@ import reactPlugin from "eslint-plugin-react";
 
 export default [
   {
-    files: ["{common,plugin-src,ui-src}/**/*{.ts,.tsx}"],
+    files: ["./src/**/*{.ts,.tsx}"],
     plugins: {
       importPlugin,
       tsLintPlugin,
@@ -18,9 +18,9 @@ export default [
       parserOptions: {
         ecmaVersion: "2019",
         project: [
-          "./common/tsconfig.json",
-          "./plugin-src/tsconfig.json",
-          "./ui-src/tsconfig.json",
+          ".src/common/tsconfig.json",
+          ".src/plugin/tsconfig.json",
+          ".src/ui/tsconfig.json",
         ],
       },
     },
@@ -41,7 +41,7 @@ export default [
     },
   },
   {
-    files: ["ui-src/**/*{.ts,.tsx}"],
+    files: ["src/ui/**/*{.ts,.tsx}"],
     plugins: {
       reactPlugin,
       jsxA11yPlugin,

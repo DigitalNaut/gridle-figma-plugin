@@ -1,8 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./plugin-src/**/*.{js,ts,jsx,tsx}",
-    "./ui-src/**/*.{js,ts,jsx,tsx,html}",
+    "./src/plugin/**/*.{js,ts,jsx,tsx}",
+    "./src/ui/**/*.{js,ts,jsx,tsx,html}",
   ],
   blocklist: ["eslint.config.js", "tailwind.config.js", "postcss.config.js"],
   theme: {
