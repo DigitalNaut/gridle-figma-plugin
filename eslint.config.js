@@ -8,7 +8,7 @@ import reactPlugin from "eslint-plugin-react";
 
 export default [
   {
-    files: ["./src/**/*{.ts,.tsx}"],
+    files: ["src/**/*{.ts,.tsx}"],
     plugins: {
       importPlugin,
       tsLintPlugin,
@@ -18,13 +18,14 @@ export default [
       parserOptions: {
         ecmaVersion: "2019",
         project: [
-          ".src/common/tsconfig.json",
-          ".src/plugin/tsconfig.json",
-          ".src/ui/tsconfig.json",
+          "./src/common/tsconfig.json",
+          "./src/plugin/tsconfig.json",
+          "./src/ui/tsconfig.json",
         ],
       },
     },
     rules: {
+      "object-shorthand": "error",
       "tsLintPlugin/consistent-type-exports": "error",
       "tsLintPlugin/consistent-type-imports": "error",
       "tsLintPlugin/no-non-null-assertion": "off",

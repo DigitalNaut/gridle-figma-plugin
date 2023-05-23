@@ -1,6 +1,6 @@
 import type { PatternDataMessage } from "@common/index";
 
-import { ShapeNode } from "~/types";
+import type { ShapeNode } from "~/types";
 
 export function createNoiseFilter(
   noiseMode: PatternDataMessage["noiseMode"],

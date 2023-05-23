@@ -7,7 +7,8 @@ import type {
 
 import type { PatternDataMessage, KeysOfType } from "@common/index";
 import { clamp, toInteger } from "@common/utils/index";
-import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "../settings";
+
+import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "~/settings";
 
 type StateSetter = Dispatch<SetStateAction<PatternDataMessage>>;
 

@@ -1,4 +1,4 @@
-import { Icon } from "~/types";
+import type { Icon } from "~/types";
 
 export default function AxisIcon({ className }: Icon) {
   return (
