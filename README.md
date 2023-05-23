@@ -4,6 +4,13 @@
 
 This plugin allows you to create a grid pattern of squares and circles in Figma. It's great for pixelated art and background details.
 
+## Features
+
+- Generate a grid of shapes supported by Figma with a single click. This includes squares, circles, polygons and stars.
+- Fine control of the size of the grid and the number of the elements per axis.
+- Vary the properties of each element including its color based on a color palette, its opacity, and corner radius.
+- Create gradients by modulating the opacity of the elements based on their position.
+
 ## Installation
 
 For now the only way to install this plugin is to clone this repository and run `yarn build` in the root directory. Then you can open Figma and go to `Plugins > Development > New Plugin...` and choose the `manifest.json` file in the `build` directory.
@@ -16,19 +23,23 @@ I'm working on getting this plugin into the Figma Community so it can be install
 
 ✅ Multiple range slider for element opacity
 
-⏹ Saving, loading and default presets
+⏹ Saving and loading current settings
 
-🟨 Seeds for randomness generation
+🟨 Creating personalized presets
 
-⏹ More shape options (triangles, hexagons, custom shapes, etc.)
+⬜ Seeds for randomness generation
 
-🟨 UI options based on icon buttons rather than dropdowns
+✅ More shape options (triangles, hexagons, custom shapes, etc.)
 
-🟨 Option to use a color pattern instead of random color selection
+⬜ UI options based on icon buttons rather than dropdowns
 
-🟨 Lock certain proportions (like when image editors lock aspect ratios) for horizontal and vertical element counts
+⬜ Option to use a color pattern instead of random color selection
 
-Legend: ✅ Done, ⏹ In progress, 🟨 Planned
+⬜ Lock certain proportions (like when image editors lock aspect ratios) for horizontal and vertical element counts
+
+⬜ Use a selected shape as the base element for the grid
+
+Legend: ✅ Done, ⏹ In progress, 🟨 Planned, ⬜ Not started
 
 ## For developers
 
@@ -54,6 +65,21 @@ This project is a fork of the [Official Figma ESBuild-React Plugin Template](htt
 
 This plugin is not affiliated with Figma in any way. It's just a personal project.
 It's also my first Figma plugin, so please be gentle.
+
+## Known issues
+
+### Bugs
+
+- You cannot hit the Enter key to confirm the dialog. You have to click the 'Generate' button instead.
+- Quickly hitting the 'Generate' button twice will start and stop the generation.
+- Deleting the contents of the width or height inputs for the frame, clicking outside and setting it again will cause small UI issues that self-resolve.
+- Deleting the contents of the width or height inputs for the frame and clicking outside will set the value to 0 instead of the previous value or the minimum allowed.
+- The plugin will generate an error if you try to generate a grid with 0 elements (0 width & 0 height).
+
+### Limitations
+
+- There's no way to resume the generation after stopping it yet. There's also no way to modify a grid after generating it.
+- You can't use a seed to generate the same grid twice. It still relies on Math.random every time.
 
 ## License
 
