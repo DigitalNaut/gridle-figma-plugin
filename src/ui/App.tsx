@@ -63,7 +63,10 @@ const messageTitles = {
 function Main() {
   const [error, setError] = useState<string>();
   const [state, setState] = useState<AppState>(AppState.IDLE);
-  const [progress, setProgress] = useState({ percentage: 0, timeElapsed: 0 });
+  const [progress, setProgress] = useState({
+    percentProgress: 0,
+    timeElapsed: 0,
+  });
   const [availablePresets] = useState<PresetRecord>(globalPresets);
   const [patternMessage, setPatternMessage] =
     useState<PatternDataMessage>(defaultInputValues);
@@ -87,6 +90,8 @@ function Main() {
 
   const handleRangeSliderChange = (opacityRange: [number, number]) =>
     setPatternMessage((prev) => ({ ...prev, opacityRange }));
+  const handleSizeRangeSliderChange = (sizeRange: [number, number]) =>
+    setPatternMessage((prev) => ({ ...prev, sizeRange }));
   const { handleSelectChange, handleInputChange } =
     useBasicInputs(setPatternMessage);
   const { handleColorChange, handleAddColor, handleRemoveColor } =
@@ -98,8 +103,8 @@ function Main() {
     handleFrameHeightBlur,
     handleHorizontalElementsCountChange,
     handleVerticalElementsCountChange,
-    handlePaddingXChange,
-    handlePaddingYChange,
+    handleXPaddingChange,
+    handleYPaddingChange,
   } = useManagedInputs(setPatternMessage);
 
   const handleMessages: typeof onmessage = async ({
@@ -159,8 +164,12 @@ function Main() {
     return (
       <>
         <Subsection title="Generating...">
-          <div>{`Progress: ${toPercentage(progress.percentage)}`}</div>
-          <progress className="w-full" value={progress.percentage} max={1} />
+          <div>{`Progress: ${toPercentage(progress.percentProgress)}`}</div>
+          <progress
+            className="w-full"
+            value={progress.percentProgress}
+            max={1}
+          />
           <div>{`Time elapsed: ${formatSeconds(progress.timeElapsed)}s`}</div>
         </Subsection>
         <Footer>
@@ -216,12 +225,8 @@ function Main() {
     );
   }
 
-  const calculatedElementWidth = toFloat(
-    elementWidth - patternMessage.paddingX,
-  );
-  const calculatedElementHeight = toFloat(
-    elementHeight - patternMessage.paddingY,
-  );
+  const derivedElementWidth = toFloat(elementWidth - patternMessage.xPadding);
+  const derivedElementHeight = toFloat(elementHeight - patternMessage.yPadding);
 
   return (
     <>
@@ -322,43 +327,39 @@ function Main() {
           <Input<PatternDataMessage, number>
             label={<PaddingIcon className="rotate-90 transform" />}
             labelStyle="flex-1"
-            id="paddingXInput"
-            name="paddingX"
+            id="xPaddingInput"
+            name="xPadding"
             type="number"
             min={0}
             max={toFloat(elementWidth - 1)}
             maxLength={8}
-            value={toFloat(patternMessage.paddingX)}
-            onChange={handlePaddingXChange}
+            value={toFloat(patternMessage.xPadding)}
+            onChange={handleXPaddingChange}
             title="Horizontal padding between elements."
           />
           <Input<PatternDataMessage, number>
             label={<PaddingIcon />}
             labelStyle="flex-1"
-            id="paddingYInput"
-            name="paddingY"
+            id="yPaddingInput"
+            name="yPadding"
             type="number"
             min={0}
             max={toFloat(elementHeight - 1)}
             maxLength={8}
-            value={toFloat(patternMessage.paddingY)}
-            onChange={handlePaddingYChange}
+            value={toFloat(patternMessage.yPadding)}
+            onChange={handleYPaddingChange}
             title="Vertical padding between elements."
           />
         </div>
         <div className="flex w-full justify-between pt-2">
           <span>Element size:</span>
           <span className="flex items-center gap-1">
-            <span
-              className={`${calculatedElementWidth < 0 ? "text-orange-500" : ""}`}
-            >
-              {calculatedElementWidth}
+            <span className={derivedElementWidth < 0 ? "text-orange-500" : ""}>
+              {derivedElementWidth}
             </span>
             x
-            <span
-              className={`${calculatedElementHeight < 0 ? "text-orange-500" : ""}`}
-            >
-              {calculatedElementHeight}
+            <span className={derivedElementHeight < 0 ? "text-orange-500" : ""}>
+              {derivedElementHeight}
             </span>
             px
           </span>
@@ -373,6 +374,12 @@ function Main() {
             applyPreset(colorPresets[currentTarget.value])
           }
           title="Predefined colors."
+        />
+        <MultiColorPicker
+          colors={patternMessage.colors}
+          handleAddColor={handleAddColor}
+          handleColorChange={handleColorChange}
+          handleRemoveColor={handleRemoveColor}
         />
         <Select<PatternDataMessage, string>
           name="shape"
@@ -394,11 +401,16 @@ function Main() {
           units="%"
           onChange={handleRangeSliderChange}
         />
-        <MultiColorPicker
-          colors={patternMessage.colors}
-          handleAddColor={handleAddColor}
-          handleColorChange={handleColorChange}
-          handleRemoveColor={handleRemoveColor}
+        <MultiRangeSlider
+          label="Size range"
+          id="sizeRangeInput"
+          title="Range of size values to use for the elements."
+          minVal={patternMessage.sizeRange[0]}
+          maxVal={patternMessage.sizeRange[1]}
+          min={patternMessage.sizeRangeLimits[0]}
+          max={patternMessage.sizeRangeLimits[1]}
+          units="%"
+          onChange={handleSizeRangeSliderChange}
         />
       </Subsection>
       <CollapsibleSubsection title="Options">

@@ -1,5 +1,7 @@
 import type { PatternDataMessage } from "@common/index";
 
+import { ShapeNode } from "~/types";
+
 export function createNoiseFilter(
   noiseMode: PatternDataMessage["noiseMode"],
   noiseAmount: number,
@@ -58,11 +60,45 @@ export function createOpacityValueGenerator(min: number, max: number) {
   return () => delta * Math.random() + min;
 }
 
+export function createSizeVariationFilter({
+  minSize,
+  maxSize,
+  elementWidth,
+  elementHeight,
+  xPadding,
+  yPadding,
+}: {
+  minSize: number;
+  maxSize: number;
+  elementWidth: number;
+  elementHeight: number;
+  xPadding: number;
+  yPadding: number;
+}) {
+  const effectiveWidth = elementWidth - xPadding;
+  const effectiveHeight = elementHeight - yPadding;
+  const deltaSize = maxSize - minSize;
+
+  const fixedSize = () => minSize;
+  const randomSize = () => Math.random() * deltaSize + minSize;
+  const getSizeFn = deltaSize > 1 ? randomSize : fixedSize;
+
+  return function applyResizeEffect(node: ShapeNode) {
+    const size = getSizeFn();
+    node.resize(effectiveWidth * size, effectiveHeight * size);
+    node.x -= (effectiveWidth * size - elementWidth) * 0.5;
+    node.y -= (effectiveHeight * size - elementHeight) * 0.5;
+  };
+}
+
 export function colorGenerator(colors: RGB[]) {
   if (colors.length === 1) return () => colors[0];
   return () => colors[Math.floor(Math.random() * colors.length)];
 }
 
-export function transformRange01(range: [number, number], maxValue: number) {
-  return [range[0] / maxValue, range[1] / maxValue];
+export function transformRange01(
+  [min, max]: [number, number],
+  maxValue: number,
+) {
+  return [min / maxValue, max / maxValue];
 }

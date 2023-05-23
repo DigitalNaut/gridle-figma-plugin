@@ -18,6 +18,7 @@ import {
   createFadeModifier,
   createOpacityValueGenerator,
   createOpacityThresholdFilter,
+  createSizeVariationFilter,
 } from "./filters";
 
 function createOutputFrame(width: number, height: number) {
@@ -70,21 +71,21 @@ function createShapeCloner(
   dimensions: {
     width: number;
     height: number;
-    paddingX: number;
-    paddingY: number;
+    xPadding: number;
+    yPadding: number;
   },
 ) {
-  const { width, height, paddingX, paddingY } = dimensions;
-  const halfPaddingX = paddingX * 0.5;
-  const halfPaddingY = paddingY * 0.5;
+  const { width, height, xPadding, yPadding } = dimensions;
+  const halfXPadding = xPadding * 0.5;
+  const halfYPadding = yPadding * 0.5;
   let newElement: ShapeNode;
   const constraints: Constraints = { horizontal: "SCALE", vertical: "SCALE" };
 
   return (x: number, y: number) => {
     newElement = shape.clone();
 
-    newElement.x = x * width + halfPaddingX;
-    newElement.y = y * height + halfPaddingY;
+    newElement.x = x * width + halfXPadding;
+    newElement.y = y * height + halfYPadding;
 
     newElement.name = `Element ${x + 1}`;
     newElement.constraints = constraints;
@@ -102,13 +103,14 @@ async function generatePattern(
     frameHeight,
     columns,
     rows,
-    paddingX,
-    paddingY,
+    xPadding,
+    yPadding,
     colors,
     shape,
     opacityRange,
     opacityRangeLimits,
     opacityThresholdMode,
+    sizeRange,
     noiseMode,
     noiseAmount,
     verticalFadeMode,
@@ -122,30 +124,39 @@ async function generatePattern(
 
   const sampleElement = createTemplateElement(
     shape,
-    elementWidth - paddingX,
-    elementHeight - paddingY,
+    elementWidth - xPadding,
+    elementHeight - yPadding,
   );
   const getNewColor = colorGenerator(colors.map(hexToRGB));
   const getShapeClone = createShapeCloner(sampleElement, {
     width: elementWidth,
     height: elementHeight,
-    paddingX,
-    paddingY,
+    xPadding,
+    yPadding,
   });
 
   // Properties and filters
-  const [opacityMin, opacityMax] = transformRange01(
+  const [minOpacity, maxOpacity] = transformRange01(
     opacityRange,
     opacityRangeLimits[1],
   );
+  const [minSize, maxSize] = transformRange01(sizeRange, 100);
   const noiseFilter = createNoiseFilter(noiseMode, noiseAmount);
   const fadeModifier = createFadeModifier(verticalFadeMode);
-  const getOpacityValue = createOpacityValueGenerator(opacityMin, opacityMax);
+  const getOpacityValue = createOpacityValueGenerator(minOpacity, maxOpacity);
   const opacityThresholdFilter = createOpacityThresholdFilter(
     opacityThresholdMode,
-    opacityMin,
-    opacityMax,
+    minOpacity,
+    maxOpacity,
   );
+  const varySizeFilter = createSizeVariationFilter({
+    minSize,
+    maxSize,
+    elementWidth,
+    elementHeight,
+    xPadding,
+    yPadding,
+  });
 
   // Utilities
   let percentProgress = 0;
@@ -168,8 +179,8 @@ async function generatePattern(
     if (signal.aborted) break;
     if (shouldUpdate()) await postUpdate(x / totalElements);
 
-    const newElement = getShapeClone(x, 0);
-    sampleRow.push(newElement);
+    const elementClone = getShapeClone(x, 0);
+    sampleRow.push(elementClone);
   }
 
   sampleElement.remove();
@@ -189,7 +200,7 @@ async function generatePattern(
         break;
       }
 
-      rowNodes.y = y * elementHeight + paddingY * 0.5;
+      rowNodes.y = y * elementHeight + yPadding * 0.5;
       rowNodes.name = `Layer ${y + 1}`;
       outputFrame.appendChild(rowNodes);
 
@@ -220,8 +231,12 @@ async function generatePattern(
           continue;
         }
 
+        varySizeFilter?.(node);
+
         if (node.type === "RECTANGLE")
-          node.fills = [{ type: "SOLID", color: getNewColor(), opacity }];
+          node.cornerRadius = shape === "circle" ? node.width * 0.5 : 0;
+
+        node.fills = [{ type: "SOLID", color: getNewColor(), opacity }];
       }
 
       // Update progress

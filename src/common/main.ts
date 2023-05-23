@@ -1,7 +1,5 @@
 export const supportedShapes = ["square", "circle"] as const;
-
 export const opacityThresholdModes = ["remove", "clamp"] as const;
-
 export const verticalFadeModes = ["ascending", "descending", "none"] as const;
 
 export const noiseModes = [
@@ -19,12 +17,14 @@ export type PatternDataMessage = {
   frameHeight: number;
   columns: number;
   rows: number;
-  paddingX: number;
-  paddingY: number;
+  xPadding: number;
+  yPadding: number;
   colors: string[];
   shape: (typeof supportedShapes)[number];
   opacityRange: [number, number];
   opacityRangeLimits: readonly [number, number];
+  sizeRange: [number, number];
+  sizeRangeLimits: readonly [number, number];
   opacityThresholdMode: (typeof opacityThresholdModes)[number];
   verticalFadeMode: (typeof verticalFadeModes)[number];
   noiseMode: (typeof noiseModes)[number];

@@ -149,14 +149,14 @@ export function useManagedInputs(setState: StateSetter) {
     setState,
     "frameWidth",
     "columns",
-    "paddingX",
+    "xPadding",
   );
 
   const handleFrameHeightBlur = createHandlerDerivePropertiesFromLength(
     setState,
     "frameHeight",
     "rows",
-    "paddingY",
+    "yPadding",
   );
 
   const handleHorizontalElementsCountChange =
@@ -164,28 +164,28 @@ export function useManagedInputs(setState: StateSetter) {
       setState,
       "frameWidth",
       "columns",
-      "paddingX",
+      "xPadding",
     );
 
   const handleVerticalElementsCountChange = createHandlerDeriveCountFromLength(
     setState,
     "frameHeight",
     "rows",
-    "paddingY",
+    "yPadding",
   );
 
-  const handlePaddingXChange = createHandlerLengthPadding(
+  const handleXPaddingChange = createHandlerLengthPadding(
     setState,
     "frameWidth",
     "columns",
-    "paddingX",
+    "xPadding",
   );
 
-  const handlePaddingYChange = createHandlerLengthPadding(
+  const handleYPaddingChange = createHandlerLengthPadding(
     setState,
     "frameHeight",
     "rows",
-    "paddingY",
+    "yPadding",
   );
 
   return {
@@ -195,7 +195,7 @@ export function useManagedInputs(setState: StateSetter) {
     handleFrameHeightBlur,
     handleHorizontalElementsCountChange,
     handleVerticalElementsCountChange,
-    handlePaddingXChange,
-    handlePaddingYChange,
+    handleXPaddingChange,
+    handleYPaddingChange,
   };
 }

@@ -3,16 +3,21 @@ import type { PatternDataMessage } from "@common/index";
 type ColorPreset = Pick<PatternDataMessage, "colors">;
 type AppearancePreset = Pick<
   Preset,
-  "shape" | "opacityRange" | "noiseMode" | "noiseAmount" | "verticalFadeMode"
+  | "shape"
+  | "opacityRange"
+  | "sizeRange"
+  | "noiseMode"
+  | "noiseAmount"
+  | "verticalFadeMode"
 >;
 
 type FramePreset = Pick<
   Preset,
-  "frameWidth" | "frameHeight" | "columns" | "rows" | "paddingX" | "paddingY"
+  "frameWidth" | "frameHeight" | "columns" | "rows" | "xPadding" | "yPadding"
 >;
 
 type GlobalPreset = Partial<
-  Omit<PatternDataMessage, "opacityRangeLimits" | "type">
+  Omit<PatternDataMessage, "opacityRangeLimits" | "sizeRangeLimits" | "type">
 >;
 
 export type Preset = Partial<PatternDataMessage>;
@@ -56,8 +61,8 @@ const largeFramePreset: FramePreset = {
   frameHeight: 1080,
   columns: 192,
   rows: 108,
-  paddingX: 2,
-  paddingY: 2,
+  xPadding: 2,
+  yPadding: 2,
 };
 
 const staticNoiseGlobalPreset: GlobalPreset = {
@@ -65,11 +70,12 @@ const staticNoiseGlobalPreset: GlobalPreset = {
   frameHeight: 300,
   columns: 50,
   rows: 50,
-  paddingX: 0,
-  paddingY: 0,
+  xPadding: 0,
+  yPadding: 0,
   colors: ["#000000", "#ffffff"],
   opacityRange: [0, 100],
   opacityThresholdMode: "clamp",
+  sizeRange: [100, 100],
   noiseMode: "none",
   verticalFadeMode: "none",
 };
@@ -77,6 +83,7 @@ const staticNoiseGlobalPreset: GlobalPreset = {
 const bubblegumAppearancePreset: AppearancePreset = {
   shape: "circle",
   opacityRange: [100, 100],
+  sizeRange: [25, 100],
   noiseMode: "uniform",
   noiseAmount: 0.5,
   verticalFadeMode: "none",
@@ -122,11 +129,13 @@ export const defaultInputValues: PatternDataMessage = {
   frameHeight: 300,
   columns: 30,
   rows: 30,
-  paddingX: 2,
-  paddingY: 2,
+  xPadding: 2,
+  yPadding: 2,
   opacityRange: [0, 100],
   opacityRangeLimits: OPACITY_RANGE_LIMITS,
   opacityThresholdMode: "remove",
+  sizeRange: [100, 100],
+  sizeRangeLimits: [1, 200],
   colors: defaultColors,
   shape: "square",
   verticalFadeMode: "ascending",
