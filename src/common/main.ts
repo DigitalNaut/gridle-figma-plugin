@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const supportedShapes = ["square", "circle"] as const;
+export const supportedShapes = ["square", "circle", "star", "polygon"] as const;
 export const opacityThresholdModes = ["remove", "clamp"] as const;
 export const verticalFadeModes = ["ascending", "descending", "none"] as const;
 
@@ -23,6 +23,9 @@ export const patternDataMessageSchema = z.object({
   yPadding: z.number(),
   colors: z.array(z.string()),
   shape: z.enum(supportedShapes),
+  cornerRadius: z.number(),
+  rotationRange: z.tuple([z.number(), z.number()]),
+  rotationRangeLimits: z.tuple([z.number(), z.number()]),
   opacityRange: z.tuple([z.number(), z.number()]),
   opacityRangeLimits: z.tuple([z.number(), z.number()]),
   sizeRange: z.tuple([z.number(), z.number()]),

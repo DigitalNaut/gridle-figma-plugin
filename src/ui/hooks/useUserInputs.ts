@@ -21,7 +21,19 @@ export function useBasicInputs(
 
   const handleInputChange: ChangeEventHandler<HTMLInputElement> = ({
     currentTarget: { name, value },
-  }) => setState((prev) => ({ ...prev, [name]: value }));
+  }) =>
+    setState((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+  const handleNumberInputChange: ChangeEventHandler<HTMLInputElement> = ({
+    currentTarget: { name, value },
+  }) =>
+    setState((prev) => ({
+      ...prev,
+      [name]: +value,
+    }));
 
   const handleCheckboxChange: ChangeEventHandler<HTMLInputElement> = ({
     currentTarget: { name, checked },
@@ -30,6 +42,7 @@ export function useBasicInputs(
   return {
     handleSelectChange,
     handleInputChange,
+    handleNumberInputChange,
     handleCheckboxChange,
   };
 }

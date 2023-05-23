@@ -1,6 +1,7 @@
 import type { PatternDataMessage } from "@common/index";
 
 import type { ShapeNode } from "~/types";
+import { transformRotateAxis2D } from "~/utils/math";
 
 export function createNoiseFilter(
   noiseMode: PatternDataMessage["noiseMode"],
@@ -38,18 +39,22 @@ export function createFadeModifier(
   }
 }
 
-export function createOpacityThresholdFilter(
-  opacityThresholdMode: PatternDataMessage["opacityThresholdMode"],
-  opacityMin: number,
-  opacityMax: number,
-) {
+export function createOpacityThresholdFilter({
+  opacityThresholdMode,
+  minOpacity,
+  maxOpacity,
+}: {
+  opacityThresholdMode: PatternDataMessage["opacityThresholdMode"];
+  minOpacity: number;
+  maxOpacity: number;
+}) {
   switch (opacityThresholdMode) {
     case "clamp":
       return (opacity: number) =>
-        Math.min(Math.max(opacity, opacityMin), opacityMax);
+        Math.min(Math.max(opacity, minOpacity), maxOpacity);
     case "remove":
       return (opacity: number) =>
-        opacity < opacityMin || opacity > opacityMax ? null : opacity;
+        opacity < minOpacity || opacity > maxOpacity ? null : opacity;
     default:
       return (opacity: number) => opacity;
   }
@@ -89,6 +94,26 @@ export function createSizeVariationFilter({
     node.x -= (effectiveWidth * size - elementWidth) * 0.5;
     node.y -= (effectiveHeight * size - elementHeight) * 0.5;
   };
+}
+
+export function createRotationVariationFilter({
+  minRotation,
+  maxRotation,
+}: {
+  minRotation: number;
+  maxRotation: number;
+}) {
+  const deltaRotation = maxRotation - minRotation;
+  const randomAngle = () => Math.random() * deltaRotation + minRotation;
+
+  function rotateOnCenterAxis(node: ShapeNode) {
+    const { x, y, width, height } = node;
+    const angle = randomAngle();
+
+    node.relativeTransform = transformRotateAxis2D(x, y, width, height, angle);
+  }
+
+  return deltaRotation > 1 ? rotateOnCenterAxis : null;
 }
 
 export function colorGenerator(colors: RGB[]) {

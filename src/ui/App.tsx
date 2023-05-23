@@ -88,11 +88,13 @@ function Main() {
 
   const applyDefaultPreset = () => setPatternMessage(defaultInputValues);
 
-  const handleRangeSliderChange = (opacityRange: [number, number]) =>
+  const handleOpacityRangeSliderChange = (opacityRange: [number, number]) =>
     setPatternMessage((prev) => ({ ...prev, opacityRange }));
   const handleSizeRangeSliderChange = (sizeRange: [number, number]) =>
     setPatternMessage((prev) => ({ ...prev, sizeRange }));
-  const { handleSelectChange, handleInputChange } =
+  const handleRotationRangeSliderChange = (rotationRange: [number, number]) =>
+    setPatternMessage((prev) => ({ ...prev, rotationRange }));
+  const { handleSelectChange, handleNumberInputChange } =
     useBasicInputs(setPatternMessage);
   const { handleColorChange, handleAddColor, handleRemoveColor } =
     useColorHandlers(setPatternMessage, patternMessage);
@@ -390,6 +392,28 @@ function Main() {
           onChange={handleSelectChange}
           title="Shape of the elements."
         />
+        <Input<PatternDataMessage, number>
+          label="Corner radius"
+          id="cornerRadiusInput"
+          name="cornerRadius"
+          type="number"
+          min={0}
+          max={derivedElementWidth * 0.5}
+          maxLength={3}
+          value={toFloat(patternMessage.cornerRadius)}
+          onChange={handleNumberInputChange}
+          title="Corner radius of the elements."
+        />
+        <MultiRangeSlider
+          label="Rotation range"
+          id="rotationRangeInput"
+          title="Range of rotation values to use for the elements."
+          minVal={patternMessage.rotationRange[0]}
+          maxVal={patternMessage.rotationRange[1]}
+          min={patternMessage.rotationRangeLimits[0]}
+          max={patternMessage.rotationRangeLimits[1]}
+          onChange={handleRotationRangeSliderChange}
+        />
         <MultiRangeSlider
           label="Opacity range"
           id="opacityRangeInput"
@@ -399,7 +423,7 @@ function Main() {
           min={patternMessage.opacityRangeLimits[0]}
           max={patternMessage.opacityRangeLimits[1]}
           units="%"
-          onChange={handleRangeSliderChange}
+          onChange={handleOpacityRangeSliderChange}
         />
         <MultiRangeSlider
           label="Size range"
@@ -441,8 +465,8 @@ function Main() {
             min={0}
             max={1}
             step={0.01}
-            value={patternMessage.noiseAmount}
-            onChange={handleInputChange}
+            value={toFloat(patternMessage.noiseAmount)}
+            onChange={handleNumberInputChange}
             title="Number of elements to create vertically."
           />
         )}

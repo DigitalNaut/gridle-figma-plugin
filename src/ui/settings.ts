@@ -17,7 +17,10 @@ type FramePreset = Pick<
 >;
 
 type GlobalPreset = Partial<
-  Omit<PatternDataMessage, "opacityRangeLimits" | "sizeRangeLimits" | "type">
+  Omit<
+    PatternDataMessage,
+    "opacityRangeLimits" | "sizeRangeLimits" | "rotationRangeLimits" | "type"
+  >
 >;
 
 export type Preset = Partial<PatternDataMessage>;

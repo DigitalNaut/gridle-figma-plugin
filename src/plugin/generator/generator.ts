@@ -19,6 +19,7 @@ import {
   createOpacityValueGenerator,
   createOpacityThresholdFilter,
   createSizeVariationFilter,
+  createRotationVariationFilter,
 } from "./filters";
 
 function createOutputFrame(width: number, height: number) {
@@ -39,14 +40,38 @@ function createOutputFrame(width: number, height: number) {
   return outputFrame;
 }
 
-function createTemplateElement(
-  shape: PatternDataMessage["shape"],
-  width: number,
-  height: number,
-) {
-  const element = figma.createRectangle();
+function createTemplateElement({
+  shape,
+  cornerRadius,
+  width,
+  height,
+}: {
+  shape: PatternDataMessage["shape"];
+  cornerRadius: number;
+  width: number;
+  height: number;
+}) {
+  let element: ShapeNode;
+
+  switch (shape) {
+    case "circle":
+      element = figma.createEllipse();
+      break;
+    case "star":
+      element = figma.createStar();
+      break;
+    case "polygon":
+      element = figma.createPolygon();
+      element.pointCount = 6;
+      break;
+    case "square":
+      element = figma.createRectangle();
+      break;
+  }
+
+  figma.createRectangle();
   element.resize(width, height);
-  element.cornerRadius = shape === "circle" ? width * 0.5 : 0;
+  element.cornerRadius = +cornerRadius;
   element.fills = [];
   element.strokes = [];
   element.strokeWeight = 0;
@@ -107,6 +132,8 @@ async function generatePattern(
     yPadding,
     colors,
     shape,
+    rotationRange: [minRotation, maxRotation],
+    cornerRadius,
     opacityRange,
     opacityRangeLimits,
     opacityThresholdMode,
@@ -122,11 +149,12 @@ async function generatePattern(
   const elementHeight = frameHeight / rows;
   const outputFrame = createOutputFrame(+frameWidth, +frameHeight);
 
-  const sampleElement = createTemplateElement(
+  const sampleElement = createTemplateElement({
     shape,
-    elementWidth - xPadding,
-    elementHeight - yPadding,
-  );
+    cornerRadius,
+    width: elementWidth - xPadding,
+    height: elementHeight - yPadding,
+  });
   const getNewColor = colorGenerator(colors.map(hexToRGB));
   const getShapeClone = createShapeCloner(sampleElement, {
     width: elementWidth,
@@ -144,11 +172,11 @@ async function generatePattern(
   const noiseFilter = createNoiseFilter(noiseMode, noiseAmount);
   const fadeModifier = createFadeModifier(verticalFadeMode);
   const getOpacityValue = createOpacityValueGenerator(minOpacity, maxOpacity);
-  const opacityThresholdFilter = createOpacityThresholdFilter(
+  const opacityThresholdFilter = createOpacityThresholdFilter({
     opacityThresholdMode,
     minOpacity,
     maxOpacity,
-  );
+  });
   const varySizeFilter = createSizeVariationFilter({
     minSize,
     maxSize,
@@ -156,6 +184,10 @@ async function generatePattern(
     elementHeight,
     xPadding,
     yPadding,
+  });
+  const varyRotationFilter = createRotationVariationFilter({
+    minRotation,
+    maxRotation,
   });
 
   // Utilities
@@ -232,9 +264,7 @@ async function generatePattern(
         }
 
         varySizeFilter?.(node);
-
-        if (node.type === "RECTANGLE")
-          node.cornerRadius = shape === "circle" ? node.width * 0.5 : 0;
+        varyRotationFilter?.(node);
 
         node.fills = [{ type: "SOLID", color: getNewColor(), opacity }];
       }
