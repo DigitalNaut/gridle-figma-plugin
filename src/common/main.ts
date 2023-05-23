@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const supportedShapes = ["square", "circle"] as const;
 export const opacityThresholdModes = ["remove", "clamp"] as const;
 export const verticalFadeModes = ["ascending", "descending", "none"] as const;
@@ -11,25 +13,27 @@ export const noiseModes = [
 
 export type StopCode = "stopped" | "aborted" | undefined;
 
-export type PatternDataMessage = {
-  type: "generate-pattern";
-  frameWidth: number;
-  frameHeight: number;
-  columns: number;
-  rows: number;
-  xPadding: number;
-  yPadding: number;
-  colors: string[];
-  shape: (typeof supportedShapes)[number];
-  opacityRange: [number, number];
-  opacityRangeLimits: readonly [number, number];
-  sizeRange: [number, number];
-  sizeRangeLimits: readonly [number, number];
-  opacityThresholdMode: (typeof opacityThresholdModes)[number];
-  verticalFadeMode: (typeof verticalFadeModes)[number];
-  noiseMode: (typeof noiseModes)[number];
-  noiseAmount: number;
-};
+export const patternDataMessageSchema = z.object({
+  type: z.literal("generate-pattern"),
+  frameWidth: z.number(),
+  frameHeight: z.number(),
+  columns: z.number(),
+  rows: z.number(),
+  xPadding: z.number(),
+  yPadding: z.number(),
+  colors: z.array(z.string()),
+  shape: z.enum(supportedShapes),
+  opacityRange: z.tuple([z.number(), z.number()]),
+  opacityRangeLimits: z.tuple([z.number(), z.number()]),
+  sizeRange: z.tuple([z.number(), z.number()]),
+  sizeRangeLimits: z.tuple([z.number(), z.number()]),
+  opacityThresholdMode: z.enum(opacityThresholdModes),
+  verticalFadeMode: z.enum(verticalFadeModes),
+  noiseMode: z.enum(noiseModes),
+  noiseAmount: z.number(),
+});
+
+export type PatternDataMessage = z.infer<typeof patternDataMessageSchema>;
 
 export const messageTypes = {
   close: "close",
