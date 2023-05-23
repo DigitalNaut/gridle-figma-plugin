@@ -13,7 +13,7 @@ export function clamp(value: number, min: number, max: number) {
  * @param value The value to format.
  * @returns A percentage string. For example, 0.5 becomes "50.0%".
  */
-export function toPercent(value: number) {
+export function toPercentage(value: number) {
   const num = (value * 100).toFixed(1);
   return Number.isNaN(num) ? "0.0%" : num + "%";
 }

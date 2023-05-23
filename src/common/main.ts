@@ -17,8 +17,8 @@ export type PatternDataMessage = {
   type: "generate-pattern";
   frameWidth: number;
   frameHeight: number;
-  horizontalElementsCount: number;
-  verticalElementsCount: number;
+  columns: number;
+  rows: number;
   paddingX: number;
   paddingY: number;
   colors: string[];

@@ -1,4 +1,6 @@
-export default function Logo({ className }: { className?: string }) {
+import { Icon } from "~/types";
+
+export default function Logo({ className }: Icon) {
   return (
     <svg
       className={className}

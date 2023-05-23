@@ -43,7 +43,10 @@ export default function Select<T, U extends string | number>({
         {...props}
       >
         {prompt?.length && (
-          <option value="" className="normal-case">{`--${prompt}--`}</option>
+          <option
+            value=""
+            className="text-center normal-case"
+          >{`--${prompt}--`}</option>
         )}
         {options.map((optionName, index) => (
           <option key={index} className="capitalize" value={optionName}>

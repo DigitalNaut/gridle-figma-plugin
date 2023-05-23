@@ -1,5 +1,20 @@
 import { useMemo, useState } from "react";
 
+import type { PatternDataMessage } from "@common/index";
+import {
+  formatSeconds,
+  sleep,
+  toFloat,
+  toPercentage,
+} from "@common/utils/index";
+import {
+  messageTypes,
+  noiseModes,
+  opacityThresholdModes,
+  supportedShapes,
+  verticalFadeModes,
+} from "@common/index";
+
 import {
   Layout,
   CollapsibleSubsection,
@@ -15,27 +30,20 @@ import Input from "@components/Input";
 import Button from "@components/Button";
 import Select from "@components/Select";
 import MultiColorPicker from "@components/MultiColorPicker";
+import AxisIcon from "@components/AxisIcon";
+import PaddingIcon from "@components/PaddingIcon";
 import { useWindowKeyboardEvents } from "@hooks/useWindowKeyboardEvents";
 import { usePluginMessaging } from "@hooks/usePluginMessaging";
 import { useBasicInputs, useManagedInputs } from "@hooks/useUserInputs";
 import { useColorHandlers } from "@hooks/useColorHandlers";
-import { formatSeconds, sleep, toFloat, toPercent } from "@common/utils/index";
 
-import type { PresetRecord } from "./constants";
-import type { PatternDataMessage } from "@common/index";
-import {
-  messageTypes,
-  noiseModes,
-  opacityThresholdModes,
-  supportedShapes,
-  verticalFadeModes,
-} from "@common/index";
+import type { PresetRecord } from "./settings";
 import {
   MIN_FRAME_SIZE,
   MAX_FRAME_SIZE,
   defaultInputValues,
   presetInputs,
-} from "./constants";
+} from "./settings";
 import "./index.css";
 
 enum AppState {
@@ -60,12 +68,12 @@ function Main() {
     useState<PatternDataMessage>(defaultInputValues);
 
   const elementWidth = useMemo(
-    () => patternMessage.frameWidth / patternMessage.horizontalElementsCount,
-    [patternMessage.frameWidth, patternMessage.horizontalElementsCount],
+    () => patternMessage.frameWidth / patternMessage.columns,
+    [patternMessage.frameWidth, patternMessage.columns],
   );
   const elementHeight = useMemo(
-    () => patternMessage.frameHeight / patternMessage.verticalElementsCount,
-    [patternMessage.frameHeight, patternMessage.verticalElementsCount],
+    () => patternMessage.frameHeight / patternMessage.rows,
+    [patternMessage.frameHeight, patternMessage.rows],
   );
 
   const applyPreset = (value: string) =>
@@ -150,7 +158,7 @@ function Main() {
     return (
       <>
         <Subsection title="Generating...">
-          <div>{`Progress: ${toPercent(progress.percentage)}`}</div>
+          <div>{`Progress: ${toPercentage(progress.percentage)}`}</div>
           <progress className="w-full" value={progress.percentage} max={1} />
           <div>{`Time elapsed: ${formatSeconds(progress.timeElapsed)}s`}</div>
         </Subsection>
@@ -161,11 +169,19 @@ function Main() {
             </Button>
           ) : (
             <div className="flex w-full flex-col">
-              <Button appearance="actionStyle" onClick={stopGeneration}>
-                Stop generation
+              <Button
+                appearance="actionStyle"
+                title="Stop the generation process and keep the current progress."
+                onClick={stopGeneration}
+              >
+                Stop
               </Button>
-              <Button appearance="actionStyle" onClick={abortGeneration}>
-                Cancel generation
+              <Button
+                appearance="actionStyle"
+                title="Abort the generation process and discard the current progress."
+                onClick={abortGeneration}
+              >
+                Cancel
               </Button>
             </div>
           )}
@@ -233,32 +249,69 @@ function Main() {
         </div>
       </CollapsibleSubsection>
       <Subsection title="Frame">
-        <Input<PatternDataMessage, number>
-          label="Width (px)"
-          id="frameWidthInput"
-          name="frameWidth"
-          type="number"
-          min={MIN_FRAME_SIZE}
-          max={MAX_FRAME_SIZE}
-          maxLength={4}
-          value={patternMessage.frameWidth}
-          onChange={handleFrameWidthChange}
-          onBlur={handleFrameWidthBlur}
-          title="Width of the frame in pixels."
-        />
-        <Input<PatternDataMessage, number>
-          label="Height (px)"
-          id="frameHeightInput"
-          name="frameHeight"
-          type="number"
-          min={MIN_FRAME_SIZE}
-          max={MAX_FRAME_SIZE}
-          maxLength={4}
-          value={patternMessage.frameHeight}
-          onChange={handleFrameHeightChange}
-          onBlur={handleFrameHeightBlur}
-          title="Height of the frame in pixels."
-        />
+        <div className="flex w-full">
+          <span className="grow text-sm">Frame size (px):</span>
+        </div>
+        <div className="flex flex-1 justify-between gap-2">
+          <Input<PatternDataMessage, number>
+            label="W"
+            labelStyle="flex-1"
+            labelTextStyle="flex-1 w-6 text-center"
+            id="frameWidthInput"
+            name="frameWidth"
+            type="number"
+            min={MIN_FRAME_SIZE}
+            max={MAX_FRAME_SIZE}
+            maxLength={4}
+            value={patternMessage.frameWidth}
+            onChange={handleFrameWidthChange}
+            onBlur={handleFrameWidthBlur}
+            title="Width of the frame in pixels."
+          />
+          <Input<PatternDataMessage, number>
+            label="H"
+            labelStyle="flex-1"
+            labelTextStyle="flex-1 w-6 text-center"
+            id="frameHeightInput"
+            name="frameHeight"
+            type="number"
+            min={MIN_FRAME_SIZE}
+            max={MAX_FRAME_SIZE}
+            maxLength={4}
+            value={patternMessage.frameHeight}
+            onChange={handleFrameHeightChange}
+            onBlur={handleFrameHeightBlur}
+            title="Height of the frame in pixels."
+          />
+        </div>
+        <div className="flex flex-1 justify-between gap-2">
+          <Input<PatternDataMessage, number>
+            label={<AxisIcon className="rotate-90 transform" />}
+            labelStyle="flex-1"
+            id="rowsInput"
+            name="rows"
+            type="number"
+            min={1}
+            max={toFloat(patternMessage.frameWidth)}
+            maxLength={4}
+            value={patternMessage.columns}
+            onChange={handleHorizontalElementsCountChange}
+            title="Number of rows."
+          />
+          <Input<PatternDataMessage, number>
+            label={<AxisIcon />}
+            labelStyle="flex-1"
+            id="columnsInput"
+            name="columns"
+            type="number"
+            min={1}
+            max={toFloat(patternMessage.frameHeight)}
+            maxLength={4}
+            value={patternMessage.rows}
+            onChange={handleVerticalElementsCountChange}
+            title="Number of columns."
+          />
+        </div>
       </Subsection>
       <Subsection title="Elements">
         <div className="flex w-full">
@@ -267,54 +320,37 @@ function Main() {
             {`${calculatedElementWidth} x ${calculatedElementHeight} px`}
           </span>
         </div>
-        <Input<PatternDataMessage, number>
-          label="Horizontal count"
-          id="horizontalCountInput"
-          name="horizontalElementsCount"
-          type="number"
-          min={1}
-          max={toFloat(patternMessage.frameWidth)}
-          maxLength={4}
-          value={patternMessage.horizontalElementsCount}
-          onChange={handleHorizontalElementsCountChange}
-          title="Number of elements to create horizontally."
-        />
-        <Input<PatternDataMessage, number>
-          label="Vertical count"
-          id="verticalCountInput"
-          name="verticalElementsCount"
-          type="number"
-          min={1}
-          max={toFloat(patternMessage.frameHeight)}
-          maxLength={4}
-          value={patternMessage.verticalElementsCount}
-          onChange={handleVerticalElementsCountChange}
-          title="Number of elements to create vertically."
-        />
-        <Input<PatternDataMessage, number>
-          label="Padding X (px)"
-          id="paddingXInput"
-          name="paddingX"
-          type="number"
-          min={0}
-          max={toFloat(elementWidth - 1)}
-          maxLength={8}
-          value={toFloat(patternMessage.paddingX)}
-          onChange={handlePaddingXChange}
-          title="Padding between elements in pixels."
-        />
-        <Input<PatternDataMessage, number>
-          label="Padding Y (px)"
-          id="paddingYInput"
-          name="paddingY"
-          type="number"
-          min={0}
-          max={toFloat(elementHeight - 1)}
-          maxLength={8}
-          value={toFloat(patternMessage.paddingY)}
-          onChange={handlePaddingYChange}
-          title="Padding between elements in pixels."
-        />
+        <div className="flex w-full">
+          <span className="grow text-sm">Padding (px):</span>
+        </div>
+        <div className="flex w-full gap-2">
+          <Input<PatternDataMessage, number>
+            label={<PaddingIcon className="rotate-90 transform" />}
+            labelStyle="flex-1"
+            id="paddingXInput"
+            name="paddingX"
+            type="number"
+            min={0}
+            max={toFloat(elementWidth - 1)}
+            maxLength={8}
+            value={toFloat(patternMessage.paddingX)}
+            onChange={handlePaddingXChange}
+            title="Padding between elements in pixels."
+          />
+          <Input<PatternDataMessage, number>
+            label={<PaddingIcon />}
+            labelStyle="flex-1"
+            id="paddingYInput"
+            name="paddingY"
+            type="number"
+            min={0}
+            max={toFloat(elementHeight - 1)}
+            maxLength={8}
+            value={toFloat(patternMessage.paddingY)}
+            onChange={handlePaddingYChange}
+            title="Padding between elements in pixels."
+          />
+        </div>
       </Subsection>
       <Subsection title={`Appearance`}>
         <Select<PatternDataMessage, string>

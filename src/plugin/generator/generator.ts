@@ -6,77 +6,19 @@ import {
   sleep,
 } from "@common/index";
 
-import type { GeneratorStopCode, ShapeNode } from "./types";
-import { AbortController } from "./abortController";
-import { SLEEP_INTERVAL } from "./constants";
-import { postGenerationProgress } from "./messages";
+import type { GeneratorStopCode, ShapeNode } from "~/types";
+import { AbortController } from "~/utils/abortController";
+import { SLEEP_INTERVAL } from "~/settings";
+import { postGenerationProgress } from "~/messages";
 
-function createNoiseFilter(
-  noiseMode: PatternDataMessage["noiseMode"],
-  noiseAmount: number,
-) {
-  switch (noiseMode) {
-    case "ascending":
-      return (verticalPosition: number) =>
-        Math.random() <
-        Math.min(verticalPosition, noiseAmount * verticalPosition);
-    case "descending":
-      return (verticalPosition: number) => {
-        const position = 1 - verticalPosition;
-        return Math.random() < Math.min(position, noiseAmount * position);
-      };
-    case "uniform":
-      return () => Math.random() < noiseAmount;
-    default:
-      return null;
-  }
-}
-
-function createFadeModifier(
-  verticalFadeMode: PatternDataMessage["verticalFadeMode"],
-) {
-  switch (verticalFadeMode) {
-    case "ascending":
-      return (verticalPosition: number, opacity: number) =>
-        opacity * verticalPosition;
-    case "descending":
-      return (verticalPosition: number, opacity: number) =>
-        opacity * (1 - verticalPosition);
-    default:
-      return () => 1;
-  }
-}
-
-function createOpacityThresholdFilter(
-  opacityThresholdMode: PatternDataMessage["opacityThresholdMode"],
-  opacityMin: number,
-  opacityMax: number,
-) {
-  switch (opacityThresholdMode) {
-    case "clamp":
-      return (opacity: number) =>
-        Math.min(Math.max(opacity, opacityMin), opacityMax);
-    case "remove":
-      return (opacity: number) =>
-        opacity < opacityMin || opacity > opacityMax ? null : opacity;
-    default:
-      return (opacity: number) => opacity;
-  }
-}
-
-function createOpacityValueGenerator(min: number, max: number) {
-  const delta = max - min;
-  return () => delta * Math.random() + min;
-}
-
-function colorGenerator(colors: RGB[]) {
-  if (colors.length === 1) return () => colors[0];
-  return () => colors[Math.floor(Math.random() * colors.length)];
-}
-
-function transformRange01(range: [number, number], maxValue: number) {
-  return [range[0] / maxValue, range[1] / maxValue];
-}
+import {
+  colorGenerator,
+  transformRange01,
+  createNoiseFilter,
+  createFadeModifier,
+  createOpacityValueGenerator,
+  createOpacityThresholdFilter,
+} from "./filters";
 
 function createOutputFrame(width: number, height: number) {
   // Create output frame
@@ -119,11 +61,12 @@ function groupNodes(name: string, nodes: SceneNode[], parent: FrameNode) {
   group.expanded = false;
 
   parent.appendChild(group);
+
+  return group;
 }
 
 function createShapeCloner(
   shape: ShapeNode,
-  getNewColor: () => RGB,
   dimensions: {
     width: number;
     height: number;
@@ -137,21 +80,13 @@ function createShapeCloner(
   let newElement: ShapeNode;
   const constraints: Constraints = { horizontal: "SCALE", vertical: "SCALE" };
 
-  return (x: number, y: number, opacity: number) => {
+  return (x: number, y: number) => {
     newElement = shape.clone();
 
     newElement.x = x * width + halfPaddingX;
     newElement.y = y * height + halfPaddingY;
 
-    newElement.fills = [
-      {
-        type: "SOLID",
-        color: getNewColor(),
-        opacity,
-      },
-    ];
-
-    newElement.name = `${x}-${y}`;
+    newElement.name = "" + x;
     newElement.constraints = constraints;
 
     return newElement;
@@ -159,14 +94,14 @@ function createShapeCloner(
 }
 
 async function generatePattern(
-  msg: PatternDataMessage,
+  message: PatternDataMessage,
   abortController: AbortController<GeneratorStopCode>,
 ) {
   const {
     frameWidth,
     frameHeight,
-    horizontalElementsCount,
-    verticalElementsCount,
+    columns,
+    rows,
     paddingX,
     paddingY,
     colors,
@@ -177,21 +112,21 @@ async function generatePattern(
     noiseMode,
     noiseAmount,
     verticalFadeMode,
-  } = msg;
+  } = message;
   const { signal } = abortController;
 
   // Elements
-  const elementWidth = frameWidth / horizontalElementsCount;
-  const elementHeight = frameHeight / verticalElementsCount;
+  const elementWidth = frameWidth / columns;
+  const elementHeight = frameHeight / rows;
   const outputFrame = createOutputFrame(+frameWidth, +frameHeight);
 
-  const element = createTemplateElement(
+  const sampleElement = createTemplateElement(
     shape,
     elementWidth - paddingX,
     elementHeight - paddingY,
   );
   const getNewColor = colorGenerator(colors.map(hexToRGB));
-  const getShapeClone = createShapeCloner(element, getNewColor, {
+  const getShapeClone = createShapeCloner(sampleElement, {
     width: elementWidth,
     height: elementHeight,
     paddingX,
@@ -213,63 +148,96 @@ async function generatePattern(
   );
 
   // Utilities
-  const percentage = 0;
+  let percentProgress = 0;
   const chronometer = createChronometer();
   const shouldUpdate = lastUpdateTracker(150);
-  const totalElements = horizontalElementsCount * verticalElementsCount;
-  const postUpdate = async (percentage: number) => {
+  const totalElements = columns * rows;
+  const postUpdate = async (percent: number) => {
+    percentProgress = percent;
     postGenerationProgress({
-      percentage,
+      percentProgress,
       timeElapsed: chronometer(),
     });
     await sleep(SLEEP_INTERVAL);
   };
 
-  // Generation
-  for (let y = 0; y < verticalElementsCount; y++) {
+  const sampleRow: SceneNode[] = [];
+
+  // Generate sample row
+  for (let x = 0; x < columns; x++) {
     if (signal.aborted) break;
+    if (shouldUpdate()) await postUpdate(x / totalElements);
 
-    const verticalPosition =
-      verticalElementsCount > 1 ? y / (verticalElementsCount - 1) : 1;
-
-    const layerNodes: SceneNode[] = [];
-
-    for (let x = 0; x < horizontalElementsCount; x++) {
-      if (signal.aborted) break;
-      if (shouldUpdate())
-        await postUpdate((y * horizontalElementsCount + x) / totalElements);
-
-      if (noiseFilter?.(verticalPosition)) continue;
-
-      let opacity: number | null = getOpacityValue();
-      opacity = fadeModifier(verticalPosition, opacity);
-      opacity = opacityThresholdFilter(opacity);
-      if (opacity === null) continue;
-
-      const newElement = getShapeClone(x, y, opacity);
-      layerNodes.push(newElement);
-    }
-
-    // Abort clause
-    if (outputFrame === null) {
-      abortController.abort("aborted");
-      layerNodes.forEach((node) => node.remove());
-    }
-
-    groupNodes(`Layer ${y}`, layerNodes, outputFrame);
-
-    // Update progress
-    if (shouldUpdate()) await postUpdate((y + 1) / verticalElementsCount);
+    const newElement = getShapeClone(x, 0);
+    sampleRow.push(newElement);
   }
 
-  element.remove();
+  sampleElement.remove();
+
+  const sampleGroup = groupNodes("Sample Row", sampleRow, outputFrame);
+  if (!sampleGroup) abortController.abort("aborted");
+  // Generate pattern
+  else {
+    for (let y = 0; y < rows; y++) {
+      if (signal.aborted) break;
+
+      const verticalPosition = rows > 1 ? y / (rows - 1) : 1;
+
+      const rowNodes = sampleGroup.clone();
+      if (!rowNodes) {
+        abortController.abort("aborted");
+        break;
+      }
+
+      rowNodes.y = y * elementHeight + paddingY * 0.5;
+      rowNodes.name = `Layer ${y + 1}`;
+      outputFrame.appendChild(rowNodes);
+
+      const childrenNodes = rowNodes.findChildren(
+        (node) =>
+          node.type === "RECTANGLE" ||
+          node.type === "ELLIPSE" ||
+          node.type === "VECTOR" ||
+          node.type === "POLYGON" ||
+          node.type === "STAR" ||
+          node.type === "LINE" ||
+          node.type === "TEXT",
+      ) as ShapeNode[];
+
+      for (const node of childrenNodes) {
+        if (signal.aborted) break;
+
+        if (noiseFilter?.(verticalPosition)) {
+          node.remove();
+          continue;
+        }
+
+        let opacity: number | null = getOpacityValue();
+        opacity = fadeModifier(verticalPosition, opacity);
+        opacity = opacityThresholdFilter(opacity);
+        if (opacity === null) {
+          node.remove();
+          continue;
+        }
+
+        if (node.type === "RECTANGLE")
+          node.fills = [{ type: "SOLID", color: getNewColor(), opacity }];
+      }
+
+      // Update progress
+      if (shouldUpdate()) await postUpdate((y + 1) / rows);
+    }
+
+    // Cleanup
+    sampleGroup.remove();
+  }
 
   // Abort clause
   if (signal.aborted && signal.type === "aborted") outputFrame.remove();
 
   // Results
   return {
-    percentage,
+    percentProgress,
     timeElapsed: chronometer(),
     status: signal.type ?? "completed",
   };

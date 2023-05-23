@@ -7,7 +7,7 @@ import type {
 
 import type { PatternDataMessage, KeysOfType } from "@common/index";
 import { clamp, toInteger } from "@common/utils/index";
-import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "../constants";
+import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "../settings";
 
 type StateSetter = Dispatch<SetStateAction<PatternDataMessage>>;
 
@@ -148,14 +148,14 @@ export function useManagedInputs(setState: StateSetter) {
   const handleFrameWidthBlur = createHandlerDerivePropertiesFromLength(
     setState,
     "frameWidth",
-    "horizontalElementsCount",
+    "columns",
     "paddingX",
   );
 
   const handleFrameHeightBlur = createHandlerDerivePropertiesFromLength(
     setState,
     "frameHeight",
-    "verticalElementsCount",
+    "rows",
     "paddingY",
   );
 
@@ -163,28 +163,28 @@ export function useManagedInputs(setState: StateSetter) {
     createHandlerDeriveCountFromLength(
       setState,
       "frameWidth",
-      "horizontalElementsCount",
+      "columns",
       "paddingX",
     );
 
   const handleVerticalElementsCountChange = createHandlerDeriveCountFromLength(
     setState,
     "frameHeight",
-    "verticalElementsCount",
+    "rows",
     "paddingY",
   );
 
   const handlePaddingXChange = createHandlerLengthPadding(
     setState,
     "frameWidth",
-    "horizontalElementsCount",
+    "columns",
     "paddingX",
   );
 
   const handlePaddingYChange = createHandlerLengthPadding(
     setState,
     "frameHeight",
-    "verticalElementsCount",
+    "rows",
     "paddingY",
   );
 

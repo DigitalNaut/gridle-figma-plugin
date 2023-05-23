@@ -11,8 +11,8 @@ export const defaultInputValues: PatternDataMessage = {
   type: "generate-pattern",
   frameWidth: 300,
   frameHeight: 300,
-  horizontalElementsCount: 30,
-  verticalElementsCount: 30,
+  columns: 30,
+  rows: 30,
   paddingX: 2,
   paddingY: 2,
   opacityRange: [0, 100],
@@ -28,8 +28,8 @@ export const defaultInputValues: PatternDataMessage = {
 const largeFramePreset: Partial<Preset> = {
   frameWidth: 1920,
   frameHeight: 1080,
-  horizontalElementsCount: 192,
-  verticalElementsCount: 108,
+  columns: 192,
+  rows: 108,
   paddingX: 2,
   paddingY: 2,
 };
@@ -41,8 +41,8 @@ const mardiGrasPreset: Partial<Preset> = {
 const staticNoisePreset: Partial<Preset> = {
   frameWidth: 300,
   frameHeight: 300,
-  horizontalElementsCount: 50,
-  verticalElementsCount: 50,
+  columns: 50,
+  rows: 50,
   paddingX: 0,
   paddingY: 0,
   colors: ["#000000", "#ffffff"],

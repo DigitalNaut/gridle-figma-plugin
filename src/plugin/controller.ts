@@ -7,13 +7,13 @@ import {
   postGenerationError,
   presetLoaded,
 } from "./messages";
-import { DEFAULT_WINDOW_OPTIONS } from "./constants";
+import { DEFAULT_WINDOW_OPTIONS } from "./settings";
 import {
   loadSettingsFromStorage,
   saveSettingsToStorage,
   clearSettingsFromStorage,
-} from "./storage";
-import Generator from "./generator";
+} from "./utils/storage";
+import Generator from "./generator/generator";
 
 figma.showUI(__html__, DEFAULT_WINDOW_OPTIONS);
 

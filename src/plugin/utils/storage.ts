@@ -1,6 +1,6 @@
 import type { PatternDataMessage } from "@common/index";
 
-import { SAVED_SETTINGS_KEY } from "./constants";
+import { SAVED_SETTINGS_KEY } from "~/settings";
 
 export function loadSettingsFromStorage() {
   const preset = figma.root.getPluginData(SAVED_SETTINGS_KEY);
