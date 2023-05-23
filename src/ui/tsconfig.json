@@ -19,7 +19,6 @@
     "incremental": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
       "@components/*": ["./components/*"],
       "@hooks/*": ["./hooks/*"],

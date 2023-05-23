@@ -2,7 +2,14 @@
   "compilerOptions": {
     "target": "ES2019",
     "lib": ["ES2019"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "incremental": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": false,
     "strict": true,
+    "moduleResolution":"node",
     "typeRoots": ["../../node_modules/@figma"],
     "paths": {
       "@common/*": ["../common/*"],
