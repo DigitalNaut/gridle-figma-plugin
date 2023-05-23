@@ -18,9 +18,9 @@ export default [
       parserOptions: {
         ecmaVersion: "2019",
         project: [
-          "./src/common/tsconfig.json",
-          "./src/plugin/tsconfig.json",
-          "./src/ui/tsconfig.json",
+          "src/common/tsconfig.json",
+          "src/plugin/tsconfig.json",
+          "src/ui/tsconfig.json",
         ],
       },
     },

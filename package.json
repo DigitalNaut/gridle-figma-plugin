@@ -11,9 +11,9 @@
     "lint:fix": "eslint --fix .",
     "format": "npm run prettier && npm run prettier:fix",
     "tsc": "npm run tsc:common && npm run tsc:main && npm run tsc:ui",
+    "tsc:common": "tsc --emitDeclarationOnly -p ./src/common",
     "tsc:main": "tsc --noEmit -p ./src/plugin",
     "tsc:ui": "tsc --noEmit -p ./src/ui",
-    "tsc:common": "tsc --emitDeclarationOnly -p ./src/common",
     "tsc:watch": "concurrently -n widget,iframe \"npm run tsc:main -- --watch --preserveWatchOutput\" \"npm run tsc:ui -- --watch --preserveWatchOutput\"",
     "build": "npm run build:ui && npm run build:main -- --minify",
     "build:main": "esbuild ./src/plugin/controller.ts --bundle --outfile=/dist/code.js",
@@ -25,7 +25,8 @@
   "license": "Copyright 2023 DigitalNaut",
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.64.0",
@@ -40,7 +41,6 @@
     "esbuild": "^0.17.19",
     "eslint": "^8.41.0",
     "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-jsdoc": "^44.2.4",
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
