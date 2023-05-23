@@ -25,8 +25,8 @@ export function Subsection({
 }: PropsWithChildren<{ title: string; rows?: true; noGap?: true }>) {
   return (
     <>
-      <h3 className="text-xl">{title}</h3>
-      <div className="flex w-full flex-col gap-2 rounded-sm bg-black/20 p-2">
+      <h3 className="text-sm font-semibold">{title}</h3>
+      <div className="flex w-full flex-col gap-2 rounded-sm bg-black/10 p-2">
         {children}
       </div>
     </>
@@ -46,7 +46,7 @@ export function CollapsibleSubsection({
 
   return (
     <>
-      <h3 className="w-full text-xl">
+      <h3 className="w-full text-sm font-semibold">
         <button className="flex w-full items-center gap-2" onClick={toggleOpen}>
           <i
             className={`fa-solid fa-angle-right transform ${
@@ -60,7 +60,7 @@ export function CollapsibleSubsection({
         </button>
       </h3>
       {isOpen && (
-        <div className="flex w-full flex-col gap-2 rounded-sm bg-black/20 p-2">
+        <div className="flex w-full flex-col gap-2 rounded-sm bg-black/10 p-2">
           {children}
         </div>
       )}

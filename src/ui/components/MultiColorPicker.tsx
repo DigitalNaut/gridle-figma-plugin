@@ -1,10 +1,12 @@
 export default function MultiColorPicker({
   colors,
+  colorsLimit = 24,
   handleAddColor,
   handleColorChange,
   handleRemoveColor,
 }: {
   colors: string[];
+  colorsLimit?: number;
   handleAddColor: () => void;
   handleColorChange: (color: string, colorIndex: number) => void;
   handleRemoveColor: (colorIndex: number) => void;
@@ -12,9 +14,9 @@ export default function MultiColorPicker({
   return (
     <div className="flex w-full flex-col gap-2">
       {`Colors (${colors.length})`}
-      <div className="flex w-full">
+      <div className="flex w-full flex-wrap items-center">
         {colors.map((color, colorIndex) => (
-          <div key={colorIndex} className="group relative h-10 w-1/5">
+          <div key={colorIndex} className="group relative h-10 w-1/6">
             <label title="Color to use for the elements.">
               <input
                 className="h-full w-full rounded-sm bg-zinc-700"
@@ -38,9 +40,9 @@ export default function MultiColorPicker({
             </label>
           </div>
         ))}
-        {colors.length < 5 && (
+        {colors.length < colorsLimit && (
           <button
-            className="flex h-9 w-1/5 items-center justify-center rounded-md border border-zinc-200 text-xl font-bold text-zinc-200"
+            className="flex h-9 w-1/6 items-center justify-center rounded-md border border-zinc-200 text-xl font-bold text-zinc-200"
             title="Add color"
             onClick={handleAddColor}
           >

@@ -31,10 +31,10 @@ export default function Select<T, U extends string | number>({
     prompt?: string;
   }>) {
   return (
-    <label htmlFor={id} className="flex gap-2" title={title}>
+    <label htmlFor={id} className="flex items-center gap-2" title={title}>
       {label && <span className="grow whitespace-nowrap">{label}</span>}
       <select
-        className={`rounded-sm bg-zinc-700 p-2 ${
+        className={`rounded-sm bg-zinc-700 p-1 ${
           label ? "" : "grow"
         } ${className}`}
         id={id}
@@ -43,13 +43,10 @@ export default function Select<T, U extends string | number>({
         {...props}
       >
         {prompt?.length && (
-          <option
-            value=""
-            className="text-center normal-case"
-          >{`--${prompt}--`}</option>
+          <option value="" className="text-center">{`--${prompt}--`}</option>
         )}
         {options.map((optionName, index) => (
-          <option key={index} className="capitalize" value={optionName}>
+          <option key={index} className="" value={optionName}>
             {optionName}
           </option>
         ))}

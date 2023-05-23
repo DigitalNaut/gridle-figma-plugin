@@ -37,12 +37,13 @@ import { usePluginMessaging } from "@hooks/usePluginMessaging";
 import { useBasicInputs, useManagedInputs } from "@hooks/useUserInputs";
 import { useColorHandlers } from "@hooks/useColorHandlers";
 
-import type { PresetRecord } from "./settings";
+import type { Preset, PresetRecord } from "./settings";
 import {
   MIN_FRAME_SIZE,
   MAX_FRAME_SIZE,
   defaultInputValues,
-  presetInputs,
+  globalPresets,
+  colorPresets,
 } from "./settings";
 import "./index.css";
 
@@ -63,7 +64,7 @@ function Main() {
   const [error, setError] = useState<string>();
   const [state, setState] = useState<AppState>(AppState.IDLE);
   const [progress, setProgress] = useState({ percentage: 0, timeElapsed: 0 });
-  const [availablePresets] = useState<PresetRecord>(presetInputs);
+  const [availablePresets] = useState<PresetRecord>(globalPresets);
   const [patternMessage, setPatternMessage] =
     useState<PatternDataMessage>(defaultInputValues);
 
@@ -76,10 +77,10 @@ function Main() {
     [patternMessage.frameHeight, patternMessage.rows],
   );
 
-  const applyPreset = (value: string) =>
+  const applyPreset = (value: Preset) =>
     setPatternMessage((prev) => ({
       ...prev,
-      ...availablePresets[value],
+      ...value,
     }));
 
   const applyDefaultPreset = () => setPatternMessage(defaultInputValues);
@@ -224,17 +225,16 @@ function Main() {
 
   return (
     <>
-      <CollapsibleSubsection title="Global Presets">
+      <CollapsibleSubsection title="Settings">
         <Select
           prompt="Select a preset"
-          options={Object.keys(presetInputs)}
+          options={Object.keys(globalPresets)}
           id="presetSelect"
-          onChange={({ currentTarget }) => applyPreset(currentTarget.value)}
+          onChange={({ currentTarget }) =>
+            applyPreset(availablePresets[currentTarget.value])
+          }
           title="Predefined settings."
         />
-        <Button appearance="plainStyle" onClick={applyDefaultPreset}>
-          <i className="fa-solid fa-rotate-left"></i> Reset settings
-        </Button>
         <div className="flex items-center">
           <span className="grow">Current settings:</span>
           <Button
@@ -247,10 +247,13 @@ function Main() {
             <i className="fa-solid fa-trash"></i> Delete
           </Button>
         </div>
+        <Button appearance="plainStyle" onClick={applyDefaultPreset}>
+          <i className="fa-solid fa-rotate-left"></i> Reset settings
+        </Button>
       </CollapsibleSubsection>
       <Subsection title="Frame">
         <div className="flex w-full">
-          <span className="grow text-sm">Frame size (px):</span>
+          <span className="grow text-sm">Frame size</span>
         </div>
         <div className="flex flex-1 justify-between gap-2">
           <Input<PatternDataMessage, number>
@@ -312,16 +315,8 @@ function Main() {
             title="Number of columns."
           />
         </div>
-      </Subsection>
-      <Subsection title="Elements">
         <div className="flex w-full">
-          <span className="grow">Element size:</span>
-          <span>
-            {`${calculatedElementWidth} x ${calculatedElementHeight} px`}
-          </span>
-        </div>
-        <div className="flex w-full">
-          <span className="grow text-sm">Padding (px):</span>
+          <span className="grow text-sm">Padding</span>
         </div>
         <div className="flex w-full gap-2">
           <Input<PatternDataMessage, number>
@@ -335,7 +330,7 @@ function Main() {
             maxLength={8}
             value={toFloat(patternMessage.paddingX)}
             onChange={handlePaddingXChange}
-            title="Padding between elements in pixels."
+            title="Horizontal padding between elements."
           />
           <Input<PatternDataMessage, number>
             label={<PaddingIcon />}
@@ -348,11 +343,37 @@ function Main() {
             maxLength={8}
             value={toFloat(patternMessage.paddingY)}
             onChange={handlePaddingYChange}
-            title="Padding between elements in pixels."
+            title="Vertical padding between elements."
           />
+        </div>
+        <div className="flex w-full justify-between pt-2">
+          <span>Element size:</span>
+          <span className="flex items-center gap-1">
+            <span
+              className={`${calculatedElementWidth < 0 ? "text-orange-500" : ""}`}
+            >
+              {calculatedElementWidth}
+            </span>
+            x
+            <span
+              className={`${calculatedElementHeight < 0 ? "text-orange-500" : ""}`}
+            >
+              {calculatedElementHeight}
+            </span>
+            px
+          </span>
         </div>
       </Subsection>
       <Subsection title={`Appearance`}>
+        <Select
+          prompt="Select a color preset"
+          options={Object.keys(colorPresets)}
+          id="colorPresetSelect"
+          onChange={({ currentTarget }) =>
+            applyPreset(colorPresets[currentTarget.value])
+          }
+          title="Predefined colors."
+        />
         <Select<PatternDataMessage, string>
           name="shape"
           options={supportedShapes}

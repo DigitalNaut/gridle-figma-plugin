@@ -86,7 +86,7 @@ function createShapeCloner(
     newElement.x = x * width + halfPaddingX;
     newElement.y = y * height + halfPaddingY;
 
-    newElement.name = "" + x;
+    newElement.name = `Element ${x + 1}`;
     newElement.constraints = constraints;
 
     return newElement;

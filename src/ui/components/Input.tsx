@@ -44,7 +44,7 @@ export default function Input<T extends Record<string, unknown>, U>({
       <span className={`whitespace-nowrap ${labelTextStyle}`}>{label}</span>
       <input
         className={`grow bg-inherit text-inherit ${
-          hasBorder ? "border-b-2 border-white" : ""
+          hasBorder ? "border-b border-current/60" : ""
         } ${className}`}
         id={id}
         type={type}
