@@ -11,7 +11,7 @@ import { DEFAULT_WINDOW_OPTIONS } from "./settings";
 import {
   loadSettingsFromStorage,
   saveSettingsToStorage,
-  clearSettingsFromStorage,
+  clearSettingsInStorage,
 } from "./utils/storage";
 import Generator from "./generator/generator";
 
@@ -65,7 +65,7 @@ figma.ui.onmessage = async (msg) => {
       break;
 
     case messageTypes.clearPreset:
-      clearSettingsFromStorage();
+      clearSettingsInStorage();
       figma.notify("Saved settings deleted");
       break;
 

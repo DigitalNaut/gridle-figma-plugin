@@ -16,12 +16,8 @@ export default [
     languageOptions: {
       parser,
       parserOptions: {
-        ecmaVersion: "2019",
-        project: [
-          "src/common/tsconfig.json",
-          "src/plugin/tsconfig.json",
-          "src/ui/tsconfig.json",
-        ],
+        ecmaVersion: "2017",
+        project: ["src/common/tsconfig.json", "src/plugin/tsconfig.json"],
       },
     },
     rules: {
@@ -51,10 +47,11 @@ export default [
     languageOptions: {
       parser,
       parserOptions: {
+        ecmaVersion: "latest",
+        project: ["src/ui/tsconfig.json"],
         ecmaFeatures: {
           jsx: true,
         },
-        ecmaVersion: "latest",
       },
     },
     rules: {
