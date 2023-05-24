@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-export const supportedShapes = ["square", "circle", "star", "polygon"] as const;
+export const supportedShapes = [
+  "square",
+  "circle",
+  "star",
+  "polygon",
+  "selection",
+] as const;
 export const opacityThresholdModes = ["remove", "clamp"] as const;
 export const verticalFadeModes = ["ascending", "descending", "none"] as const;
 

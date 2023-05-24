@@ -1,6 +1,5 @@
 export const messageTypes = {
   close: "close",
-  UIStarted: "UI-started",
   generationProgress: "generation-progress",
   generationComplete: "generation-complete",
   generationStarted: "generation-started",

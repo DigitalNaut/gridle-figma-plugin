@@ -90,8 +90,7 @@ export default function MultiRangeSlider({
             onChange([newMin, maxVal]);
             event.target.value = newMin.toString();
           }}
-          className={`z-[3] ${thumbStyle}
-        ${minVal > max - 20 ? "z-[5]" : ""}`}
+          className={`z-[3] ${thumbStyle} ${minVal > max - 20 ? "z-[5]" : ""}`}
         />
         <input
           type="range"

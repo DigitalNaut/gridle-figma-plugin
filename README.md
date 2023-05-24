@@ -21,6 +21,8 @@ I'm working on getting this plugin into the Figma Community so it can be install
 
 🟦 Saving and loading current settings
 
+🟦 Clone the selected shape in Figma as the pattern element of the grid
+
 🟨 Creating personalized presets
 
 🟨 Option to use a color pattern instead of random color selection
@@ -28,8 +30,6 @@ I'm working on getting this plugin into the Figma Community so it can be install
 ⬜ Seeds for randomness generation
 
 ⬜ Lock certain proportions (like when image editors lock aspect ratios) for horizontal and vertical element counts
-
-⬜ Clone the selected shape in Figma as the pattern element of the grid
 
 ✅ Loading indicator and async
 

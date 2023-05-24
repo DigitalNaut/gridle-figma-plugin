@@ -38,7 +38,7 @@ export function usePluginMessaging(messageHandler: typeof onmessage) {
       "*",
     );
 
-  const loadPreset = (presetName: string) =>
+  const loadPreset = (presetName?: string) =>
     parent.postMessage(
       { pluginMessage: { type: messageTypes.loadPreset, presetName } },
       "*",
@@ -47,21 +47,17 @@ export function usePluginMessaging(messageHandler: typeof onmessage) {
   const onClose = () =>
     parent.postMessage({ pluginMessage: { type: messageTypes.close } }, "*");
 
-  const onLoad = () => {
-    setLoaded(true);
-    parent.postMessage(
-      { pluginMessage: { type: messageTypes.UIStarted } },
-      "*",
-    );
-  };
-
   useEffect(() => {
     onmessage = messageHandler;
 
-    if (!loaded) onLoad();
-
     return () => void (onmessage = null);
-  }, [loaded, messageHandler]);
+  }, [messageHandler]);
+
+  useEffect(() => {
+    if (loaded) return;
+    loadPreset();
+    setLoaded(true);
+  }, [loaded]);
 
   return {
     stopGeneration,

@@ -63,7 +63,7 @@ const messageTitles = {
 
 function Main() {
   const [error, setError] = useState<string>();
-  const [state, setState] = useState<AppState>(AppState.IDLE);
+  const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [progress, setProgress] = useState({
     percentProgress: 0,
     timeElapsed: 0,
@@ -71,6 +71,14 @@ function Main() {
   const [availablePresets] = useState<PresetRecord>(globalPresets);
   const [patternMessage, setPatternMessage] =
     useState<PatternDataMessage>(defaultInputValues);
+  const [isSectionOpen, setIsSubsectionOpen] = useState<
+    Record<string, boolean>
+  >({
+    settings: false,
+    frame: true,
+    appearance: true,
+    colors: false,
+  });
 
   const elementWidth = useMemo(
     () => patternMessage.frameWidth / patternMessage.columns,
@@ -119,23 +127,23 @@ function Main() {
         break;
 
       case messageTypes.generationComplete:
-        setState(AppState.COMPLETE);
+        setAppState(AppState.COMPLETE);
         await sleep(300);
-        setState(AppState.IDLE);
+        setAppState(AppState.IDLE);
         break;
 
       case messageTypes.generationStarted:
-        setState(AppState.GENERATING);
+        setAppState(AppState.GENERATING);
         break;
 
       case messageTypes.generationStopped:
-        setState(AppState.STOPPED);
+        setAppState(AppState.STOPPED);
         await sleep(1500);
-        setState(AppState.IDLE);
+        setAppState(AppState.IDLE);
         break;
 
       case messageTypes.generationError:
-        setState(AppState.ERROR);
+        setAppState(AppState.ERROR);
         setError(pluginMessage.error);
         break;
 
@@ -154,6 +162,7 @@ function Main() {
     startGeneration,
     savePreset,
     clearPreset,
+    loadPreset,
     onClose,
   } = usePluginMessaging(handleMessages);
 
@@ -163,7 +172,7 @@ function Main() {
     if (event.key === "Escape") onClose();
   });
 
-  if (state === AppState.GENERATING || state === AppState.COMPLETE)
+  if (appState === AppState.GENERATING || appState === AppState.COMPLETE)
     return (
       <>
         <Subsection title="Generating...">
@@ -176,7 +185,7 @@ function Main() {
           <div>{`Time elapsed: ${formatSeconds(progress.timeElapsed)}s`}</div>
         </Subsection>
         <Footer>
-          {state === AppState.COMPLETE ? (
+          {appState === AppState.COMPLETE ? (
             <Button appearance="actionStyle" disabled>
               Done!
             </Button>
@@ -202,14 +211,14 @@ function Main() {
       </>
     );
 
-  if (state === AppState.STOPPED || state === AppState.ERROR) {
-    const title = messageTitles[state];
+  if (appState === AppState.STOPPED || appState === AppState.ERROR) {
+    const title = messageTitles[appState];
 
     return (
       <>
         <Subsection title={title}>
-          {state === AppState.STOPPED && <NotificationStopped />}
-          {state === AppState.ERROR && (
+          {appState === AppState.STOPPED && <NotificationStopped />}
+          {appState === AppState.ERROR && (
             <NotificationError errorMessage={error} />
           )}
         </Subsection>
@@ -217,7 +226,7 @@ function Main() {
           <Button
             appearance="actionStyle"
             onClick={() => {
-              setState(AppState.IDLE);
+              setAppState(AppState.IDLE);
               setError(undefined);
             }}
           >
@@ -231,9 +240,39 @@ function Main() {
   const derivedElementWidth = toFloat(elementWidth - patternMessage.xPadding);
   const derivedElementHeight = toFloat(elementHeight - patternMessage.yPadding);
 
+  const handleSectionToggle = (section: string, isOpen: boolean) =>
+    setIsSubsectionOpen((prev) => ({ ...prev, [section]: isOpen }));
+
   return (
     <>
-      <CollapsibleSubsection title="Settings">
+      <CollapsibleSubsection
+        id="settings"
+        title="Settings"
+        isOpen={isSectionOpen.settings}
+        onToggle={handleSectionToggle}
+      >
+        <div className="flex flex-col items-center">
+          <div className="flex w-full">
+            <span className="grow text-sm">Settings</span>
+          </div>
+          <span className="flex w-full justify-evenly">
+            <Button
+              appearance="plainStyle"
+              onClick={() => savePreset(patternMessage)}
+            >
+              <i className="fa-solid fa-floppy-disk"></i> Save
+            </Button>
+            <Button appearance="plainStyle" onClick={clearPreset}>
+              <i className="fa-solid fa-trash"></i> Delete
+            </Button>
+            <Button appearance="plainStyle" onClick={() => loadPreset()}>
+              <i className="fa-solid fa-rotate"></i> Reload
+            </Button>
+          </span>
+        </div>
+        <Button appearance="plainStyle" onClick={applyDefaultPreset}>
+          <i className="fa-solid fa-rotate-left"></i> Reset to default
+        </Button>
         <Select
           prompt="Select a preset"
           options={Object.keys(globalPresets)}
@@ -243,23 +282,13 @@ function Main() {
           }
           title="Predefined settings."
         />
-        <div className="flex items-center">
-          <span className="grow">Current settings:</span>
-          <Button
-            appearance="plainStyle"
-            onClick={() => savePreset(patternMessage)}
-          >
-            <i className="fa-solid fa-floppy-disk"></i> Save
-          </Button>
-          <Button appearance="plainStyle" onClick={clearPreset}>
-            <i className="fa-solid fa-trash"></i> Delete
-          </Button>
-        </div>
-        <Button appearance="plainStyle" onClick={applyDefaultPreset}>
-          <i className="fa-solid fa-rotate-left"></i> Reset settings
-        </Button>
       </CollapsibleSubsection>
-      <Subsection title="Frame">
+      <CollapsibleSubsection
+        isOpen={isSectionOpen.frame}
+        id="frame"
+        title="Frame"
+        onToggle={handleSectionToggle}
+      >
         <div className="flex w-full">
           <span className="grow text-sm">Frame size</span>
         </div>
@@ -367,8 +396,19 @@ function Main() {
             px
           </span>
         </div>
-      </Subsection>
-      <Subsection title={`Appearance`}>
+      </CollapsibleSubsection>
+      <CollapsibleSubsection
+        isOpen={isSectionOpen.appearance}
+        id="appearance"
+        title={`Appearance`}
+        onToggle={handleSectionToggle}
+      >
+        <MultiColorPicker
+          colors={patternMessage.colors}
+          onAddColor={handleAddColor}
+          onChangeColor={handleColorChange}
+          onRemoveColor={handleRemoveColor}
+        />
         <Select
           prompt="Select a color preset"
           options={Object.keys(colorPresets)}
@@ -377,12 +417,6 @@ function Main() {
             applyPreset(colorPresets[currentTarget.value])
           }
           title="Predefined colors."
-        />
-        <MultiColorPicker
-          colors={patternMessage.colors}
-          handleAddColor={handleAddColor}
-          handleColorChange={handleColorChange}
-          handleRemoveColor={handleRemoveColor}
         />
         <ButtonSelect<PatternDataMessage, string, typeof supportedShapes>
           id="shapeSelect"
@@ -405,13 +439,22 @@ function Main() {
             },
             {
               value: "polygon",
-              optionLabel: <i className="fa-solid fa-lg fa-diamond"></i>,
+              optionLabel: (
+                <div className="-rotate-90 transform">
+                  <i className="fa-solid fa-lg fa-play"></i>
+                </div>
+              ),
+            },
+            {
+              value: "selection",
+              optionLabel: <i className="fa-solid fa-lg fa-arrow-pointer"></i>,
             },
           ]}
           title="Shape of the elements."
         />
         {patternMessage.shape === "polygon" && (
           <Input<PatternDataMessage, number>
+            labelStyle="pl-4"
             label="Point count"
             id="sidesInput"
             name="pointCount"
@@ -424,8 +467,9 @@ function Main() {
             title="Number of points for the polygon shape."
           />
         )}
-        {patternMessage.shape !== "circle" && (
+        {["circle", "selection"].includes(patternMessage.shape) || (
           <Input<PatternDataMessage, number>
+            labelStyle="pl-4"
             label="Corner radius"
             id="cornerRadiusInput"
             name="cornerRadius"
@@ -470,8 +514,13 @@ function Main() {
           units="%"
           onChange={handleSizeRangeSliderChange}
         />
-      </Subsection>
-      <CollapsibleSubsection title="Options">
+      </CollapsibleSubsection>
+      <CollapsibleSubsection
+        id="options"
+        title="Options"
+        isOpen={isSectionOpen.options}
+        onToggle={handleSectionToggle}
+      >
         <ButtonSelect<PatternDataMessage, string, typeof verticalFadeModes>
           id="verticalFadeModeButtonSelect"
           label="Vertical fade:"
@@ -530,6 +579,7 @@ function Main() {
         />
         {patternMessage.noiseMode !== "none" && (
           <Input<PatternDataMessage, number>
+            labelStyle="pl-4"
             label="Noise amount"
             id="verticalCountInput"
             name="noiseAmount"
@@ -557,7 +607,11 @@ function Main() {
           <Button onClick={onClose}>Close</Button>
           <Button
             appearance="filledStyle"
-            onClick={() => startGeneration(patternMessage)}
+            onClick={() => {
+              setAppState(AppState.GENERATING);
+              setProgress({ percentProgress: 0, timeElapsed: 0 });
+              startGeneration(patternMessage);
+            }}
           >
             Generate
           </Button>

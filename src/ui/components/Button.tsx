@@ -10,7 +10,7 @@ const buttonStyles = {
     "flex h-9 w-full items-center justify-center rounded-md border border-zinc-200 text-lg text-zinc-200 disabled:border-zinc-500 disabled:text-zinc-500",
   filledStyle:
     "rounded-sm bg-white px-4 text-black disabled:bg-zinc-300 disabled:text-zinc-800",
-  plainStyle: "px-2 underline",
+  plainStyle: "px-1 underline",
 };
 
 export default function Button({

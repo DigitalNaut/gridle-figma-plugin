@@ -53,16 +53,16 @@ figma.ui.onmessage = async (msg) => {
       generator.stop();
       break;
 
-    case messageTypes.UIStarted: {
-      const preset = loadSettingsFromStorage();
-      if (preset) presetLoaded(preset);
-      break;
-    }
-
     case messageTypes.savePreset:
       saveSettingsToStorage(msg.preset);
       figma.notify("Current settings saved");
       break;
+
+    case messageTypes.loadPreset: {
+      const preset = loadSettingsFromStorage();
+      if (preset) presetLoaded(preset);
+      break;
+    }
 
     case messageTypes.clearPreset:
       clearSettingsInStorage();

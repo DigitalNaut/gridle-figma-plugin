@@ -3,8 +3,8 @@ import { patternDataMessageSchema } from "@common";
 
 import { SAVED_SETTINGS_KEY } from "~/settings";
 
-export function loadSettingsFromStorage() {
-  const preset = figma.root.getPluginData(SAVED_SETTINGS_KEY);
+export function loadSettingsFromStorage(presetKey?: string) {
+  const preset = figma.root.getPluginData(presetKey ?? SAVED_SETTINGS_KEY);
 
   if (preset) {
     console.log("Loading settings...");

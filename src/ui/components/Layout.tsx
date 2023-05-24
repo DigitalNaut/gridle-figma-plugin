@@ -1,11 +1,10 @@
 import type { PropsWithChildren } from "react";
-import { useState } from "react";
 
 import Logo from "@components/Logo";
 
 export function Layout({ children }: PropsWithChildren) {
   return (
-    <main className="flex w-full flex-col items-center gap-2 p-4">
+    <main className="flex w-full flex-col items-center gap-2 rounded-md p-2">
       <header className="flex items-center justify-center gap-2">
         <Logo />
         <h2 className="text-2xl">Gridle</h2>
@@ -19,6 +18,9 @@ export function Footer({ children }: PropsWithChildren) {
   return <footer className="flex w-full gap-2">{children}</footer>;
 }
 
+const subsectionBaseStyle =
+  "flex w-full flex-col gap-2 rounded-md bg-black/10 p-3";
+
 export function Subsection({
   title,
   children,
@@ -26,28 +28,30 @@ export function Subsection({
   return (
     <>
       <h3 className="text-sm font-semibold">{title}</h3>
-      <div className="flex w-full flex-col gap-2 rounded-sm bg-black/10 p-2">
-        {children}
-      </div>
+      <div className={subsectionBaseStyle}>{children}</div>
     </>
   );
 }
 
 export function CollapsibleSubsection({
+  id,
   title,
   children,
-  open = false,
+  isOpen,
+  onToggle,
 }: PropsWithChildren<{
+  id: string;
   title: string;
-  open?: boolean;
+  isOpen: boolean;
+  onToggle: (id: string, isOpen: boolean) => void;
 }>) {
-  const [isOpen, setIsOpen] = useState(open);
-  const toggleOpen = () => setIsOpen((prev) => !prev);
-
   return (
     <>
       <h3 className="w-full text-sm font-semibold">
-        <button className="flex w-full items-center gap-2" onClick={toggleOpen}>
+        <button
+          className="flex w-full items-center gap-3"
+          onClick={() => onToggle(id, !isOpen)}
+        >
           <i
             className={`fa-solid fa-angle-right transform ${
               isOpen ? "rotate-90" : "rotate-0"
@@ -59,11 +63,7 @@ export function CollapsibleSubsection({
           )}
         </button>
       </h3>
-      {isOpen && (
-        <div className="flex w-full flex-col gap-2 rounded-sm bg-black/10 p-2">
-          {children}
-        </div>
-      )}
+      {isOpen && <div className={subsectionBaseStyle}>{children}</div>}
     </>
   );
 }

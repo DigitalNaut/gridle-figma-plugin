@@ -1,15 +1,15 @@
 export default function MultiColorPicker({
   colors,
   colorsLimit = 24,
-  handleAddColor,
-  handleColorChange,
-  handleRemoveColor,
+  onAddColor,
+  onChangeColor,
+  onRemoveColor,
 }: {
   colors: string[];
   colorsLimit?: number;
-  handleAddColor: () => void;
-  handleColorChange: (color: string, colorIndex: number) => void;
-  handleRemoveColor: (colorIndex: number) => void;
+  onAddColor: () => void;
+  onChangeColor: (color: string, colorIndex: number) => void;
+  onRemoveColor: (colorIndex: number) => void;
 }) {
   return (
     <div className="flex w-full flex-col gap-2">
@@ -25,14 +25,14 @@ export default function MultiColorPicker({
                 type="color"
                 value={color}
                 onChange={({ currentTarget }) =>
-                  handleColorChange(currentTarget.value, colorIndex)
+                  onChangeColor(currentTarget.value, colorIndex)
                 }
               />
               {colorIndex > 0 && (
                 <button
                   className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-zinc-600 group-hover:shadow-md"
                   title="Remove color"
-                  onClick={() => handleRemoveColor(colorIndex)}
+                  onClick={() => onRemoveColor(colorIndex)}
                 >
                   <i className="fa-solid fa-xmark"></i>
                 </button>
@@ -44,7 +44,7 @@ export default function MultiColorPicker({
           <button
             className="flex h-9 w-1/6 items-center justify-center rounded-md border border-zinc-200 text-xl font-bold text-zinc-200"
             title="Add color"
-            onClick={handleAddColor}
+            onClick={onAddColor}
           >
             <i className="fa-solid fa-plus text-sm"></i>
           </button>
