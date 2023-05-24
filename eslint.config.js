@@ -1,33 +1,38 @@
-// @ts-check
-import parser from "@typescript-eslint/parser";
-import tsLintPlugin from "@typescript-eslint/eslint-plugin";
-import reactHooksPlugin from "eslint-plugin-react-hooks";
-import * as importPlugin from "eslint-plugin-import";
-import jsxA11yPlugin from "eslint-plugin-jsx-a11y";
+// ts-check
+import tsParser from "@typescript-eslint/parser";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
+import importPlugin from "eslint-plugin-import";
 import reactPlugin from "eslint-plugin-react";
+import jsxA11yPlugin from "eslint-plugin-jsx-a11y";
+import reactHooksPlugin from "eslint-plugin-react-hooks";
 
 export default [
   {
     files: ["src/**/*{.ts,.tsx}"],
-    plugins: {
-      importPlugin,
-      tsLintPlugin,
-    },
     languageOptions: {
-      parser,
+      parser: tsParser,
       parserOptions: {
+        ecmaFeatures: { modules: true },
         ecmaVersion: "2017",
         project: ["src/common/tsconfig.json", "src/plugin/tsconfig.json"],
       },
     },
+    plugins: {
+      import: importPlugin,
+      "@typescript-eslint": tsPlugin,
+      tsPlugin,
+    },
     rules: {
+      ...importPlugin.configs.recommended.rules,
+      ...tsPlugin.configs.recommended.rules,
       "object-shorthand": "error",
-      "tsLintPlugin/consistent-type-exports": "error",
-      "tsLintPlugin/consistent-type-imports": "error",
-      "tsLintPlugin/no-non-null-assertion": "off",
-      "tsLintPlugin/no-unnecessary-type-assertion": "error",
-      "tsLintPlugin/array-type": ["error", { default: "array-simple" }],
-      "tsLintPlugin/no-unused-vars": [
+      "import/no-unresolved": "off",
+      "@typescript-eslint/consistent-type-exports": "error",
+      "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-unnecessary-type-assertion": "error",
+      "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
+      "@typescript-eslint/no-unused-vars": [
         "warn",
         {
           argsIgnorePattern: "^_",
@@ -39,13 +44,8 @@ export default [
   },
   {
     files: ["src/ui/**/*{.ts,.tsx}"],
-    plugins: {
-      reactPlugin,
-      jsxA11yPlugin,
-      reactHooksPlugin,
-    },
     languageOptions: {
-      parser,
+      parser: tsParser,
       parserOptions: {
         ecmaVersion: "latest",
         project: ["src/ui/tsconfig.json"],
@@ -54,9 +54,22 @@ export default [
         },
       },
     },
+    settings: {
+      react: {
+        version: "detect",
+      },
+    },
+    plugins: {
+      react: reactPlugin,
+      "jsx-a11y": jsxA11yPlugin,
+      "react-hooks": reactHooksPlugin,
+    },
     rules: {
-      "reactHooksPlugin/rules-of-hooks": "error",
-      "reactHooksPlugin/exhaustive-deps": "warn",
+      ...reactPlugin.configs.recommended.rules,
+      ...jsxA11yPlugin.configs.recommended.rules,
+      ...reactHooksPlugin.configs.recommended.rules,
+      "react/react-in-jsx-scope": "off",
+      "import/no-unresolved": "off",
     },
   },
 ];
