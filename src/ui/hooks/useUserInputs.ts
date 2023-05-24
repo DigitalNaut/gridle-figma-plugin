@@ -6,9 +6,13 @@ import type {
   SetStateAction,
 } from "react";
 
-import type { PatternDataMessage, KeysOfType } from "@common/index";
-import { clamp, toInteger } from "@common/utils/index";
-import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "@common/index";
+import type { PatternDataMessage, KeysOfType } from "@common";
+import {
+  clamp,
+  toInteger,
+  MIN_FRAME_SIZE,
+  MAX_FRAME_SIZE,
+} from "@common";
 
 type StateSetter = Dispatch<SetStateAction<PatternDataMessage>>;
 

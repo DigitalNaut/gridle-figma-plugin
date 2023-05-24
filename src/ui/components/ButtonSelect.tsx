@@ -1,6 +1,6 @@
 import type { PropsWithChildren, MouseEventHandler } from "react";
 
-import type { ExtractKeysByValueType } from "@common/index";
+import type { ExtractKeysByValueType } from "@common";
 
 type Option<U> = {
   optionLabel: JSX.Element;

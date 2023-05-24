@@ -1,5 +1,5 @@
-import type { PatternDataMessage } from "@common/index";
-import { toPercentage, formatSeconds, messageTypes } from "@common/index";
+import type { PatternDataMessage } from "@common";
+import { toPercentage, formatSeconds, messageTypes } from "@common";
 
 import type { Progress } from "./generator/generator";
 

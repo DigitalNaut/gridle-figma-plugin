@@ -1,11 +1,11 @@
-import type { PatternDataMessage } from "@common/index";
+import type { PatternDataMessage } from "@common";
 import {
   hexToRGB,
   createChronometer,
   lastUpdateTracker,
   sleep,
   OPACITY_RANGE_LIMITS,
-} from "@common/index";
+} from "@common";
 
 import type { GeneratorStopCode, ShapeNode } from "~/types";
 import { AbortController } from "~/utils/abortController";

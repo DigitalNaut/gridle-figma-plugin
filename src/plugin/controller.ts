@@ -1,4 +1,4 @@
-import { messageTypes } from "@common/index";
+import { messageTypes } from "@common";
 
 import {
   postGenerationStarted,

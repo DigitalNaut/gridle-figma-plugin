@@ -1,4 +1,4 @@
-import type { ExtractKeysByValueType } from "@common/utils/index";
+import type { ExtractKeysByValueType } from "@common";
 import type {
   DetailedHTMLProps,
   InputHTMLAttributes,

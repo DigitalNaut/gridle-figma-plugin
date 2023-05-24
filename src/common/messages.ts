@@ -1,0 +1,16 @@
+export const messageTypes = {
+  close: "close",
+  UIStarted: "UI-started",
+  generationProgress: "generation-progress",
+  generationComplete: "generation-complete",
+  generationStarted: "generation-started",
+  generationStopped: "generation-stopped",
+  generationError: "generation-error",
+  generationStart: "generation-start",
+  generationAbort: "generation-abort",
+  generationStop: "generation-stop",
+  presetLoaded: "preset-loaded",
+  savePreset: "save-preset",
+  loadPreset: "load-preset",
+  clearPreset: "clear-preset",
+};

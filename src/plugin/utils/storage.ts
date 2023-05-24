@@ -1,5 +1,5 @@
-import type { PatternDataMessage } from "@common/index";
-import { patternDataMessageSchema } from "@common/index";
+import type { PatternDataMessage } from "@common";
+import { patternDataMessageSchema } from "@common";
 
 import { SAVED_SETTINGS_KEY } from "~/settings";
 

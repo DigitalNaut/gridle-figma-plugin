@@ -1,4 +1,4 @@
-import type { PatternDataMessage } from "@common/index";
+import type { PatternDataMessage } from "@common";
 
 type ColorPreset = Pick<PatternDataMessage, "colors">;
 type AppearancePreset = Pick<

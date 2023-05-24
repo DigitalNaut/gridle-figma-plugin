@@ -48,7 +48,7 @@ export const patternDataMessageSchema = z.object({
       z.number().min(SIZE_RANGE_LIMITS[0]).max(SIZE_RANGE_LIMITS[1]),
       z.number().min(SIZE_RANGE_LIMITS[0]).max(SIZE_RANGE_LIMITS[1]),
     ])
-    .default([100, 100]),
+    .default([100, 210]),
   opacityThresholdMode: z.enum(opacityThresholdModes).default("remove"),
   verticalFadeMode: z.enum(verticalFadeModes).default("none"),
   noiseMode: z.enum(noiseModes).default("uniform"),
@@ -57,20 +57,3 @@ export const patternDataMessageSchema = z.object({
 
 export type PatternDataMessage = z.infer<typeof patternDataMessageSchema>;
 export const defaultInputValues = patternDataMessageSchema.parse({});
-
-export const messageTypes = {
-  close: "close",
-  UIStarted: "UI-started",
-  generationProgress: "generation-progress",
-  generationComplete: "generation-complete",
-  generationStarted: "generation-started",
-  generationStopped: "generation-stopped",
-  generationError: "generation-error",
-  generationStart: "generation-start",
-  generationAbort: "generation-abort",
-  generationStop: "generation-stop",
-  presetLoaded: "preset-loaded",
-  savePreset: "save-preset",
-  loadPreset: "load-preset",
-  clearPreset: "clear-preset",
-};

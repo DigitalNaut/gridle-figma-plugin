@@ -22,7 +22,7 @@
     "paths": {
       "@components/*": ["./components/*"],
       "@hooks/*": ["./hooks/*"],
-      "@common/*": ["../common/*"],
+      "@common": ["../common/index"],
       "~/*": ["./*"],
     },
     "types": ["node"],

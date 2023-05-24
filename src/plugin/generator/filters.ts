@@ -1,4 +1,4 @@
-import type { PatternDataMessage } from "@common/index";
+import type { PatternDataMessage } from "@common";
 
 import type { ShapeNode } from "~/types";
 import { transformRotateAxis2D } from "~/utils/math";

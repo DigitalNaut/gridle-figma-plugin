@@ -1,4 +1,4 @@
-import type { StopCode } from "@common/index";
+import type { StopCode } from "@common";
 
 export type GeneratorStopCode = StopCode | "completed";
 

@@ -1,13 +1,11 @@
 import { useMemo, useState } from "react";
 
-import type { PatternDataMessage, supportedShapes } from "@common/index";
+import type { PatternDataMessage, supportedShapes } from "@common";
 import {
   formatSeconds,
   sleep,
   toFloat,
   toPercentage,
-} from "@common/utils/index";
-import {
   messageTypes,
   noiseModes,
   opacityThresholdModes,
@@ -18,7 +16,7 @@ import {
   OPACITY_RANGE_LIMITS,
   ROTATION_RANGE_LIMITS,
   SIZE_RANGE_LIMITS,
-} from "@common/index";
+} from "@common";
 
 import {
   Layout,

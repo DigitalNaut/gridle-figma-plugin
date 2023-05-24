@@ -5,7 +5,7 @@ import type {
   RefObject,
 } from "react";
 
-import type { ExtractKeysByValueType } from "@common/utils/types";
+import type { ExtractKeysByValueType } from "@common";
 
 export default function Input<T extends Record<string, unknown>, U>({
   label,
