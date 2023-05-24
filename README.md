@@ -19,27 +19,27 @@ I'm working on getting this plugin into the Figma Community so it can be install
 
 ## Planned features
 
-✅ Loading indicator and async (it current blocks the main thread, whoops!)
-
-✅ Multiple range slider for element opacity
-
-⏹ Saving and loading current settings
+🟦 Saving and loading current settings
 
 🟨 Creating personalized presets
 
+🟨 Option to use a color pattern instead of random color selection
+
 ⬜ Seeds for randomness generation
-
-✅ More shape options (triangles, hexagons, custom shapes, etc.)
-
-⬜ UI options based on icon buttons rather than dropdowns
-
-⬜ Option to use a color pattern instead of random color selection
 
 ⬜ Lock certain proportions (like when image editors lock aspect ratios) for horizontal and vertical element counts
 
-⬜ Use a selected shape as the base element for the grid
+⬜ Clone the selected shape in Figma as the pattern element of the grid
 
-Legend: ✅ Done, ⏹ In progress, 🟨 Planned, ⬜ Not started
+✅ Loading indicator and async
+
+✅ Multiple range slider for element opacity
+
+✅ More shape options (triangles, hexagons, custom shapes, etc.)
+
+✅ UI options based on icon buttons rather than dropdowns
+
+Legend: ✅ Done, 🟦 In progress, 🟨 Planned, ⬜ Not started
 
 ## For developers
 

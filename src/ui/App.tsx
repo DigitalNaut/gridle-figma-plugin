@@ -1,15 +1,18 @@
 import { useMemo, useState } from "react";
 
-import type { PatternDataMessage, supportedShapes } from "@common";
+import type {
+  PatternDataMessage,
+  supportedShapes,
+  verticalFadeModes,
+  noiseModes,
+} from "@common";
 import {
   formatSeconds,
   sleep,
   toFloat,
   toPercentage,
   messageTypes,
-  noiseModes,
   opacityThresholdModes,
-  verticalFadeModes,
   defaultInputValues,
   MIN_FRAME_SIZE,
   MAX_FRAME_SIZE,
@@ -383,7 +386,7 @@ function Main() {
         />
         <ButtonSelect<PatternDataMessage, string, typeof supportedShapes>
           id="shapeSelect"
-          label="Shape"
+          label="Shape:"
           name="shape"
           value={patternMessage.shape}
           onClick={handleStringInputChange}
@@ -469,23 +472,61 @@ function Main() {
         />
       </Subsection>
       <CollapsibleSubsection title="Options">
-        <Select<PatternDataMessage, string>
-          name="verticalFadeMode"
-          options={verticalFadeModes}
-          id="verticalFadeModeSelect"
+        <ButtonSelect<PatternDataMessage, string, typeof verticalFadeModes>
+          id="verticalFadeModeButtonSelect"
           label="Vertical fade:"
+          name="verticalFadeMode"
           value={patternMessage.verticalFadeMode}
-          onChange={handleStringInputChange}
-          title="Create a vertical fade by changing the opacity values of the elements in the direction selected."
+          onClick={handleStringInputChange}
+          options={[
+            {
+              value: "ascending",
+              optionLabel: (
+                <i className="fa-solid fa-lg fa-arrow-up-short-wide"></i>
+              ),
+            },
+            {
+              value: "descending",
+              optionLabel: (
+                <i className="fa-solid fa-lg fa-arrow-down-wide-short"></i>
+              ),
+            },
+            {
+              value: "none",
+              optionLabel: <i className="fa-solid fa-lg fa-ban"></i>,
+            },
+          ]}
+          title="Shape of the elements."
         />
-        <Select<PatternDataMessage, string>
-          name="noiseMode"
-          options={noiseModes}
-          label="Noise mode:"
+        <ButtonSelect<PatternDataMessage, string, typeof noiseModes>
           id="noiseModeSelect"
+          label="Noise mode:"
+          name="noiseMode"
           value={patternMessage.noiseMode}
-          onChange={handleStringInputChange}
-          title="Remove random elements to add noise and create a more organic look."
+          onClick={handleStringInputChange}
+          options={[
+            {
+              value: "ascending",
+              optionLabel: (
+                <i className="fa-solid fa-lg fa-arrow-down-wide-short"></i>
+              ),
+            },
+            {
+              value: "descending",
+              optionLabel: (
+                <i className="fa-solid fa-lg fa-arrow-up-short-wide"></i>
+              ),
+            },
+            {
+              value: "uniform",
+              optionLabel: <i className="fa-solid fa-lg fa-bars"></i>,
+            },
+            {
+              value: "none",
+              optionLabel: <i className="fa-solid fa-lg fa-ban"></i>,
+            },
+          ]}
+          title="Shape of the elements."
         />
         {patternMessage.noiseMode !== "none" && (
           <Input<PatternDataMessage, number>

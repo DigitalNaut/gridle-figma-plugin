@@ -55,6 +55,7 @@ export default function ButtonSelect<
                 : "text-current"
             }`}
             name={name}
+            title={optionValue.toLocaleUpperCase()}
             value={optionValue}
             onClick={onOptionClick}
           >
