@@ -121,30 +121,3 @@ export const globalPresets: PresetRecord = {
   Bubblegum: bubblegumGlobalPreset,
 } satisfies PresetRecord;
 
-export const MIN_FRAME_SIZE = 1;
-export const MAX_FRAME_SIZE = 1920;
-export const OPACITY_RANGE_LIMITS: [number, number] = [0, 100];
-export const defaultColors = mardiGrasColorPreset.colors;
-
-export const defaultInputValues: PatternDataMessage = {
-  type: "generate-pattern",
-  frameWidth: 300,
-  frameHeight: 300,
-  columns: 30,
-  rows: 30,
-  xPadding: 2,
-  yPadding: 2,
-  rotationRange: [-180, 180],
-  rotationRangeLimits: [-180, 180],
-  opacityRange: [0, 100],
-  opacityRangeLimits: OPACITY_RANGE_LIMITS,
-  opacityThresholdMode: "remove",
-  sizeRange: [100, 100],
-  sizeRangeLimits: [1, 300],
-  colors: defaultColors,
-  shape: "square",
-  cornerRadius: 0,
-  verticalFadeMode: "none",
-  noiseMode: "uniform",
-  noiseAmount: 0.5,
-};

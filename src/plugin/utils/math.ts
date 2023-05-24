@@ -8,16 +8,13 @@ const degToRad = PI / 180;
  * @param node
  */
 export function transformRotateAxis2D(
+  angle: number,
   x: number,
   y: number,
-  width: number,
-  height: number,
-  angle: number,
+  cx: number,
+  cy: number,
 ): Transform {
   const theta = angle * degToRad;
-
-  const cx = x + width * 0.5;
-  const cy = y + height * 0.5;
 
   const newX =
     cos(theta) * x + y * sin(theta) - cy * sin(theta) - cx * cos(theta) + cx;

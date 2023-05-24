@@ -1,9 +1,10 @@
-import type { PatternDataMessage } from "@common/main";
+import type { PatternDataMessage } from "@common/index";
 import {
   hexToRGB,
   createChronometer,
   lastUpdateTracker,
   sleep,
+  OPACITY_RANGE_LIMITS,
 } from "@common/index";
 
 import type { GeneratorStopCode, ShapeNode } from "~/types";
@@ -45,38 +46,39 @@ function createTemplateElement({
   cornerRadius,
   width,
   height,
+  pointCount,
 }: {
   shape: PatternDataMessage["shape"];
   cornerRadius: number;
   width: number;
   height: number;
+  pointCount: number;
 }) {
-  let element: ShapeNode;
+  let newShape: ShapeNode;
 
   switch (shape) {
     case "circle":
-      element = figma.createEllipse();
+      newShape = figma.createEllipse();
       break;
     case "star":
-      element = figma.createStar();
+      newShape = figma.createStar();
       break;
     case "polygon":
-      element = figma.createPolygon();
-      element.pointCount = 6;
+      newShape = figma.createPolygon();
+      newShape.pointCount = pointCount;
       break;
     case "square":
-      element = figma.createRectangle();
+      newShape = figma.createRectangle();
       break;
   }
 
-  figma.createRectangle();
-  element.resize(width, height);
-  element.cornerRadius = +cornerRadius;
-  element.fills = [];
-  element.strokes = [];
-  element.strokeWeight = 0;
-  element.constraints = { horizontal: "SCALE", vertical: "SCALE" };
-  return element;
+  newShape.resize(width, height);
+  newShape.cornerRadius = +cornerRadius;
+  newShape.fills = [];
+  newShape.strokes = [];
+  newShape.strokeWeight = 0;
+  newShape.constraints = { horizontal: "SCALE", vertical: "SCALE" };
+  return newShape;
 }
 
 function groupNodes(name: string, nodes: SceneNode[], parent: FrameNode) {
@@ -133,9 +135,9 @@ async function generatePattern(
     colors,
     shape,
     rotationRange: [minRotation, maxRotation],
+    pointCount,
     cornerRadius,
     opacityRange,
-    opacityRangeLimits,
     opacityThresholdMode,
     sizeRange,
     noiseMode,
@@ -154,6 +156,7 @@ async function generatePattern(
     cornerRadius,
     width: elementWidth - xPadding,
     height: elementHeight - yPadding,
+    pointCount,
   });
   const getNewColor = colorGenerator(colors.map(hexToRGB));
   const getShapeClone = createShapeCloner(sampleElement, {
@@ -166,7 +169,7 @@ async function generatePattern(
   // Properties and filters
   const [minOpacity, maxOpacity] = transformRange01(
     opacityRange,
-    opacityRangeLimits[1],
+    OPACITY_RANGE_LIMITS[1],
   );
   const [minSize, maxSize] = transformRange01(sizeRange, 100);
   const noiseFilter = createNoiseFilter(noiseMode, noiseAmount);
@@ -263,8 +266,8 @@ async function generatePattern(
           continue;
         }
 
-        varySizeFilter?.(node);
         varyRotationFilter?.(node);
+        varySizeFilter?.(node);
 
         node.fills = [{ type: "SOLID", color: getNewColor(), opacity }];
       }

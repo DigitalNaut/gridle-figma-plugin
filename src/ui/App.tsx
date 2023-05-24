@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import type { PatternDataMessage } from "@common/index";
+import type { PatternDataMessage, supportedShapes } from "@common/index";
 import {
   formatSeconds,
   sleep,
@@ -11,8 +11,13 @@ import {
   messageTypes,
   noiseModes,
   opacityThresholdModes,
-  supportedShapes,
   verticalFadeModes,
+  defaultInputValues,
+  MIN_FRAME_SIZE,
+  MAX_FRAME_SIZE,
+  OPACITY_RANGE_LIMITS,
+  ROTATION_RANGE_LIMITS,
+  SIZE_RANGE_LIMITS,
 } from "@common/index";
 
 import {
@@ -38,14 +43,9 @@ import { useBasicInputs, useManagedInputs } from "@hooks/useUserInputs";
 import { useColorHandlers } from "@hooks/useColorHandlers";
 
 import type { Preset, PresetRecord } from "./settings";
-import {
-  MIN_FRAME_SIZE,
-  MAX_FRAME_SIZE,
-  defaultInputValues,
-  globalPresets,
-  colorPresets,
-} from "./settings";
+import { globalPresets, colorPresets } from "./settings";
 import "./index.css";
+import ButtonSelect from "@components/ButtonSelect";
 
 enum AppState {
   IDLE = "idle",
@@ -94,7 +94,7 @@ function Main() {
     setPatternMessage((prev) => ({ ...prev, sizeRange }));
   const handleRotationRangeSliderChange = (rotationRange: [number, number]) =>
     setPatternMessage((prev) => ({ ...prev, rotationRange }));
-  const { handleSelectChange, handleNumberInputChange } =
+  const { handleStringInputChange, handleNumberInputChange } =
     useBasicInputs(setPatternMessage);
   const { handleColorChange, handleAddColor, handleRemoveColor } =
     useColorHandlers(setPatternMessage, patternMessage);
@@ -383,35 +383,68 @@ function Main() {
           handleColorChange={handleColorChange}
           handleRemoveColor={handleRemoveColor}
         />
-        <Select<PatternDataMessage, string>
-          name="shape"
-          options={supportedShapes}
+        <ButtonSelect<PatternDataMessage, string, typeof supportedShapes>
           id="shapeSelect"
           label="Shape"
+          name="shape"
           value={patternMessage.shape}
-          onChange={handleSelectChange}
+          onClick={handleStringInputChange}
+          options={[
+            {
+              value: "square",
+              optionLabel: <i className="fa-solid fa-lg fa-square"></i>,
+            },
+            {
+              value: "circle",
+              optionLabel: <i className="fa-solid fa-lg fa-circle"></i>,
+            },
+            {
+              value: "star",
+              optionLabel: <i className="fa-solid fa-lg fa-star"></i>,
+            },
+            {
+              value: "polygon",
+              optionLabel: <i className="fa-solid fa-lg fa-diamond"></i>,
+            },
+          ]}
           title="Shape of the elements."
         />
-        <Input<PatternDataMessage, number>
-          label="Corner radius"
-          id="cornerRadiusInput"
-          name="cornerRadius"
-          type="number"
-          min={0}
-          max={derivedElementWidth * 0.5}
-          maxLength={3}
-          value={toFloat(patternMessage.cornerRadius)}
-          onChange={handleNumberInputChange}
-          title="Corner radius of the elements."
-        />
+        {patternMessage.shape === "polygon" && (
+          <Input<PatternDataMessage, number>
+            label="Point count"
+            id="sidesInput"
+            name="pointCount"
+            type="number"
+            min={3}
+            max={10}
+            maxLength={2}
+            value={patternMessage.pointCount}
+            onChange={handleNumberInputChange}
+            title="Number of points for the polygon shape."
+          />
+        )}
+        {patternMessage.shape !== "circle" && (
+          <Input<PatternDataMessage, number>
+            label="Corner radius"
+            id="cornerRadiusInput"
+            name="cornerRadius"
+            type="number"
+            min={0}
+            max={derivedElementWidth * 0.5}
+            maxLength={3}
+            value={toFloat(patternMessage.cornerRadius)}
+            onChange={handleNumberInputChange}
+            title="Corner radius of the elements."
+          />
+        )}
         <MultiRangeSlider
           label="Rotation range"
           id="rotationRangeInput"
           title="Range of rotation values to use for the elements."
           minVal={patternMessage.rotationRange[0]}
           maxVal={patternMessage.rotationRange[1]}
-          min={patternMessage.rotationRangeLimits[0]}
-          max={patternMessage.rotationRangeLimits[1]}
+          min={ROTATION_RANGE_LIMITS[0]}
+          max={ROTATION_RANGE_LIMITS[1]}
           onChange={handleRotationRangeSliderChange}
         />
         <MultiRangeSlider
@@ -420,8 +453,8 @@ function Main() {
           title="Range of opacity values to use for the elements."
           minVal={patternMessage.opacityRange[0]}
           maxVal={patternMessage.opacityRange[1]}
-          min={patternMessage.opacityRangeLimits[0]}
-          max={patternMessage.opacityRangeLimits[1]}
+          min={OPACITY_RANGE_LIMITS[0]}
+          max={OPACITY_RANGE_LIMITS[1]}
           units="%"
           onChange={handleOpacityRangeSliderChange}
         />
@@ -431,8 +464,8 @@ function Main() {
           title="Range of size values to use for the elements."
           minVal={patternMessage.sizeRange[0]}
           maxVal={patternMessage.sizeRange[1]}
-          min={patternMessage.sizeRangeLimits[0]}
-          max={patternMessage.sizeRangeLimits[1]}
+          min={SIZE_RANGE_LIMITS[0]}
+          max={SIZE_RANGE_LIMITS[1]}
           units="%"
           onChange={handleSizeRangeSliderChange}
         />
@@ -444,7 +477,7 @@ function Main() {
           id="verticalFadeModeSelect"
           label="Vertical fade:"
           value={patternMessage.verticalFadeMode}
-          onChange={handleSelectChange}
+          onChange={handleStringInputChange}
           title="Create a vertical fade by changing the opacity values of the elements in the direction selected."
         />
         <Select<PatternDataMessage, string>
@@ -453,7 +486,7 @@ function Main() {
           label="Noise mode:"
           id="noiseModeSelect"
           value={patternMessage.noiseMode}
-          onChange={handleSelectChange}
+          onChange={handleStringInputChange}
           title="Remove random elements to add noise and create a more organic look."
         />
         {patternMessage.noiseMode !== "none" && (
@@ -476,7 +509,7 @@ function Main() {
           label="Outside opacity range:"
           id="opacityThresholdModeSelect"
           value={patternMessage.opacityThresholdMode}
-          onChange={handleSelectChange}
+          onChange={handleStringInputChange}
           title="How to handle elements with opacity value below the threshold."
         />
       </CollapsibleSubsection>

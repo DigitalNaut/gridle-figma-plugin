@@ -2,46 +2,36 @@ import type {
   ChangeEvent,
   ChangeEventHandler,
   Dispatch,
+  MouseEventHandler,
   SetStateAction,
 } from "react";
 
 import type { PatternDataMessage, KeysOfType } from "@common/index";
 import { clamp, toInteger } from "@common/utils/index";
-
-import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "~/settings";
+import { MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "@common/index";
 
 type StateSetter = Dispatch<SetStateAction<PatternDataMessage>>;
 
 export function useBasicInputs(
   setState: Dispatch<SetStateAction<PatternDataMessage>>,
 ) {
-  const handleSelectChange: ChangeEventHandler<HTMLSelectElement> = ({
+  const handleStringInputChange: ChangeEventHandler<
+    HTMLSelectElement | HTMLInputElement
+  > &
+    MouseEventHandler<HTMLButtonElement> = ({
     currentTarget: { name, value },
   }) => setState((prev) => ({ ...prev, [name]: value }));
 
-  const handleInputChange: ChangeEventHandler<HTMLInputElement> = ({
-    currentTarget: { name, value },
-  }) =>
-    setState((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
   const handleNumberInputChange: ChangeEventHandler<HTMLInputElement> = ({
     currentTarget: { name, value },
-  }) =>
-    setState((prev) => ({
-      ...prev,
-      [name]: +value,
-    }));
+  }) => setState((prev) => ({ ...prev, [name]: +value }));
 
   const handleCheckboxChange: ChangeEventHandler<HTMLInputElement> = ({
     currentTarget: { name, checked },
   }) => setState((prev) => ({ ...prev, [name]: checked }));
 
   return {
-    handleSelectChange,
-    handleInputChange,
+    handleStringInputChange,
     handleNumberInputChange,
     handleCheckboxChange,
   };

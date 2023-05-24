@@ -104,16 +104,23 @@ export function createRotationVariationFilter({
   maxRotation: number;
 }) {
   const deltaRotation = maxRotation - minRotation;
+  const fixedAngle = () => minRotation;
   const randomAngle = () => Math.random() * deltaRotation + minRotation;
+  const getAngleFn = deltaRotation > 1 ? randomAngle : fixedAngle;
 
-  function rotateOnCenterAxis(node: ShapeNode) {
+  return function rotateOnCenterAxis(node: ShapeNode) {
     const { x, y, width, height } = node;
-    const angle = randomAngle();
+    const angle = getAngleFn();
 
-    node.relativeTransform = transformRotateAxis2D(x, y, width, height, angle);
-  }
-
-  return deltaRotation > 1 ? rotateOnCenterAxis : null;
+    if (angle !== 0)
+      node.relativeTransform = transformRotateAxis2D(
+        angle,
+        x,
+        y,
+        x + width * 0.5,
+        y + height * 0.5,
+      );
+  };
 }
 
 export function colorGenerator(colors: RGB[]) {
