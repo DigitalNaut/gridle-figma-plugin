@@ -1,10 +1,12 @@
 export default function MultiColorPicker({
+  label,
   colors,
   colorsLimit = 24,
   onAddColor,
   onChangeColor,
   onRemoveColor,
 }: {
+  label: string;
   colors: string[];
   colorsLimit?: number;
   onAddColor: () => void;
@@ -13,7 +15,7 @@ export default function MultiColorPicker({
 }) {
   return (
     <div className="flex w-full flex-col gap-2">
-      {`Colors (${colors.length})`}
+      {label}
       <div className="flex w-full flex-wrap items-center">
         {colors.map((color, colorIndex) => (
           <div key={colorIndex} className="group relative h-10 w-1/6">
@@ -28,15 +30,13 @@ export default function MultiColorPicker({
                   onChangeColor(currentTarget.value, colorIndex)
                 }
               />
-              {colorIndex > 0 && (
-                <button
-                  className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-zinc-600 group-hover:shadow-md"
-                  title="Remove color"
-                  onClick={() => onRemoveColor(colorIndex)}
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </button>
-              )}
+              <button
+                className="absolute right-0 top-0 hidden h-5 w-5 items-center justify-center rounded-full shadow-sm group-hover:flex group-hover:border group-hover:bg-zinc-600 group-hover:shadow-md"
+                title="Remove color"
+                onClick={() => onRemoveColor(colorIndex)}
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
             </label>
           </div>
         ))}

@@ -1,4 +1,5 @@
-import { messageTypes } from "@common";
+import type { ElementSelectionTypes } from "@common";
+import { messageTypes, elementSelectionTypes } from "@common";
 
 import {
   postGenerationStarted,
@@ -6,6 +7,7 @@ import {
   postGenerationStopped,
   postGenerationError,
   presetLoaded,
+  postSelectionChanged,
 } from "./messages";
 import { DEFAULT_WINDOW_OPTIONS } from "./settings";
 import {
@@ -14,16 +16,36 @@ import {
   clearSettingsInStorage,
 } from "./utils/storage";
 import Generator from "./generator/generator";
+import { isSupportedNode } from "./types";
 
 figma.showUI(__html__, DEFAULT_WINDOW_OPTIONS);
 
 const generator = new Generator();
+
+function selectionChangeHandler() {
+  const { selection } = figma.currentPage;
+  let selectionType: ElementSelectionTypes;
+  if (selection.length === 0) selectionType = elementSelectionTypes.none;
+  else if (selection.length === 1) {
+    const [node] = selection;
+    if (isSupportedNode(node)) selectionType = elementSelectionTypes.supported;
+    else selectionType = elementSelectionTypes.notSupported;
+  } else selectionType = elementSelectionTypes.multiple;
+
+  postSelectionChanged({
+    type: selectionType,
+    element: selection[0]?.type,
+  });
+}
+
+figma.on("selectionchange", selectionChangeHandler);
 
 figma.ui.onmessage = async (msg) => {
   const { type } = msg || {};
 
   switch (type) {
     case messageTypes.generationStart:
+      figma.off("selectionchange", selectionChangeHandler);
       generator.reset();
       postGenerationStarted();
 
@@ -40,6 +62,7 @@ figma.ui.onmessage = async (msg) => {
         console.error(error);
       } finally {
         generator.reset();
+        figma.on("selectionchange", selectionChangeHandler);
       }
       break;
 
@@ -63,6 +86,10 @@ figma.ui.onmessage = async (msg) => {
       if (preset) presetLoaded(preset);
       break;
     }
+
+    case messageTypes.uiLoaded:
+      selectionChangeHandler();
+      break;
 
     case messageTypes.clearPreset:
       clearSettingsInStorage();

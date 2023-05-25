@@ -21,8 +21,6 @@ I'm working on getting this plugin into the Figma Community so it can be install
 
 🟦 Saving and loading current settings
 
-🟦 Clone the selected shape in Figma as the pattern element of the grid
-
 🟨 Creating personalized presets
 
 🟨 Option to use a color pattern instead of random color selection
@@ -30,6 +28,8 @@ I'm working on getting this plugin into the Figma Community so it can be install
 ⬜ Seeds for randomness generation
 
 ⬜ Lock certain proportions (like when image editors lock aspect ratios) for horizontal and vertical element counts
+
+✅ Clone the selected shape in Figma as the pattern element of the grid
 
 ✅ Loading indicator and async
 
@@ -76,10 +76,14 @@ It's also my first Figma plugin, so please be gentle.
 - Deleting the contents of the width or height inputs for the frame and clicking outside will set the value to 0 instead of the previous value or the minimum allowed.
 - The plugin will generate an error if you try to generate a grid with 0 elements (0 width & 0 height).
 
-### Limitations
+## Limitations
 
-- There's no way to resume the generation after stopping it yet. There's also no way to modify a grid after generating it.
-- You can't use a seed to generate the same grid twice. It still relies on Math.random every time.
+- Currently, there is no functionality to resume generation after stopping it. Similarly, modifying a grid after it has been generated is not supported.
+- It's not possible to generate the same pattern twice using a seed if range values are used.
+- The selection feature for cloning has certain limitations with regard to page elements:
+  -- If an element is not supported, try placing it within a frame and change the content constraints of the frame so that it resizes appropriately and it doesn't clip. Then select the frame instead.
+  -- Components will be cloned as instances of the component, and component sets will be cloned as instances of the default component in the set.
+- Figma doesn't rescale lines and certain polygons properly, so there's limited support for these shapes when generating from selections.
 
 ## License
 

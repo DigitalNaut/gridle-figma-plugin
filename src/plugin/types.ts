@@ -8,5 +8,25 @@ export type ShapeNode =
   | LineNode
   | EllipseNode
   | PolygonNode
-  | RectangleNode
-  | TextNode;
+  | RectangleNode;
+
+export type SupportedNode =
+  | InstanceNode
+  | FrameNode
+  | ComponentSetNode
+  | ComponentNode
+  | StampNode
+  | TextNode
+  | ShapeNode;
+
+export function isSupportedNode(node: SceneNode): node is SupportedNode {
+  return (
+    "resize" in node &&
+    "constraints" in node &&
+    "opacity" in node &&
+    "fills" in node &&
+    "x" in node &&
+    "y" in node &&
+    "relativeTransform" in node
+  );
+}

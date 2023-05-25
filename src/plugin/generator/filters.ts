@@ -1,6 +1,6 @@
 import type { PatternDataMessage } from "@common";
 
-import type { ShapeNode } from "~/types";
+import type { SupportedNode } from "~/types";
 import { transformRotateAxis2D } from "~/utils/math";
 
 export function createNoiseFilter(
@@ -72,6 +72,7 @@ export function createSizeVariationFilter({
   elementHeight,
   xPadding,
   yPadding,
+  useScale,
 }: {
   minSize: number;
   maxSize: number;
@@ -79,6 +80,7 @@ export function createSizeVariationFilter({
   elementHeight: number;
   xPadding: number;
   yPadding: number;
+  useScale: boolean;
 }) {
   const effectiveWidth = elementWidth - xPadding;
   const effectiveHeight = elementHeight - yPadding;
@@ -88,11 +90,24 @@ export function createSizeVariationFilter({
   const randomSize = () => Math.random() * deltaSize + minSize;
   const getSizeFn = deltaSize > 1 ? randomSize : fixedSize;
 
-  return function applyResizeEffect(node: ShapeNode) {
-    const size = getSizeFn();
+  const resize = (node: SupportedNode, size: number) => {
     node.resize(effectiveWidth * size, effectiveHeight * size);
-    node.x -= (effectiveWidth * size - elementWidth) * 0.5;
-    node.y -= (effectiveHeight * size - elementHeight) * 0.5;
+    node.x += (elementWidth - effectiveWidth * size) * 0.5;
+    node.y += (elementHeight - effectiveHeight * size) * 0.5;
+  };
+
+  const rescale = (node: SupportedNode, scale: number) => {
+    const { width: prevWidth, height: prevHeight } = node;
+    node.rescale(scale);
+    node.x += (prevWidth - node.width) * 0.5;
+    node.y += (prevHeight - node.height) * 0.5;
+  };
+
+  const resizeMethodFn = useScale ? rescale : resize;
+
+  return function applyResizeEffect(node: SupportedNode) {
+    const size = getSizeFn();
+    resizeMethodFn(node, size);
   };
 }
 
@@ -108,7 +123,7 @@ export function createRotationVariationFilter({
   const randomAngle = () => Math.random() * deltaRotation + minRotation;
   const getAngleFn = deltaRotation > 1 ? randomAngle : fixedAngle;
 
-  return function rotateOnCenterAxis(node: ShapeNode) {
+  return function rotateOnCenterAxis(node: SupportedNode) {
     const { x, y, width, height } = node;
     const angle = getAngleFn();
 

@@ -17,6 +17,20 @@ export const noiseModes = [
   "none",
 ] as const;
 
+export const elementSelectionTypes = {
+  supported: "supported",
+  notSupported: "notSupported",
+  multiple: "multiple",
+  none: "none",
+} as const;
+
+export type ElementSelectionTypes = keyof typeof elementSelectionTypes;
+
+export type ElementSelection = {
+  type: ElementSelectionTypes;
+  element?: string;
+};
+
 export type StopCode = "stopped" | "aborted" | undefined;
 
 export const MIN_FRAME_SIZE = 1;
@@ -33,7 +47,7 @@ export const patternDataMessageSchema = z.object({
   rows: z.number().min(1).default(30),
   xPadding: z.number().min(0).default(2),
   yPadding: z.number().min(0).default(2),
-  colors: z.array(z.string()).min(1).default(defaultColors),
+  colors: z.array(z.string()).max(10).default(defaultColors),
   shape: z.enum(supportedShapes).default(supportedShapes[0]),
   pointCount: z.number().min(3).max(10).default(5),
   cornerRadius: z.number().min(0).default(0),

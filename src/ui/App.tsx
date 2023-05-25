@@ -5,8 +5,10 @@ import type {
   supportedShapes,
   verticalFadeModes,
   noiseModes,
+  ElementSelection,
 } from "@common";
 import {
+  elementSelectionTypes,
   formatSeconds,
   sleep,
   toFloat,
@@ -38,6 +40,8 @@ import Select from "@components/Select";
 import MultiColorPicker from "@components/MultiColorPicker";
 import AxisIcon from "@components/AxisIcon";
 import PaddingIcon from "@components/PaddingIcon";
+import ButtonSelect from "@components/ButtonSelect";
+import InlineNotice from "@components/InlineWarning";
 import { useWindowKeyboardEvents } from "@hooks/useWindowKeyboardEvents";
 import { usePluginMessaging } from "@hooks/usePluginMessaging";
 import { useBasicInputs, useManagedInputs } from "@hooks/useUserInputs";
@@ -46,7 +50,6 @@ import { useColorHandlers } from "@hooks/useColorHandlers";
 import type { Preset, PresetRecord } from "./settings";
 import { globalPresets, colorPresets } from "./settings";
 import "./index.css";
-import ButtonSelect from "@components/ButtonSelect";
 
 enum AppState {
   IDLE = "idle",
@@ -67,6 +70,9 @@ function Main() {
   const [progress, setProgress] = useState({
     percentProgress: 0,
     timeElapsed: 0,
+  });
+  const [selectionType, setSelectionType] = useState<ElementSelection>({
+    type: "none",
   });
   const [availablePresets] = useState<PresetRecord>(globalPresets);
   const [patternMessage, setPatternMessage] =
@@ -148,7 +154,11 @@ function Main() {
         break;
 
       case messageTypes.presetLoaded:
-        setPatternMessage(pluginMessage.preset);
+        setPatternMessage(pluginMessage.data.preset);
+        break;
+
+      case messageTypes.selectionChanged:
+        setSelectionType(pluginMessage.data);
         break;
 
       default:
@@ -403,21 +413,6 @@ function Main() {
         title={`Appearance`}
         onToggle={handleSectionToggle}
       >
-        <MultiColorPicker
-          colors={patternMessage.colors}
-          onAddColor={handleAddColor}
-          onChangeColor={handleColorChange}
-          onRemoveColor={handleRemoveColor}
-        />
-        <Select
-          prompt="Select a color preset"
-          options={Object.keys(colorPresets)}
-          id="colorPresetSelect"
-          onChange={({ currentTarget }) =>
-            applyPreset(colorPresets[currentTarget.value])
-          }
-          title="Predefined colors."
-        />
         <ButtonSelect<PatternDataMessage, string, typeof supportedShapes>
           id="shapeSelect"
           label="Shape:"
@@ -452,6 +447,64 @@ function Main() {
           ]}
           title="Shape of the elements."
         />
+        {patternMessage.shape === "selection" &&
+          (selectionType.type === elementSelectionTypes.supported ? (
+            <InlineNotice info>
+              {`Selected: ${selectionType.element}`}
+            </InlineNotice>
+          ) : (
+            <InlineNotice>
+              {selectionType.type === elementSelectionTypes.none && (
+                <span title="Please select an element to use for the pattern.">
+                  No selection
+                </span>
+              )}
+              {selectionType.type === elementSelectionTypes.multiple && (
+                <span title="Please select a single element.">
+                  Multiple selection not supported
+                </span>
+              )}
+              {selectionType.type === elementSelectionTypes.notSupported && (
+                <details
+                  className="grow"
+                  title="Please select a valid element."
+                >
+                  <summary className="flex cursor-pointer gap-1">
+                    <span>Selection not supported:</span>
+                    <span>{selectionType.element}</span>
+                  </summary>
+                  <div className="mb-1 mt-0 bg-white/60 py-1 pl-2 text-zinc-800">
+                    <span>A selection can be:</span>
+                    <ul className="list-inside list-disc pl-2">
+                      <li>
+                        <span className="group relative border-b-2 border-dotted border-zinc-800/75">
+                          A shape
+                          <span
+                            className="invisible absolute -right-2 top-1/2 z-[1] w-max -translate-y-1/2 translate-x-full transform rounded-md bg-white/90 p-2 px-1 text-zinc-800 opacity-0 shadow-lg transition content-['']
+                                  after:absolute after:right-full after:top-1/2 after:-mt-1 after:border-4 after:border-solid after:border-y-transparent after:border-l-transparent after:border-r-white/90
+                                  group-hover:visible group-hover:opacity-100"
+                          >
+                            <ul className="list-outside list-['-'] pl-2">
+                              <li>Rectangle</li>
+                              <li>Ellipse</li>
+                              <li>Line</li>
+                              <li>Star</li>
+                              <li>Polygon</li>
+                              <li>Vector</li>
+                            </ul>
+                          </span>
+                        </span>
+                      </li>
+                      <li>A frame</li>
+                      <li>A component</li>
+                      <li>A component set</li>
+                      <li>A text element</li>
+                    </ul>
+                  </div>
+                </details>
+              )}
+            </InlineNotice>
+          ))}
         {patternMessage.shape === "polygon" && (
           <Input<PatternDataMessage, number>
             labelStyle="pl-4"
@@ -482,8 +535,30 @@ function Main() {
             title="Corner radius of the elements."
           />
         )}
+        <MultiColorPicker
+          label={`Colors (${patternMessage.colors.length})`}
+          colors={patternMessage.colors}
+          onAddColor={handleAddColor}
+          onChangeColor={handleColorChange}
+          onRemoveColor={handleRemoveColor}
+        />
+        {patternMessage.shape !== "selection" &&
+          patternMessage.colors.length < 1 && (
+            <InlineNotice>
+              No colors; the pattern will be invisible
+            </InlineNotice>
+          )}
+        <Select
+          prompt="Select a color preset"
+          options={Object.keys(colorPresets)}
+          id="colorPresetSelect"
+          onChange={({ currentTarget }) =>
+            applyPreset(colorPresets[currentTarget.value])
+          }
+          title="Predefined colors."
+        />
         <MultiRangeSlider
-          label="Rotation range"
+          label="Rotation"
           id="rotationRangeInput"
           title="Range of rotation values to use for the elements."
           minVal={patternMessage.rotationRange[0]}
@@ -493,7 +568,7 @@ function Main() {
           onChange={handleRotationRangeSliderChange}
         />
         <MultiRangeSlider
-          label="Opacity range"
+          label="Opacity"
           id="opacityRangeInput"
           title="Range of opacity values to use for the elements."
           minVal={patternMessage.opacityRange[0]}
@@ -504,7 +579,7 @@ function Main() {
           onChange={handleOpacityRangeSliderChange}
         />
         <MultiRangeSlider
-          label="Size range"
+          label="Size"
           id="sizeRangeInput"
           title="Range of size values to use for the elements."
           minVal={patternMessage.sizeRange[0]}
@@ -603,10 +678,14 @@ function Main() {
         />
       </CollapsibleSubsection>
       <Footer>
-        <div className="bottom-0 flex w-full justify-end">
+        <div className="bottom-0 flex w-full justify-end gap-2">
           <Button onClick={onClose}>Close</Button>
           <Button
             appearance="filledStyle"
+            disabled={
+              patternMessage.shape === "selection" &&
+              selectionType.type === elementSelectionTypes.notSupported
+            }
             onClick={() => {
               setAppState(AppState.GENERATING);
               setProgress({ percentProgress: 0, timeElapsed: 0 });

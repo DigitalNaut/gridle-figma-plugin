@@ -1,4 +1,4 @@
-import type { PatternDataMessage } from "@common";
+import type { ElementSelection, PatternDataMessage } from "@common";
 import { toPercentage, formatSeconds, messageTypes } from "@common";
 
 import type { Progress } from "./generator/generator";
@@ -31,6 +31,13 @@ export function postGenerationError(error: string) {
   figma.ui.postMessage({ type: messageTypes.generationError, error });
 }
 
+export function postSelectionChanged(data: ElementSelection) {
+  figma.ui.postMessage({
+    type: messageTypes.selectionChanged,
+    data,
+  });
+}
+
 export function postGenerationStopped(data: Progress) {
   const { percentProgress, timeElapsed } = data;
 
@@ -49,6 +56,6 @@ export function postGenerationStopped(data: Progress) {
 export function presetLoaded(preset: PatternDataMessage) {
   figma.ui.postMessage({
     type: messageTypes.presetLoaded,
-    preset,
+    data: { preset },
   });
 }

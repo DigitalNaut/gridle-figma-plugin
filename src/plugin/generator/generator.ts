@@ -7,13 +7,14 @@ import {
   OPACITY_RANGE_LIMITS,
 } from "@common";
 
-import type { GeneratorStopCode, ShapeNode } from "~/types";
+import type { GeneratorStopCode, SupportedNode } from "~/types";
+import { isSupportedNode } from "~/types";
 import { AbortController } from "~/utils/abortController";
 import { SLEEP_INTERVAL } from "~/settings";
 import { postGenerationProgress } from "~/messages";
 
 import {
-  colorGenerator,
+  colorGenerator as randomColorGenerator,
   transformRange01,
   createNoiseFilter,
   createFadeModifier,
@@ -41,7 +42,101 @@ function createOutputFrame(width: number, height: number) {
   return outputFrame;
 }
 
-function createTemplateElement({
+function loadFonts(node: TextNode) {
+  return Promise.all(
+    node
+      .getRangeAllFontNames(0, node.characters.length)
+      .map(figma.loadFontAsync),
+  );
+}
+
+async function createElementFromSelection({
+  width,
+  height,
+}: {
+  width: number;
+  height: number;
+}) {
+  const [selection] = figma.currentPage.selection;
+  const { type } = selection;
+
+  let newShape: SupportedNode;
+
+  if (!isSupportedNode(selection))
+    throw new Error("Selection is not supported.");
+
+  if (type === "COMPONENT") {
+    newShape = selection.createInstance();
+    console.log("Creating instance from component");
+  } else if (type === "COMPONENT_SET")
+    newShape = selection.defaultVariant.createInstance();
+  else if (type === "TEXT") {
+    newShape = selection.clone();
+
+    await loadFonts(newShape);
+
+    newShape.textAutoResize = "HEIGHT";
+    newShape.textAlignHorizontal = "CENTER";
+    newShape.textAlignVertical = "CENTER";
+
+    newShape.rescale(width / newShape.width);
+
+    return newShape;
+  } else newShape = selection.clone();
+
+  newShape.constraints = { horizontal: "SCALE", vertical: "SCALE" };
+
+  if (newShape.width >= newShape.height)
+    newShape.rescale(width / newShape.width);
+  else newShape.rescale(height / newShape.height);
+
+  return newShape;
+}
+
+function createShapeElement({
+  shape,
+  cornerRadius,
+  width,
+  height,
+  pointCount,
+}: {
+  shape: Exclude<PatternDataMessage["shape"], "selection">;
+  cornerRadius: number;
+  width: number;
+  height: number;
+  pointCount: number;
+}) {
+  let newShape: SupportedNode;
+
+  switch (shape) {
+    case "circle":
+      newShape = figma.createEllipse();
+      break;
+    case "star":
+      newShape = figma.createStar();
+      newShape.cornerRadius = +cornerRadius;
+      break;
+    case "polygon":
+      newShape = figma.createPolygon();
+      newShape.pointCount = pointCount;
+      newShape.cornerRadius = +cornerRadius;
+      break;
+    case "square":
+      newShape = figma.createRectangle();
+      newShape.cornerRadius = +cornerRadius;
+      break;
+  }
+
+  newShape.resize(width, height);
+  newShape.cornerRadius = +cornerRadius;
+  newShape.fills = [];
+  newShape.strokes = [];
+  newShape.strokeWeight = 0;
+
+  return newShape;
+}
+
+async function createTemplateElement({
   shape,
   cornerRadius,
   width,
@@ -54,34 +149,19 @@ function createTemplateElement({
   height: number;
   pointCount: number;
 }) {
-  let newShape: ShapeNode;
-
-  switch (shape) {
-    case "circle":
-      newShape = figma.createEllipse();
-      break;
-    case "star":
-      newShape = figma.createStar();
-      break;
-    case "polygon":
-      newShape = figma.createPolygon();
-      newShape.pointCount = pointCount;
-      break;
-    case "square":
-      newShape = figma.createRectangle();
-      break;
-  }
-
-  newShape.resize(width, height);
-  newShape.cornerRadius = +cornerRadius;
-  newShape.fills = [];
-  newShape.strokes = [];
-  newShape.strokeWeight = 0;
-  newShape.constraints = { horizontal: "SCALE", vertical: "SCALE" };
-  return newShape;
+  if (shape === "selection")
+    return await createElementFromSelection({ width, height });
+  else
+    return createShapeElement({
+      shape,
+      cornerRadius,
+      width,
+      height,
+      pointCount,
+    });
 }
 
-function groupNodes(name: string, nodes: SceneNode[], parent: FrameNode) {
+function groupNodes(name: string, nodes: SupportedNode[], parent: FrameNode) {
   if (nodes.length === 0) return;
 
   const group = figma.group(nodes, figma.currentPage);
@@ -94,7 +174,7 @@ function groupNodes(name: string, nodes: SceneNode[], parent: FrameNode) {
 }
 
 function createShapeCloner(
-  shape: ShapeNode,
+  shape: SupportedNode,
   dimensions: {
     width: number;
     height: number;
@@ -105,7 +185,7 @@ function createShapeCloner(
   const { width, height, xPadding, yPadding } = dimensions;
   const halfXPadding = xPadding * 0.5;
   const halfYPadding = yPadding * 0.5;
-  let newElement: ShapeNode;
+  let newElement: SupportedNode;
   const constraints: Constraints = { horizontal: "SCALE", vertical: "SCALE" };
 
   return (x: number, y: number) => {
@@ -149,16 +229,20 @@ async function generatePattern(
   // Elements
   const elementWidth = frameWidth / columns;
   const elementHeight = frameHeight / rows;
-  const outputFrame = createOutputFrame(+frameWidth, +frameHeight);
 
-  const sampleElement = createTemplateElement({
+  const sampleElement = await createTemplateElement({
     shape,
-    cornerRadius,
     width: elementWidth - xPadding,
     height: elementHeight - yPadding,
+    cornerRadius,
     pointCount,
   });
-  const getNewColor = colorGenerator(colors.map(hexToRGB));
+  console.log("Created sample element:", sampleElement.type);
+
+  const outputFrame = createOutputFrame(+frameWidth, +frameHeight);
+
+  const getNewColor =
+    colors.length > 0 ? randomColorGenerator(colors.map(hexToRGB)) : null;
   const getShapeClone = createShapeCloner(sampleElement, {
     width: elementWidth,
     height: elementHeight,
@@ -187,6 +271,7 @@ async function generatePattern(
     elementHeight,
     xPadding,
     yPadding,
+    useScale: shape === "selection",
   });
   const varyRotationFilter = createRotationVariationFilter({
     minRotation,
@@ -207,7 +292,7 @@ async function generatePattern(
     await sleep(SLEEP_INTERVAL);
   };
 
-  const sampleRow: SceneNode[] = [];
+  const sampleRow: SupportedNode[] = [];
 
   // Generate sample row
   for (let x = 0; x < columns; x++) {
@@ -224,6 +309,8 @@ async function generatePattern(
   if (!sampleGroup) abortController.abort("aborted");
   // Generate pattern
   else {
+    sampleGroup.visible = false;
+
     for (let y = 0; y < rows; y++) {
       if (signal.aborted) break;
 
@@ -235,22 +322,12 @@ async function generatePattern(
         break;
       }
 
+      rowNodes.visible = true;
       rowNodes.y = y * elementHeight + yPadding * 0.5;
       rowNodes.name = `Layer ${y + 1}`;
       outputFrame.appendChild(rowNodes);
 
-      const childrenNodes = rowNodes.findChildren(
-        (node) =>
-          node.type === "RECTANGLE" ||
-          node.type === "ELLIPSE" ||
-          node.type === "VECTOR" ||
-          node.type === "POLYGON" ||
-          node.type === "STAR" ||
-          node.type === "LINE" ||
-          node.type === "TEXT",
-      ) as ShapeNode[];
-
-      for (const node of childrenNodes) {
+      for (const node of rowNodes.children as SupportedNode[]) {
         if (signal.aborted) break;
 
         if (noiseFilter?.(verticalPosition)) {
@@ -265,11 +342,12 @@ async function generatePattern(
           node.remove();
           continue;
         }
+        node.opacity = opacity;
 
-        varyRotationFilter?.(node);
-        varySizeFilter?.(node);
+        varySizeFilter(node);
+        varyRotationFilter(node);
 
-        node.fills = [{ type: "SOLID", color: getNewColor(), opacity }];
+        if (getNewColor) node.fills = [{ type: "SOLID", color: getNewColor() }];
       }
 
       // Update progress

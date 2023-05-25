@@ -47,6 +47,9 @@ export function usePluginMessaging(messageHandler: typeof onmessage) {
   const onClose = () =>
     parent.postMessage({ pluginMessage: { type: messageTypes.close } }, "*");
 
+  const onLoad = () =>
+    parent.postMessage({ pluginMessage: { type: messageTypes.uiLoaded } }, "*");
+
   useEffect(() => {
     onmessage = messageHandler;
 
@@ -56,6 +59,7 @@ export function usePluginMessaging(messageHandler: typeof onmessage) {
   useEffect(() => {
     if (loaded) return;
     loadPreset();
+    onLoad();
     setLoaded(true);
   }, [loaded]);
 
