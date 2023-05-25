@@ -684,7 +684,7 @@ function Main() {
             appearance="filledStyle"
             disabled={
               patternMessage.shape === "selection" &&
-              selectionType.type === elementSelectionTypes.notSupported
+              selectionType.type !== elementSelectionTypes.supported
             }
             onClick={() => {
               setAppState(AppState.GENERATING);
