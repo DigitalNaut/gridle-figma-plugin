@@ -86,7 +86,7 @@ const staticNoiseGlobalPreset: GlobalPreset = {
 const bubblegumAppearancePreset: AppearancePreset = {
   shape: "circle",
   opacityRange: [100, 100],
-  sizeRange: [25, 100],
+  sizeRange: [25, 230],
   noiseMode: "uniform",
   noiseAmount: 0.5,
   verticalFadeMode: "none",

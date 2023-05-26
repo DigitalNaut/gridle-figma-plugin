@@ -7,9 +7,9 @@ import { useMemo } from "react";
 
 const buttonStyles = {
   actionStyle:
-    "flex h-9 w-full items-center justify-center rounded-md border border-zinc-200 text-lg text-zinc-200 disabled:border-zinc-500 disabled:text-zinc-500",
+    "flex h-9 w-full items-center justify-center rounded-md border border-zinc-200 text-lg text-zinc-200 disabled:border-zinc-500 disabled:text-zinc-500 disabled:cursor-not-allowed",
   filledStyle:
-    "rounded-sm bg-white px-4 text-black disabled:bg-zinc-500 disabled:text-zinc-700",
+    "rounded-sm bg-white px-4 text-black disabled:bg-zinc-500 disabled:text-zinc-700 disabled:cursor-not-allowed",
   plainStyle: "px-1 underline",
 };
 
