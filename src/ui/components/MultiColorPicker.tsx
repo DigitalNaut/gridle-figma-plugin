@@ -80,14 +80,21 @@ function HoverIndicator({ overPosition }: { overPosition: OverPosition }) {
             : "center",
       }}
     >
+      {/* prettier-ignore */}
       <div
-        className="left-0 top-0 h-full w-full"
+        className={`left-0 top-0 flex h-full w-full items-center justify-center
+                    before:absolute before:bottom-full ${overPosition === "before" ? "before:left-0 before:-translate-x-1/2" : ""} ${overPosition === "after" ? "before:right-0 before:translate-x-1/2" : ""} before:border-8 before:border-solid before:border-b-transparent before:border-l-transparent before:border-r-transparent ${overPosition !== "center" ? "before:border-t-white" : "before:border-transparent before:shadow-sm"}
+                    after:absolute after:top-full ${overPosition === "before" ? "after:left-0 after:-translate-x-1/2" : ""} ${overPosition === "after" ? "after:right-0 after:translate-x-1/2" : ""} after:border-8 after:border-solid ${overPosition !== "center" ? "after:border-b-white" : "after:border-b-transparent"} after:border-l-transparent after:border-r-transparent after:border-t-transparent after:shadow-sm`}
         style={{
-          borderLeft: overPosition === "before" ? "4px solid #fff" : "none",
-          outline: overPosition === "center" ? "4px solid #fff" : "none",
-          borderRight: overPosition === "after" ? "4px solid #fff" : "none",
+          borderLeft: overPosition === "before" ? "4px solid white" : undefined,
+          outline: overPosition === "center" ? "4px solid white" : undefined,
+          borderRight: overPosition === "after" ? "4px solid white" : undefined,
         }}
-      />
+      >
+        {overPosition === "center" && (
+          <i className="fa-solid fa-arrows-rotate text-2xl text-white shadow-lg"></i>
+        )}
+      </div>
     </div>
   );
 }
