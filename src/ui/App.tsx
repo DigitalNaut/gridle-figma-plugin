@@ -28,24 +28,24 @@ import {
   CollapsibleSubsection,
   Subsection,
   Footer,
-} from "@components/Layout";
+} from "~components/Layout";
 import {
   NotificationStopped,
   NotificationError,
-} from "@components/Notifications";
-import MultiRangeSlider from "@components/MultiRangeSlider";
-import Input from "@components/Input";
-import Button from "@components/Button";
-import Select from "@components/Select";
-import MultiColorPicker from "@components/MultiColorPicker";
-import AxisIcon from "@components/AxisIcon";
-import PaddingIcon from "@components/PaddingIcon";
-import ButtonSelect from "@components/ButtonSelect";
-import InlineNotice from "@components/InlineWarning";
-import { useWindowKeyboardEvents } from "@hooks/useWindowKeyboardEvents";
-import { usePluginMessaging } from "@hooks/usePluginMessaging";
-import { useBasicInputs, useManagedInputs } from "@hooks/useUserInputs";
-import { useColorHandlers } from "@hooks/useColorHandlers";
+} from "~components/Notifications";
+import MultiRangeSlider from "~components/MultiRangeSlider";
+import Input from "~components/Input";
+import Button from "~components/Button";
+import Select from "~components/Select";
+import MultiColorPicker from "~components/MultiColorPicker";
+import AxisIcon from "~components/AxisIcon";
+import PaddingIcon from "~components/PaddingIcon";
+import ButtonSelect from "~components/ButtonSelect";
+import InlineNotice from "~components/InlineWarning";
+import { useWindowKeyboardEvents } from "~hooks/useWindowKeyboardEvents";
+import { usePluginMessaging } from "~hooks/usePluginMessaging";
+import { useBasicInputs, useManagedInputs } from "~hooks/useUserInputs";
+import { useColorHandlers } from "~hooks/useColorHandlers";
 
 import type { Preset, PresetRecord } from "./settings";
 import { globalPresets, colorPresets } from "./settings";
@@ -111,8 +111,12 @@ function Main() {
     setPatternMessage((prev) => ({ ...prev, rotationRange }));
   const { handleStringInputChange, handleNumberInputChange } =
     useBasicInputs(setPatternMessage);
-  const { handleColorChange, handleAddColor, handleRemoveColor } =
-    useColorHandlers(setPatternMessage, patternMessage);
+  const {
+    handleColorChange,
+    handleAddColor,
+    handleRemoveColor,
+    handleRearrangeColors,
+  } = useColorHandlers(setPatternMessage, patternMessage);
   const {
     handleFrameWidthChange,
     handleFrameHeightChange,
@@ -541,6 +545,7 @@ function Main() {
           onAddColor={handleAddColor}
           onChangeColor={handleColorChange}
           onRemoveColor={handleRemoveColor}
+          onRearrangeColors={handleRearrangeColors}
         />
         {patternMessage.shape !== "selection" &&
           patternMessage.colors.length < 1 && (

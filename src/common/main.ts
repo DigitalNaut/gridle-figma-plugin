@@ -47,7 +47,7 @@ export const patternDataMessageSchema = z.object({
   rows: z.number().min(1).default(30),
   xPadding: z.number().min(0).default(2),
   yPadding: z.number().min(0).default(2),
-  colors: z.array(z.string()).max(10).default(defaultColors),
+  colors: z.array(z.string()).max(24).default(defaultColors),
   shape: z.enum(supportedShapes).default(supportedShapes[0]),
   pointCount: z.number().min(3).max(10).default(5),
   cornerRadius: z.number().min(0).default(0),

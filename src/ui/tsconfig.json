@@ -20,8 +20,8 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@components/*": ["./components/*"],
-      "@hooks/*": ["./hooks/*"],
+      "~components/*": ["./components/*"],
+      "~hooks/*": ["./hooks/*"],
       "@common": ["../common/index"],
       "~/*": ["./*"],
     },
