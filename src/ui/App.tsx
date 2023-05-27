@@ -115,7 +115,8 @@ function Main() {
     handleColorChange,
     handleAddColor,
     handleRemoveColor,
-    handleRearrangeColors,
+    handleSwapColors,
+    handleMoveColor,
   } = useColorHandlers(setPatternMessage, patternMessage);
   const {
     handleFrameWidthChange,
@@ -545,7 +546,8 @@ function Main() {
           onAddColor={handleAddColor}
           onChangeColor={handleColorChange}
           onRemoveColor={handleRemoveColor}
-          onRearrangeColors={handleRearrangeColors}
+          onMoveColor={handleMoveColor}
+          onSwapColors={handleSwapColors}
         />
         {patternMessage.shape !== "selection" &&
           patternMessage.colors.length < 1 && (

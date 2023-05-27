@@ -2,7 +2,12 @@ import type { Dispatch, SetStateAction } from "react";
 
 import type { PatternDataMessage } from "@common";
 
-export type OnRearrangeColors = (fromIndex: number, toIndex: number) => void;
+export type OnMoveColor = (
+  colorA: number,
+  colorB: number,
+  position: "before" | "after",
+) => void;
+export type OnSwapColors = (colorA: number, colorB: number) => void;
 export type OnChangeColor = (color: string, colorIndex: number) => void;
 export type OnRemoveColor = (colorIndex: number) => void;
 
@@ -27,13 +32,30 @@ export function useColorHandlers(
   const handleAddColor = () =>
     setState((prev) => ({
       ...prev,
-      colors: prev.colors.concat(prev.colors[prev.colors.length - 1]),
+      colors: prev.colors.concat(
+        prev.colors[prev.colors.length - 1] || "#ffffff",
+      ),
     }));
 
-  const handleRearrangeColors: OnRearrangeColors = (fromIndex, toIndex) => {
+  const handleSwapColors: OnSwapColors = (colorA, colorB) => {
     const colors = [...state.colors];
-    const [color] = colors.splice(fromIndex, 1);
-    colors.splice(toIndex, 0, color);
+
+    [colors[colorA], colors[colorB]] = [colors[colorB], colors[colorA]];
+
+    setState((prev) => ({
+      ...prev,
+      colors,
+    }));
+  };
+
+  const handleMoveColor: OnMoveColor = (fromIndex, toIndex, position) => {
+    const colors = [...state.colors];
+
+    if (position === "before") {
+      colors.splice(toIndex, 0, colors.splice(fromIndex, 1)[0]);
+    } else {
+      colors.splice(toIndex + 1, 0, colors.splice(fromIndex, 1)[0]);
+    }
 
     setState((prev) => ({
       ...prev,
@@ -45,6 +67,7 @@ export function useColorHandlers(
     handleColorChange,
     handleRemoveColor,
     handleAddColor,
-    handleRearrangeColors,
+    handleSwapColors,
+    handleMoveColor,
   };
 }
