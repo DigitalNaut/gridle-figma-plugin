@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 
-import type { PatternDataMessage } from "@common";
+import { PatternDataMessage, clamp } from "@common";
 
 export type OnMoveColor = (
   colorA: number,
@@ -49,13 +49,19 @@ export function useColorHandlers(
   };
 
   const handleMoveColor: OnMoveColor = (fromIndex, toIndex, position) => {
+    const toAdjustedIndex = clamp(
+      toIndex + (position === "after" ? 1 : 0),
+      0,
+      state.colors.length,
+    );
+
+    if (fromIndex === toAdjustedIndex) return;
+
     const colors = [...state.colors];
 
-    if (position === "before") {
-      colors.splice(toIndex, 0, colors.splice(fromIndex, 1)[0]);
-    } else {
-      colors.splice(toIndex + 1, 0, colors.splice(fromIndex, 1)[0]);
-    }
+    const color = colors[fromIndex];
+    colors.splice(toAdjustedIndex, 0, color);
+    colors.splice(fromIndex + +(fromIndex > toAdjustedIndex), 1);
 
     setState((prev) => ({
       ...prev,

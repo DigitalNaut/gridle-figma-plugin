@@ -1,15 +1,17 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import {
-  DndContext,
-  MouseSensor,
+import type {
   UniqueIdentifier,
-  useSensor,
-  useSensors,
-  closestCenter,
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
   DragMoveEvent,
+} from "@dnd-kit/core";
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  MouseSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+  DndContext,
 } from "@dnd-kit/core";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 
@@ -41,7 +43,10 @@ function ColorPicker({
   );
 
   return (
-    <label className="h-full w-full" title="Color to use for the elements.">
+    <label
+      className="relative h-full w-full"
+      title="Color to use for the elements."
+    >
       <input
         className="h-full w-full rounded-sm bg-zinc-700"
         id="colorsInput"
@@ -60,7 +65,7 @@ function ColorPicker({
   );
 }
 
-type OverPosition = "left" | "center" | "right";
+type OverPosition = "before" | "center" | "after";
 
 function HoverIndicator({ overPosition }: { overPosition: OverPosition }) {
   return (
@@ -68,9 +73,9 @@ function HoverIndicator({ overPosition }: { overPosition: OverPosition }) {
       className="absolute left-0 top-0 flex h-full w-full"
       style={{
         justifyContent:
-          overPosition === "left"
+          overPosition === "before"
             ? "flex-start"
-            : overPosition === "right"
+            : overPosition === "after"
             ? "flex-end"
             : "center",
       }}
@@ -78,9 +83,9 @@ function HoverIndicator({ overPosition }: { overPosition: OverPosition }) {
       <div
         className="left-0 top-0 h-full w-full"
         style={{
-          borderLeft: overPosition === "left" ? "4px solid #fff" : "none",
+          borderLeft: overPosition === "before" ? "4px solid #fff" : "none",
           outline: overPosition === "center" ? "4px solid #fff" : "none",
-          borderRight: overPosition === "right" ? "4px solid #fff" : "none",
+          borderRight: overPosition === "after" ? "4px solid #fff" : "none",
         }}
       />
     </div>
@@ -181,24 +186,23 @@ export default function MultiColorPicker({
     removeWindowMouseMoveListener(onMouseMove);
     mouseX.current = null;
 
-    if (!over || active.id === over.id) return;
+    if (!over || active.id === over.id || overPosition === undefined) return;
 
     const activeIndex = decodeIdToIndex(active.id);
     const overIndex = decodeIdToIndex(over.id);
 
-    console.log({ activeID: activeIndex, overID: overIndex, overPosition });
-
-    switch (overPosition) {
-      case "left":
-        onMoveColor(activeIndex, overIndex, "before");
-        break;
-      case "right":
-        onMoveColor(activeIndex, overIndex, "after");
-        break;
-      case "center":
-        onSwapColors(+activeIndex, overIndex);
-        break;
-    }
+    if (overPosition !== undefined)
+      switch (overPosition) {
+        case "center":
+          onSwapColors(+activeIndex, overIndex);
+          break;
+        case "before":
+          onMoveColor(activeIndex, overIndex, overPosition);
+          break;
+        case "after":
+          onMoveColor(activeIndex, overIndex, overPosition);
+          break;
+      }
   };
   const onDragCancel = () => {
     resetDndIDs();
@@ -215,12 +219,13 @@ export default function MultiColorPicker({
   const onDragMove = ({ over, active }: DragMoveEvent) => {
     if (!over || over.id === active.id || !mouseX.current) return;
 
-    const halfWidth = over.rect.width * 0.5;
-    const threshold = halfWidth * 0.33;
-    const dx = mouseX.current - (over.rect.left + halfWidth);
+    const halfWidthOver = over.rect.width * 0.5;
+    const middleOver = over.rect.left + halfWidthOver;
+    const dx = mouseX.current - middleOver;
+    const threshold = halfWidthOver * 0.333;
 
-    if (dx <= -threshold) setOverPosition("left");
-    else if (dx >= threshold) setOverPosition("right");
+    if (dx <= -threshold) setOverPosition("before");
+    else if (dx >= threshold) setOverPosition("after");
     else setOverPosition("center");
   };
 
@@ -230,14 +235,14 @@ export default function MultiColorPicker({
       <DndContext
         sensors={sensors}
         modifiers={[restrictToParentElement]}
-        collisionDetection={closestCenter}
+        collisionDetection={closestCorners}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         onDragCancel={onDragCancel}
         onDragOver={onDragOver}
         onDragMove={onDragMove}
       >
-        <div className="flex w-full flex-wrap items-center">
+        <div className="-mt-2 mb-2 flex w-full flex-wrap items-center">
           {colors.map((color, colorIndex) => {
             const id = encodeIndexToId(colorIndex);
             const isDragged = draggingID === id;
