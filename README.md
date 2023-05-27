@@ -23,7 +23,7 @@ I'm working on getting this plugin into the Figma Community so it can be install
 
 🟨 Creating personalized presets
 
-🟨 Option to use a color pattern instead of random color selection
+🟦 Option to use a color pattern instead of random color selection
 
 ⬜ Seeds for randomness generation
 
