@@ -28,24 +28,24 @@ import {
   CollapsibleSubsection,
   Subsection,
   Footer,
-} from "~components/Layout";
+} from "~/components/Layout";
 import {
   NotificationStopped,
   NotificationError,
-} from "~components/Notifications";
-import MultiRangeSlider from "~components/MultiRangeSlider";
-import Input from "~components/Input";
-import Button from "~components/Button";
-import Select from "~components/Select";
-import MultiColorPicker from "~components/MultiColorPicker";
-import AxisIcon from "~components/AxisIcon";
-import PaddingIcon from "~components/PaddingIcon";
-import ButtonSelect from "~components/ButtonSelect";
-import InlineNotice from "~components/InlineWarning";
-import { useWindowKeyboardEvents } from "~hooks/useWindowKeyboardEvents";
-import { usePluginMessaging } from "~hooks/usePluginMessaging";
-import { useBasicInputs, useManagedInputs } from "~hooks/useUserInputs";
-import { useColorHandlers } from "~hooks/useColorHandlers";
+} from "~/components/Notifications";
+import MultiRangeSlider from "~/components/MultiRangeSlider";
+import Input from "~/components/Input";
+import Button from "~/components/Button";
+import Select from "~/components/Select";
+import MultiColorPicker from "~/components/MultiColorPicker";
+import AxisIcon from "~/components/AxisIcon";
+import PaddingIcon from "~/components/PaddingIcon";
+import ButtonSelect from "~/components/ButtonSelect";
+import InlineNotice from "~/components/InlineWarning";
+import { useWindowKeyboardEvents } from "~/hooks/useWindowKeyboardEvents";
+import { usePluginMessaging } from "~/hooks/usePluginMessaging";
+import { useBasicInputs, useManagedInputs } from "~/hooks/useUserInputs";
+import { useColorHandlers } from "~/hooks/useColorHandlers";
 
 import type { Preset, PresetRecord } from "./settings";
 import { globalPresets, colorPresets } from "./settings";
@@ -470,19 +470,18 @@ function Main() {
                 </span>
               )}
               {selectionType.type === elementSelectionTypes.notSupported && (
-                <details
-                  className="grow"
-                  title="Please select a valid element."
-                >
-                  <summary className="flex cursor-pointer gap-1">
-                    <span>Selection not supported:</span>
-                    <span>{selectionType.element}</span>
+                <details title="Please select a valid element.">
+                  <summary className="cursor-pointer">
+                    <span>{`Selection not supported: ${selectionType.element}`}</span>
                   </summary>
                   <div className="mb-1 mt-0 bg-white/60 py-1 pl-2 text-zinc-800">
                     <span>A selection can be:</span>
                     <ul className="list-inside list-disc pl-2">
                       <li>
-                        <span className="group relative border-b-2 border-dotted border-zinc-800/75">
+                        <span
+                          className="group relative border-b-2 border-dotted border-zinc-800/75"
+                          title=""
+                        >
                           A shape
                           <span
                             className="invisible absolute -right-2 top-1/2 z-[1] w-max -translate-y-1/2 translate-x-full transform rounded-md bg-white/90 p-2 px-1 text-zinc-800 opacity-0 shadow-lg transition content-['']

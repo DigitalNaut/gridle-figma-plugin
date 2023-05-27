@@ -10,8 +10,6 @@ export default defineConfig({
   plugins: [react(), viteSingleFile(), tsconfigPaths()],
   resolve: {
     alias: {
-      "~components": resolve(__dirname, "src/ui/components"),
-      "~hooks": resolve(__dirname, "src/ui/hooks"),
       "@common": resolve(__dirname, "src/common"),
       "~": resolve(__dirname, "src/ui"),
     },

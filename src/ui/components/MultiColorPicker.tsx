@@ -10,18 +10,17 @@ import {
   MouseSensor,
   useSensor,
   useSensors,
-  closestCorners,
   DndContext,
 } from "@dnd-kit/core";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 
-import { DraggableAndDroppable } from "~components/DragNDrop";
+import { DraggableAndDroppable } from "~/components/DragNDrop";
 import type {
   OnChangeColor,
   OnMoveColor,
   OnSwapColors,
   OnRemoveColor,
-} from "~hooks/useColorHandlers";
+} from "~/hooks/useColorHandlers";
 
 const draggableType = Symbol("draggableType");
 
@@ -242,7 +241,6 @@ export default function MultiColorPicker({
       <DndContext
         sensors={sensors}
         modifiers={[restrictToParentElement]}
-        collisionDetection={closestCorners}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         onDragCancel={onDragCancel}

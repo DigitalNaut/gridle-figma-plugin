@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
 
-import Logo from "~components/Logo";
+import Logo from "~/components/Logo";
 
 export function Layout({ children }: PropsWithChildren) {
   return (
