@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import type { PatternDataMessage } from "@common";
 import { messageTypes } from "@common";
+import { usePatternMessage } from "./usePatternMessage";
 
 export function usePluginMessaging(messageHandler: typeof onmessage) {
-  const [loaded, setLoaded] = useState(false);
+  const { loaded, setLoaded } = usePatternMessage();
 
   const startGeneration = (patternData: PatternDataMessage) =>
     parent.postMessage(
