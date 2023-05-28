@@ -8,7 +8,14 @@ import {
   Over,
   Active,
 } from "@dnd-kit/core";
-import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  DetailedHTMLProps,
+  InputHTMLAttributes,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { MouseSensor, useSensor, useSensors, DndContext } from "@dnd-kit/core";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 
@@ -27,7 +34,11 @@ function ColorPicker({
   colorIndex,
   onChangeColor,
   disabled,
-}: {
+  ...props
+}: DetailedHTMLProps<
+  InputHTMLAttributes<HTMLInputElement>,
+  HTMLInputElement
+> & {
   color: string;
   colorIndex: number;
   onChangeColor?: OnChangeColor;
@@ -56,6 +67,7 @@ function ColorPicker({
         style={{
           pointerEvents,
         }}
+        {...props}
       />
     </label>
   );
@@ -263,7 +275,9 @@ export default function MultiColorPicker({
               >
                 <ColorPicker
                   disabled={draggedItem !== null}
-                  {...{ color, colorIndex, onChangeColor, onRemoveColor }}
+                  color={color}
+                  colorIndex={colorIndex}
+                  onChangeColor={onChangeColor}
                 />
                 {draggedItem === null && (
                   <RemoveColorButton
