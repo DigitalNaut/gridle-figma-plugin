@@ -11,64 +11,6 @@ import {
   UseDraggableArguments,
   UseDroppableArguments,
 } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
-
-export function Droppable({
-  children,
-  accepts,
-  id,
-}: PropsWithChildren<
-  Parameters<typeof useDroppable>[0] & {
-    accepts: symbol[];
-  }
->) {
-  const { setNodeRef, isOver } = useDroppable({
-    id,
-    data: { accepts },
-  });
-
-  return (
-    <div
-      ref={setNodeRef}
-      className="h-full w-full"
-      style={{
-        border: isOver ? "1px dashed #fff" : "1px dashed transparent",
-        zIndex: isOver ? 0 : undefined,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-export function Draggable({
-  children,
-  type,
-  id,
-}: PropsWithChildren<Parameters<typeof useDraggable>[0]> & {
-  type: symbol;
-}) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id,
-      data: { type },
-    });
-
-  return (
-    <div
-      ref={setNodeRef}
-      className="h-full w-full"
-      style={{
-        transform: CSS.Transform.toString(transform),
-        zIndex: isDragging ? 999 : undefined,
-      }}
-      {...attributes}
-      {...listeners}
-    >
-      {children}
-    </div>
-  );
-}
 
 export function DraggableAndDroppable({
   children,
@@ -77,6 +19,7 @@ export function DraggableAndDroppable({
   accepts,
   style,
   className,
+  data,
 }: PropsWithChildren<
   Omit<
     DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>,
@@ -92,12 +35,10 @@ export function DraggableAndDroppable({
   const {
     attributes,
     listeners,
-    transform,
-    isDragging,
     setNodeRef: setDragRef,
   } = useDraggable({
     id,
-    data: { type },
+    data: { type, ...data },
   });
 
   const { setNodeRef: setDropRef } = useDroppable({
@@ -122,8 +63,6 @@ export function DraggableAndDroppable({
       ref={ref}
       className={className}
       style={{
-        transform: CSS.Transform.toString(transform),
-        transition: isDragging ? "" : "transform 100ms linear",
         ...style,
       }}
       {...attributes}

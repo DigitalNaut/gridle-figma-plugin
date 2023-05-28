@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 
-import type {
+import {
   PatternDataMessage,
   supportedShapes,
   verticalFadeModes,
   noiseModes,
   ElementSelection,
+  ColorGenerationMode,
+  colorGenerationModes,
 } from "@common";
 import {
   elementSelectionTypes,
@@ -109,8 +111,11 @@ function Main() {
     setPatternMessage((prev) => ({ ...prev, sizeRange }));
   const handleRotationRangeSliderChange = (rotationRange: [number, number]) =>
     setPatternMessage((prev) => ({ ...prev, rotationRange }));
-  const { handleStringInputChange, handleNumberInputChange } =
-    useBasicInputs(setPatternMessage);
+  const {
+    handleStringInputChange,
+    handleFloatInputChange,
+    handleIntegerInputChange,
+  } = useBasicInputs(setPatternMessage);
   const {
     handleColorChange,
     handleAddColor,
@@ -520,7 +525,7 @@ function Main() {
             max={10}
             maxLength={2}
             value={patternMessage.pointCount}
-            onChange={handleNumberInputChange}
+            onChange={handleFloatInputChange}
             title="Number of points for the polygon shape."
           />
         )}
@@ -535,7 +540,7 @@ function Main() {
             max={derivedElementWidth * 0.5}
             maxLength={3}
             value={toFloat(patternMessage.cornerRadius)}
-            onChange={handleNumberInputChange}
+            onChange={handleFloatInputChange}
             title="Corner radius of the elements."
           />
         )}
@@ -563,6 +568,34 @@ function Main() {
           }
           title="Predefined colors."
         />
+        <Select
+          options={colorGenerationModes}
+          id="colorGenerationModeSelect"
+          label="Color mode:"
+          value={patternMessage.colorGenerationMode}
+          onChange={({ currentTarget }) =>
+            setPatternMessage((prev) => ({
+              ...prev,
+              colorGenerationMode: currentTarget.value as ColorGenerationMode,
+            }))
+          }
+          title="Predefined colors."
+        />
+        {patternMessage.colorGenerationMode === "cycle" && (
+          <Input<PatternDataMessage, number>
+            labelStyle="pl-4"
+            label="Even row color offset"
+            id="evenRowOffsetInput"
+            name="rowColorOffset"
+            type="number"
+            min={0}
+            max={patternMessage.colors.length}
+            maxLength={2}
+            value={patternMessage.rowColorOffset}
+            onChange={handleIntegerInputChange}
+            title="Offset for the even row colors."
+          />
+        )}
         <MultiRangeSlider
           label="Rotation"
           id="rotationRangeInput"
@@ -669,7 +702,7 @@ function Main() {
             max={1}
             step={0.01}
             value={toFloat(patternMessage.noiseAmount)}
-            onChange={handleNumberInputChange}
+            onChange={handleFloatInputChange}
             title="Number of elements to create vertically."
           />
         )}

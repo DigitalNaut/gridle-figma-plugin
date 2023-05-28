@@ -1,4 +1,4 @@
-import type { PatternDataMessage } from "@common";
+import type { ColorGenerationMode, PatternDataMessage } from "@common";
 
 import type { SupportedNode } from "~/types";
 import { transformRotateAxis2D } from "~/utils/math";
@@ -138,9 +138,21 @@ export function createRotationVariationFilter({
   };
 }
 
-export function colorGenerator(colors: RGB[]) {
+export function colorGenerator(
+  colors: RGB[],
+  selectionMode: ColorGenerationMode,
+) {
+  let index = 0;
+
   if (colors.length === 1) return () => colors[0];
+  if (selectionMode === "cycle")
+    return (offset = 0) => colors[(index++ + offset) % colors.length];
   return () => colors[Math.floor(Math.random() * colors.length)];
+}
+
+export function createOffsetColorGenerator(noop: boolean, offset: number) {
+  if (noop) return null;
+  return (value: number) => value % 2 === 0 ? offset : 0;
 }
 
 export function transformRange01(

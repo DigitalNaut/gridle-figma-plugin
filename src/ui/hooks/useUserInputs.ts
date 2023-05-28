@@ -7,12 +7,7 @@ import type {
 } from "react";
 
 import type { PatternDataMessage, KeysOfType } from "@common";
-import {
-  clamp,
-  toInteger,
-  MIN_FRAME_SIZE,
-  MAX_FRAME_SIZE,
-} from "@common";
+import { clamp, toInteger, MIN_FRAME_SIZE, MAX_FRAME_SIZE } from "@common";
 
 type StateSetter = Dispatch<SetStateAction<PatternDataMessage>>;
 
@@ -26,9 +21,13 @@ export function useBasicInputs(
     currentTarget: { name, value },
   }) => setState((prev) => ({ ...prev, [name]: value }));
 
-  const handleNumberInputChange: ChangeEventHandler<HTMLInputElement> = ({
+  const handleFloatInputChange: ChangeEventHandler<HTMLInputElement> = ({
     currentTarget: { name, value },
   }) => setState((prev) => ({ ...prev, [name]: +value }));
+
+  const handleIntegerInputChange: ChangeEventHandler<HTMLInputElement> = ({
+    currentTarget: { name, value },
+  }) => setState((prev) => ({ ...prev, [name]: toInteger(value) }));
 
   const handleCheckboxChange: ChangeEventHandler<HTMLInputElement> = ({
     currentTarget: { name, checked },
@@ -36,7 +35,8 @@ export function useBasicInputs(
 
   return {
     handleStringInputChange,
-    handleNumberInputChange,
+    handleFloatInputChange,
+    handleIntegerInputChange,
     handleCheckboxChange,
   };
 }

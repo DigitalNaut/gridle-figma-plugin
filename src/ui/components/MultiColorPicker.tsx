@@ -1,17 +1,15 @@
-import type {
+import {
   UniqueIdentifier,
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
   DragMoveEvent,
+  DragOverlay,
+  Over,
+  Active,
 } from "@dnd-kit/core";
 import { useCallback, useMemo, useRef, useState } from "react";
-import {
-  MouseSensor,
-  useSensor,
-  useSensors,
-  DndContext,
-} from "@dnd-kit/core";
+import { MouseSensor, useSensor, useSensors, DndContext } from "@dnd-kit/core";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 
 import { DraggableAndDroppable } from "~/components/DragNDrop";
@@ -32,8 +30,7 @@ function ColorPicker({
 }: {
   color: string;
   colorIndex: number;
-  onChangeColor: OnChangeColor;
-  onRemoveColor: OnRemoveColor;
+  onChangeColor?: OnChangeColor;
   disabled?: boolean;
 }) {
   const pointerEvents = useMemo(
@@ -53,7 +50,7 @@ function ColorPicker({
         type="color"
         value={color}
         onChange={({ currentTarget }) =>
-          onChangeColor(currentTarget.value, colorIndex)
+          onChangeColor?.(currentTarget.value, colorIndex)
         }
         disabled={disabled}
         style={{
@@ -126,7 +123,7 @@ function RemoveColorButton({
       title={title}
       onClick={onClick}
     >
-      <i className="fa-solid fa-xmark"></i>
+      <i className="fa-solid fa-xmark fa-sm"></i>
     </button>
   );
 }
@@ -156,8 +153,8 @@ export default function MultiColorPicker({
   onMoveColor: OnMoveColor;
   onSwapColors: OnSwapColors;
 }) {
-  const [draggingID, setDraggingID] = useState<UniqueIdentifier>();
-  const [overID, setOverID] = useState<UniqueIdentifier>();
+  const [draggedItem, setDraggedItem] = useState<Active | null>(null);
+  const [overItem, setOverItem] = useState<Over | null>(null);
   const mouseX = useRef<number | null>(null);
   const [overPosition, setOverPosition] = useState<OverPosition | null>(null);
   const sensors = useSensors(
@@ -174,8 +171,8 @@ export default function MultiColorPicker({
     +(id + "").replace("id-", "");
 
   const resetDndIDs = useCallback(() => {
-    setTimeout(() => setDraggingID(undefined), 1);
-    setOverID(undefined);
+    setDraggedItem(null);
+    setOverItem(null);
   }, []);
 
   const onMouseMove = useCallback(
@@ -184,7 +181,7 @@ export default function MultiColorPicker({
   );
 
   const onDragStart = ({ active }: DragStartEvent) => {
-    setDraggingID(active.id);
+    setDraggedItem(active);
     addWindowMouseMoveListener(onMouseMove);
   };
   const onDragEnd = ({ active, over }: DragEndEvent) => {
@@ -192,12 +189,12 @@ export default function MultiColorPicker({
     removeWindowMouseMoveListener(onMouseMove);
     mouseX.current = null;
 
-    if (!over || active.id === over.id || overPosition === undefined) return;
+    if (!over || active.id === over.id || overPosition === null) return;
 
     const activeIndex = decodeIdToIndex(active.id);
     const overIndex = decodeIdToIndex(over.id);
 
-    if (overPosition !== undefined)
+    if (overPosition)
       switch (overPosition) {
         case "center":
           onSwapColors(+activeIndex, overIndex);
@@ -216,10 +213,10 @@ export default function MultiColorPicker({
     mouseX.current = null;
   };
   const onDragOver = ({ active, over }: DragOverEvent) => {
-    if (active.id === over?.id) setOverID(undefined);
+    if (active.id === over?.id) setOverItem(null);
     else {
       setOverPosition(null);
-      setOverID(over?.id);
+      setOverItem(over);
     }
   };
   const onDragMove = ({ over, active }: DragMoveEvent) => {
@@ -247,13 +244,12 @@ export default function MultiColorPicker({
         onDragOver={onDragOver}
         onDragMove={onDragMove}
       >
-        <div className="-mt-2 mb-2 flex w-full flex-wrap items-center">
+        <div className="flex w-full flex-wrap items-center">
           {colors.map((color, colorIndex) => {
             const id = encodeIndexToId(colorIndex);
-            const isDragged = draggingID === id;
-            const isOver = overID === id;
-            const zIndex = isDragged ? 999 : isOver ? 998 : 0;
-            const opacity = isDragged ? 0.5 : 1;
+            const isDragged = draggedItem?.id === id;
+            const isOver = overItem?.id === id;
+            const zIndex = isOver ? 100 : 0;
 
             return (
               <DraggableAndDroppable
@@ -262,15 +258,16 @@ export default function MultiColorPicker({
                 id={id}
                 type={draggableType}
                 accepts={[draggableType]}
-                style={{ zIndex, opacity }}
+                style={{ zIndex }}
+                data={{ color }}
               >
                 <ColorPicker
-                  disabled={draggingID !== undefined}
+                  disabled={draggedItem !== null}
                   {...{ color, colorIndex, onChangeColor, onRemoveColor }}
                 />
-                {draggingID === undefined && (
+                {draggedItem === null && (
                   <RemoveColorButton
-                    className="absolute right-0 top-0 hidden h-5 w-5 "
+                    className="absolute right-0 top-0 hidden h-5 w-5"
                     colorIndex={colorIndex}
                     onClick={() => onRemoveColor(colorIndex)}
                     title="Remove color"
@@ -279,6 +276,11 @@ export default function MultiColorPicker({
                 {isOver && overPosition !== null && (
                   <HoverIndicator overPosition={overPosition} />
                 )}
+                {isDragged && (
+                  <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center bg-black/60 p-2">
+                    <div className="h-full w-full border-2 border-dashed border-white" />
+                  </div>
+                )}
               </DraggableAndDroppable>
             );
           })}
@@ -286,6 +288,16 @@ export default function MultiColorPicker({
             <AddColorButton onClick={onAddColor} />
           )}
         </div>
+        {draggedItem && (
+          <DragOverlay>
+            <div
+              className="z-[999] flex h-5 w-5 translate-x-1/2 translate-y-1/2 rounded-sm opacity-80"
+              style={{
+                backgroundColor: draggedItem?.data.current?.color,
+              }}
+            />
+          </DragOverlay>
+        )}
       </DndContext>
     </div>
   );

@@ -33,6 +33,10 @@ export type ElementSelection = {
 
 export type StopCode = "stopped" | "aborted" | undefined;
 
+export const colorGenerationModes = ["random", "cycle"] as const;
+
+export type ColorGenerationMode = (typeof colorGenerationModes)[number];
+
 export const MIN_FRAME_SIZE = 1;
 export const MAX_FRAME_SIZE = 1920;
 export const OPACITY_RANGE_LIMITS: [number, number] = [0, 100];
@@ -48,8 +52,12 @@ export const patternDataMessageSchema = z.object({
   xPadding: z.number().min(0).default(2),
   yPadding: z.number().min(0).default(2),
   colors: z.array(z.string()).max(24).default(defaultColors),
+  colorGenerationMode: z
+    .enum(colorGenerationModes)
+    .default(colorGenerationModes[0]),
+  rowColorOffset: z.number().min(0).default(0),
   shape: z.enum(supportedShapes).default(supportedShapes[0]),
-  pointCount: z.number().min(3).max(10).default(5),
+  pointCount: z.number().min(3).max(10).default(3),
   cornerRadius: z.number().min(0).default(0),
   rotationRange: z
     .tuple([

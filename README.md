@@ -23,11 +23,14 @@ I'm working on getting this plugin into the Figma Community so it can be install
 
 🟨 Creating personalized presets
 
-🟦 Option to use a color pattern instead of random color selection
-
-⬜ Seeds for randomness generation
+⬜ Use a seed for random generation
 
 ⬜ Lock certain proportions (like when image editors lock aspect ratios) for horizontal and vertical element counts
+
+<details>
+<summary>✅ Implemented features</summary>
+
+✅ Option to make colors cycle instead of a random color selection
 
 ✅ Clone the selected shape in Figma as the pattern element of the grid
 
@@ -39,7 +42,9 @@ I'm working on getting this plugin into the Figma Community so it can be install
 
 ✅ UI options based on icon buttons rather than dropdowns
 
-Legend: ✅ Done, 🟦 In progress, 🟨 Planned, ⬜ Not started
+</details>
+
+*Legend: ✅ Done, 🟦 In progress / partial, 🟨 Planned, ⬜ Not started*
 
 ## For developers
 
@@ -71,10 +76,10 @@ It's also my first Figma plugin, so please be gentle.
 ### Bugs
 
 - You cannot hit the Enter key to confirm the dialog. You have to click the 'Generate' button instead.
-- Quickly hitting the 'Generate' button twice will start and stop the generation.
-- Deleting the contents of the width or height inputs for the frame, clicking outside and setting it again will cause small UI issues that self-resolve.
+- Deleting the contents of the width or height inputs for the frame, clicking outside and setting it again will cause small UI issues that will self-resolve.
 - Deleting the contents of the width or height inputs for the frame and clicking outside will set the value to 0 instead of the previous value or the minimum allowed.
 - The plugin will generate an error if you try to generate a grid with 0 elements (0 width & 0 height).
+- The max size in the slider gets the minimum value when setting it lower than 100%. Making it larger usually fixes it. (Weird bug!)
 
 ## Limitations
 

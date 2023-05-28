@@ -14,7 +14,7 @@ import { SLEEP_INTERVAL } from "~/settings";
 import { postGenerationProgress } from "~/messages";
 
 import {
-  colorGenerator as randomColorGenerator,
+  colorGenerator,
   transformRange01,
   createNoiseFilter,
   createFadeModifier,
@@ -22,6 +22,7 @@ import {
   createOpacityThresholdFilter,
   createSizeVariationFilter,
   createRotationVariationFilter,
+  createOffsetColorGenerator,
 } from "./filters";
 
 function createOutputFrame(width: number, height: number) {
@@ -213,6 +214,8 @@ async function generatePattern(
     xPadding,
     yPadding,
     colors,
+    colorGenerationMode,
+    rowColorOffset,
     shape,
     rotationRange: [minRotation, maxRotation],
     pointCount,
@@ -242,13 +245,19 @@ async function generatePattern(
   const outputFrame = createOutputFrame(+frameWidth, +frameHeight);
 
   const getNewColor =
-    colors.length > 0 ? randomColorGenerator(colors.map(hexToRGB)) : null;
+    colors.length > 0
+      ? colorGenerator(colors.map(hexToRGB), colorGenerationMode)
+      : null;
   const getShapeClone = createShapeCloner(sampleElement, {
     width: elementWidth,
     height: elementHeight,
     xPadding,
     yPadding,
   });
+  const getRowColorOffset = createOffsetColorGenerator(
+    colorGenerationMode !== "cycle",
+    rowColorOffset,
+  );
 
   // Properties and filters
   const [minOpacity, maxOpacity] = transformRange01(
@@ -347,7 +356,10 @@ async function generatePattern(
         varySizeFilter(node);
         varyRotationFilter(node);
 
-        if (getNewColor) node.fills = [{ type: "SOLID", color: getNewColor() }];
+        if (getNewColor)
+          node.fills = [
+            { type: "SOLID", color: getNewColor(getRowColorOffset?.(y)) },
+          ];
       }
 
       // Update progress

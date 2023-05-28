@@ -18,6 +18,7 @@ export default function Input<T extends Record<string, unknown>, U>({
   title,
   type,
   disabled,
+  value,
   ...props
 }: Omit<
   DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>,
@@ -46,8 +47,10 @@ export default function Input<T extends Record<string, unknown>, U>({
         className={`grow bg-inherit text-inherit ${
           hasBorder ? "border-current/60 border-b" : ""
         } ${className}`}
+        title={"" + value}
         id={id}
         type={type}
+        value={value}
         {...props}
       />
       {children}
