@@ -1,31 +1,29 @@
 import type { PatternDataMessage } from "@common";
 
+type GlobalPreset = PatternDataMessage;
 type ColorPreset = Pick<PatternDataMessage, "colors">;
 type AppearancePreset = Pick<
-  Preset,
+  GlobalPreset,
   | "shape"
   | "opacityRange"
   | "sizeRange"
   | "noiseMode"
   | "noiseAmount"
   | "verticalFadeMode"
+  | "colorGenerationMode"
+  | "rowColorOffset"
+  | "opacityThresholdMode"
+  | "cornerRadius"
+  | "pointCount"
+  | "rotationRange"
 >;
 
 type FramePreset = Pick<
-  Preset,
+  GlobalPreset,
   "frameWidth" | "frameHeight" | "columns" | "rows" | "xPadding" | "yPadding"
 >;
 
-type GlobalPreset = Partial<
-  Omit<
-    PatternDataMessage,
-    "opacityRangeLimits" | "sizeRangeLimits" | "rotationRangeLimits" | "type"
-  >
->;
-
 export type Preset = Partial<PatternDataMessage>;
-
-export type PresetRecord = Record<string, Preset>;
 
 const holiColorPreset: ColorPreset = {
   colors: ["#ffb437", "#bfe7c5", "#1094c4", "#625cd6", "#a042a3", "#ae1d3c"],
@@ -59,6 +57,15 @@ const bubblegumColorPreset: ColorPreset = {
   colors: ["#f25ec0", "#ffc3c3", "#92f5ff", "#f9ff94", "#87ffb0"],
 };
 
+const smallFramePreset: FramePreset = {
+  frameWidth: 300,
+  frameHeight: 300,
+  columns: 30,
+  rows: 30,
+  xPadding: 2,
+  yPadding: 2,
+};
+
 const largeFramePreset: FramePreset = {
   frameWidth: 1920,
   frameHeight: 1080,
@@ -81,6 +88,13 @@ const staticNoiseGlobalPreset: GlobalPreset = {
   sizeRange: [100, 100],
   noiseMode: "none",
   verticalFadeMode: "none",
+  colorGenerationMode: "random",
+  cornerRadius: 0,
+  noiseAmount: 0,
+  pointCount: 4,
+  rotationRange: [0, 0],
+  rowColorOffset: 0,
+  shape: "square",
 };
 
 const bubblegumAppearancePreset: AppearancePreset = {
@@ -90,22 +104,29 @@ const bubblegumAppearancePreset: AppearancePreset = {
   noiseMode: "uniform",
   noiseAmount: 0.5,
   verticalFadeMode: "none",
+  colorGenerationMode: "random",
+  rowColorOffset: 0,
+  opacityThresholdMode: "remove",
+  cornerRadius: 0,
+  pointCount: 3,
+  rotationRange: [0, 0],
 };
 
 const bubblegumGlobalPreset: GlobalPreset = {
+  ...smallFramePreset,
   ...bubblegumColorPreset,
   ...bubblegumAppearancePreset,
 };
 
-export const framePresets: PresetRecord = {
+export const framePresets: Record<string, FramePreset> = {
   "Large Frame": largeFramePreset,
-} satisfies PresetRecord;
+} satisfies Record<string, FramePreset>;
 
-export const appearancePresets: PresetRecord = {
+export const appearancePresets: Record<string, AppearancePreset> = {
   Bubblegum: bubblegumAppearancePreset,
-} satisfies PresetRecord;
+} satisfies Record<string, AppearancePreset>;
 
-export const colorPresets: PresetRecord = {
+export const colorPresets: Record<string, ColorPreset> ={
   "Mardi Gras": mardiGrasColorPreset,
   Bubblegum: bubblegumColorPreset,
   "Holi Festival": holiColorPreset,
@@ -114,10 +135,19 @@ export const colorPresets: PresetRecord = {
   "Chinese New Year": chineseNewYearColorPreset,
   "Day of the Dead": dayOfTheDeadColorPreset,
   "Pride Parade": prideParadeColorPreset,
-} satisfies PresetRecord;
+} satisfies Record<string, ColorPreset>
 
-export const globalPresets: PresetRecord = {
+export type GlobalPresets = Record<string, GlobalPreset>;
+
+export const globalPresets: GlobalPresets = {
   "Static Noise": staticNoiseGlobalPreset,
   Bubblegum: bubblegumGlobalPreset,
-} satisfies PresetRecord;
+} satisfies GlobalPresets;
 
+export enum AppState {
+  IDLE = "idle",
+  GENERATING = "generating",
+  COMPLETE = "complete",
+  STOPPED = "aborted",
+  ERROR = "error",
+}

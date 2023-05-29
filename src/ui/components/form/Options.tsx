@@ -1,17 +1,16 @@
-import {
+import type {
   PatternDataMessage,
   verticalFadeModes,
   noiseModes,
-  toFloat,
-  opacityThresholdModes,
 } from "@common";
+import { toFloat, opacityThresholdModes } from "@common";
 
 import { CollapsibleSubsection } from "~/components/Layout";
 import ButtonSelect from "~/components/ButtonSelect";
 import Input from "~/components/Input";
 import Select from "~/components/Select";
 import { useBasicInputs } from "~/hooks/useUserInputs";
-import { usePatternMessage } from "~/hooks/usePatternMessage";
+import { usePatternMessageContext } from "~/hooks/usePatternMessage";
 
 export function OptionsSection({
   isSectionOpen,
@@ -20,7 +19,7 @@ export function OptionsSection({
   isSectionOpen: boolean;
   handleSectionToggle: () => void;
 }) {
-  const { patternMessage, setPatternMessage } = usePatternMessage();
+  const { patternMessage, setPatternMessage } = usePatternMessageContext();
   const { handleStringInputChange, handleFloatInputChange } =
     useBasicInputs(setPatternMessage);
 

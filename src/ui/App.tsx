@@ -1,13 +1,6 @@
 import { useState } from "react";
 
-import { ElementSelection } from "@common";
-import {
-  elementSelectionTypes,
-  formatSeconds,
-  sleep,
-  toPercentage,
-  messageTypes,
-} from "@common";
+import { elementSelectionTypes, formatSeconds, toPercentage } from "@common";
 
 import { Layout, Subsection, Footer } from "~/components/Layout";
 import {
@@ -19,22 +12,14 @@ import { OptionsSection } from "~/components/form/Options";
 import { AppearanceSection } from "~/components/form/Appearance";
 import { FrameSection } from "~/components/form/Frame";
 import { SettingsSection } from "~/components/form/Settings";
-import { PatternMessageProvider } from "~/context/PatternMessage";
+import { PatternMessageProvider } from "~/context/PatternMessageContext";
 import { useWindowKeyboardEvents } from "~/hooks/useWindowKeyboardEvents";
-import { usePluginMessaging } from "~/hooks/usePluginMessaging";
-import { usePatternMessage } from "~/hooks/usePatternMessage";
+import { usePatternMessageContext } from "~/hooks/usePatternMessage";
+import { usePluginMessagingContext } from "~/hooks/usePluginMessaging";
+import { PluginMessagingProvider } from "~/context/PluginMessageContext";
 
-import type { Preset, PresetRecord } from "./settings";
-import { globalPresets } from "./settings";
+import { AppState } from "./settings";
 import "./index.css";
-
-enum AppState {
-  IDLE = "idle",
-  GENERATING = "generating",
-  COMPLETE = "complete",
-  STOPPED = "aborted",
-  ERROR = "error",
-}
 
 const messageTitles = {
   [AppState.STOPPED]: "Generation stopped",
@@ -42,17 +27,8 @@ const messageTitles = {
 };
 
 function Main() {
-  const { patternMessage, setPatternMessage } = usePatternMessage();
-  const [error, setError] = useState<string>();
-  const [appState, setAppState] = useState<AppState>(AppState.IDLE);
-  const [progress, setProgress] = useState({
-    percentProgress: 0,
-    timeElapsed: 0,
-  });
-  const [selectionType, setSelectionType] = useState<ElementSelection>({
-    type: "none",
-  });
-  const [availablePresets] = useState<PresetRecord>(globalPresets);
+  const { patternMessage } = usePatternMessageContext();
+
   const [isSectionOpen, setIsSubsectionOpen] = useState<
     Record<string, boolean>
   >({
@@ -62,56 +38,21 @@ function Main() {
     colors: false,
   });
 
-  const handleMessages: typeof onmessage = async ({
-    data: { pluginMessage },
-  }) => {
-    switch (pluginMessage?.type) {
-      case messageTypes.generationProgress:
-        setProgress(pluginMessage.data);
-        break;
-
-      case messageTypes.generationComplete:
-        setAppState(AppState.COMPLETE);
-        await sleep(300);
-        setAppState(AppState.IDLE);
-        break;
-
-      case messageTypes.generationStarted:
-        setAppState(AppState.GENERATING);
-        break;
-
-      case messageTypes.generationStopped:
-        setAppState(AppState.STOPPED);
-        await sleep(1500);
-        setAppState(AppState.IDLE);
-        break;
-
-      case messageTypes.generationError:
-        setAppState(AppState.ERROR);
-        setError(pluginMessage.error);
-        break;
-
-      case messageTypes.presetLoaded:
-        setPatternMessage(pluginMessage.data.preset);
-        break;
-
-      case messageTypes.selectionChanged:
-        setSelectionType(pluginMessage.data);
-        break;
-
-      default:
-        break;
-    }
-  };
-
+  const {
+    selectionType,
+    pluginMessenger,
+    progress,
+    setProgress,
+    appState,
+    setAppState,
+    error,
+    setError,
+    messageHandler
+  } = usePluginMessagingContext();
   const { stopGeneration, abortGeneration, startGeneration, onClose } =
-    usePluginMessaging(handleMessages);
+    pluginMessenger;
 
-  const applyPreset = (value: Preset) =>
-    setPatternMessage((prev) => ({
-      ...prev,
-      ...value,
-    }));
+  onmessage = messageHandler;
 
   useWindowKeyboardEvents(async (event: KeyboardEvent) => {
     // TODO: Bugfix - Enter key does not update the plugin message before creating the pattern.
@@ -194,9 +135,6 @@ function Main() {
         handleSectionToggle={() =>
           handleSectionToggle("settings", !isSectionOpen.settings)
         }
-        applyPreset={applyPreset}
-        availablePresets={availablePresets}
-        handleMessages={handleMessages}
       />
       <FrameSection
         isSectionOpen={isSectionOpen.frame}
@@ -209,8 +147,6 @@ function Main() {
         handleSectionToggle={() =>
           handleSectionToggle("appearance", !isSectionOpen.appearance)
         }
-        applyPreset={applyPreset}
-        selectionType={selectionType}
       />
       <OptionsSection
         isSectionOpen={isSectionOpen.options}
@@ -245,7 +181,9 @@ export default function App() {
   return (
     <Layout>
       <PatternMessageProvider>
-        <Main />
+        <PluginMessagingProvider>
+          <Main />
+        </PluginMessagingProvider>
       </PatternMessageProvider>
     </Layout>
   );

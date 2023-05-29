@@ -1,16 +1,12 @@
-import {
-  PatternDataMessage,
-  MIN_FRAME_SIZE,
-  MAX_FRAME_SIZE,
-  toFloat,
-} from "@common";
+import type { PatternDataMessage } from "@common";
+import { MIN_FRAME_SIZE, MAX_FRAME_SIZE, toFloat } from "@common";
 
 import { CollapsibleSubsection } from "~/components/Layout";
 import Input from "~/components/Input";
 import AxisIcon from "~/components/AxisIcon";
 import PaddingIcon from "~/components/PaddingIcon";
 import { useManagedInputs } from "~/hooks/useUserInputs";
-import { usePatternMessage } from "~/hooks/usePatternMessage";
+import { usePatternMessageContext } from "~/hooks/usePatternMessage";
 
 export function FrameSection({
   isSectionOpen,
@@ -26,7 +22,7 @@ export function FrameSection({
     elementHeight,
     derivedElementHeight,
     derivedElementWidth,
-  } = usePatternMessage();
+  } = usePatternMessageContext();
   const {
     handleFrameWidthChange,
     handleFrameHeightChange,

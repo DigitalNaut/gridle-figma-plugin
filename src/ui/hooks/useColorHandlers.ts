@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 
-import { PatternDataMessage, clamp } from "@common";
+import type { PatternDataMessage } from "@common";
+import { clamp } from "@common";
 
 export type OnMoveColor = (
   colorA: number,

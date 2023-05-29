@@ -1,18 +1,19 @@
-import {
+import type {
   PatternDataMessage,
   supportedShapes,
+  ColorGenerationMode,
+} from "@common";
+import {
   elementSelectionTypes,
   toFloat,
   colorGenerationModes,
-  ColorGenerationMode,
   ROTATION_RANGE_LIMITS,
   OPACITY_RANGE_LIMITS,
   SIZE_RANGE_LIMITS,
-  ElementSelection,
 } from "@common";
 
 import { CollapsibleSubsection } from "~/components/Layout";
-import { Preset, colorPresets } from "~/settings";
+import { colorPresets } from "~/settings";
 import ButtonSelect from "~/components/ButtonSelect";
 import InlineNotice from "~/components/InlineWarning";
 import Input from "~/components/Input";
@@ -21,21 +22,20 @@ import MultiRangeSlider from "~/components/MultiRangeSlider";
 import Select from "~/components/Select";
 import { useBasicInputs } from "~/hooks/useUserInputs";
 import { useColorHandlers } from "~/hooks/useColorHandlers";
-import { usePatternMessage } from "~/hooks/usePatternMessage";
+import { usePatternMessageContext } from "~/hooks/usePatternMessage";
+import { usePluginMessagingContext } from "~/hooks/usePluginMessaging";
 
 export function AppearanceSection({
   isSectionOpen,
   handleSectionToggle,
-  selectionType,
-  applyPreset,
 }: {
   isSectionOpen: boolean;
   handleSectionToggle: () => void;
-  selectionType: ElementSelection;
-  applyPreset: (value: Preset) => void;
 }) {
   const { patternMessage, setPatternMessage, derivedElementWidth } =
-    usePatternMessage();
+    usePatternMessageContext();
+  const { selectionType, applyPreset } = usePluginMessagingContext();
+
   const {
     handleStringInputChange,
     handleFloatInputChange,

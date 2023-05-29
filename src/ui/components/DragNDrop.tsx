@@ -1,16 +1,14 @@
-import {
+import type {
   PropsWithChildren,
-  useRef,
-  useEffect,
   DetailedHTMLProps,
   HTMLAttributes,
 } from "react";
-import {
-  useDroppable,
-  useDraggable,
+import { useRef, useEffect } from "react";
+import type {
   UseDraggableArguments,
   UseDroppableArguments,
 } from "@dnd-kit/core";
+import { useDroppable, useDraggable } from "@dnd-kit/core";
 
 export function DraggableAndDroppable({
   children,

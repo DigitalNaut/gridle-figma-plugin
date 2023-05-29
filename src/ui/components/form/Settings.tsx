@@ -1,26 +1,26 @@
-import { CollapsibleSubsection } from "~/components/Layout";
-import { Preset, PresetRecord, globalPresets } from "~/settings";
+import { useState } from "react";
+
+import type { GlobalPresets} from "~/settings";
+import { globalPresets } from "~/settings";
 import Button from "~/components/Button";
 import Select from "~/components/Select";
-import { usePluginMessaging } from "~/hooks/usePluginMessaging";
-import { usePatternMessage } from "~/hooks/usePatternMessage";
+import { CollapsibleSubsection } from "~/components/Layout";
+import { usePluginMessagingContext } from "~/hooks/usePluginMessaging";
+import { usePatternMessageContext } from "~/hooks/usePatternMessage";
 
 export function SettingsSection({
   isSectionOpen,
   handleSectionToggle,
-  handleMessages,
-  availablePresets,
-  applyPreset,
 }: {
   isSectionOpen: boolean;
   handleSectionToggle: () => void;
-  handleMessages: typeof onmessage;
-  availablePresets: PresetRecord;
-  applyPreset: (value: Preset) => void;
 }) {
-  const { savePreset, clearPreset, loadPreset } =
-    usePluginMessaging(handleMessages);
-  const { patternMessage, applyDefaultPreset } = usePatternMessage();
+  const {
+    pluginMessenger: { savePreset, clearPreset, loadPreset },
+    applyPreset,
+  } = usePluginMessagingContext();
+  const { patternMessage, applyDefaultPreset } = usePatternMessageContext();
+  const [availablePresets] = useState<GlobalPresets>(globalPresets);
 
   return (
     <CollapsibleSubsection

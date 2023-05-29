@@ -1,22 +1,21 @@
-import {
+import type { DetailedHTMLProps, InputHTMLAttributes } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import type {
   UniqueIdentifier,
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
   DragMoveEvent,
-  DragOverlay,
   Over,
   Active,
 } from "@dnd-kit/core";
 import {
-  DetailedHTMLProps,
-  InputHTMLAttributes,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { MouseSensor, useSensor, useSensors, DndContext } from "@dnd-kit/core";
+  DragOverlay,
+  MouseSensor,
+  useSensor,
+  useSensors,
+  DndContext,
+} from "@dnd-kit/core";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 
 import { DraggableAndDroppable } from "~/components/DragNDrop";

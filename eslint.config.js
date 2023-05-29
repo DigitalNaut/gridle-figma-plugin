@@ -8,7 +8,7 @@ import reactHooksPlugin from "eslint-plugin-react-hooks";
 
 export default [
   {
-    files: ["src/{common,plugin,ui}/**/*{.ts,.tsx}"],
+    files: ["src/**/*{.ts,.tsx}"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -44,10 +44,10 @@ export default [
   },
   {
     files: ["src/ui/**/*{.ts,.tsx}"],
-    parserPath: tsParser,
     languageOptions: {
       parserOptions: {
         ecmaVersion: "latest",
+        sourceType: "module",
         project: ["src/ui/tsconfig.json"],
         ecmaFeatures: {
           jsx: true,
@@ -57,6 +57,9 @@ export default [
     settings: {
       react: {
         version: "detect",
+      },
+      "import/parsers": {
+        espree: [".js", ".cjs", ".mjs", ".jsx"],
       },
     },
     plugins: {
