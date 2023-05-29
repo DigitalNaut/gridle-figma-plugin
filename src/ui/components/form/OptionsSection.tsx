@@ -10,7 +10,7 @@ import ButtonSelect from "~/components/ButtonSelect";
 import Input from "~/components/Input";
 import Select from "~/components/Select";
 import { useBasicInputs } from "~/hooks/useUserInputs";
-import { usePatternMessageContext } from "~/hooks/usePatternMessage";
+import { usePatternDataContext } from "~/hooks/usePatternData";
 
 export function OptionsSection({
   isSectionOpen,
@@ -19,7 +19,7 @@ export function OptionsSection({
   isSectionOpen: boolean;
   handleSectionToggle: () => void;
 }) {
-  const { patternMessage, setPatternMessage } = usePatternMessageContext();
+  const { patternData: patternMessage, setPatternData: setPatternMessage } = usePatternDataContext();
   const { handleStringInputChange, handleFloatInputChange } =
     useBasicInputs(setPatternMessage);
 

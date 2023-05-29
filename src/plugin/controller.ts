@@ -8,15 +8,15 @@ import {
   postGenerationError,
   presetLoaded,
   postSelectionChanged,
-} from "./messages";
-import { DEFAULT_WINDOW_OPTIONS } from "./settings";
+} from "~/messages";
+import { DEFAULT_WINDOW_OPTIONS } from "~/settings";
 import {
   loadSettingsFromStorage,
   saveSettingsToStorage,
   clearSettingsInStorage,
-} from "./utils/storage";
-import Generator from "./generator/generator";
-import { isSupportedNode } from "./types";
+} from "~/utils/storage";
+import Generator from "~/generator/generator";
+import { isSupportedNode } from "~/types";
 
 figma.showUI(__html__, DEFAULT_WINDOW_OPTIONS);
 

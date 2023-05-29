@@ -22,7 +22,7 @@ import MultiRangeSlider from "~/components/MultiRangeSlider";
 import Select from "~/components/Select";
 import { useBasicInputs } from "~/hooks/useUserInputs";
 import { useColorHandlers } from "~/hooks/useColorHandlers";
-import { usePatternMessageContext } from "~/hooks/usePatternMessage";
+import { usePatternDataContext } from "~/hooks/usePatternData";
 import { usePluginMessagingContext } from "~/hooks/usePluginMessaging";
 
 export function AppearanceSection({
@@ -32,9 +32,13 @@ export function AppearanceSection({
   isSectionOpen: boolean;
   handleSectionToggle: () => void;
 }) {
-  const { patternMessage, setPatternMessage, derivedElementWidth } =
-    usePatternMessageContext();
-  const { selectionType, applyPreset } = usePluginMessagingContext();
+  const {
+    patternData: patternMessage,
+    setPatternData: setPatternMessage,
+    applyPreset,
+    derivedElementWidth,
+  } = usePatternDataContext();
+  const { selectionType } = usePluginMessagingContext();
 
   const {
     handleStringInputChange,

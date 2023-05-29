@@ -6,7 +6,7 @@ import Input from "~/components/Input";
 import AxisIcon from "~/components/AxisIcon";
 import PaddingIcon from "~/components/PaddingIcon";
 import { useManagedInputs } from "~/hooks/useUserInputs";
-import { usePatternMessageContext } from "~/hooks/usePatternMessage";
+import { usePatternDataContext } from "~/hooks/usePatternData";
 
 export function FrameSection({
   isSectionOpen,
@@ -16,13 +16,13 @@ export function FrameSection({
   handleSectionToggle: () => void;
 }) {
   const {
-    patternMessage,
-    setPatternMessage,
+    patternData: patternMessage,
+    setPatternData: setPatternMessage,
     elementWidth,
     elementHeight,
     derivedElementHeight,
     derivedElementWidth,
-  } = usePatternMessageContext();
+  } = usePatternDataContext();
   const {
     handleFrameWidthChange,
     handleFrameHeightChange,

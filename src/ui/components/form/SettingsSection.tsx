@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import type { GlobalPresets} from "~/settings";
+import type { GlobalPresets } from "~/settings";
 import { globalPresets } from "~/settings";
 import Button from "~/components/Button";
 import Select from "~/components/Select";
 import { CollapsibleSubsection } from "~/components/Layout";
 import { usePluginMessagingContext } from "~/hooks/usePluginMessaging";
-import { usePatternMessageContext } from "~/hooks/usePatternMessage";
+import { usePatternDataContext } from "~/hooks/usePatternData";
 
 export function SettingsSection({
   isSectionOpen,
@@ -17,9 +17,9 @@ export function SettingsSection({
 }) {
   const {
     pluginMessenger: { savePreset, clearPreset, loadPreset },
-    applyPreset,
   } = usePluginMessagingContext();
-  const { patternMessage, applyDefaultPreset } = usePatternMessageContext();
+  const { patternData: patternMessage, applyDefaultPreset, applyPreset } =
+    usePatternDataContext();
   const [availablePresets] = useState<GlobalPresets>(globalPresets);
 
   return (

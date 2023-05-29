@@ -1,12 +1,12 @@
 import type { Dispatch, PropsWithChildren, SetStateAction } from "react";
-
 import { useCallback, createContext, useState, useEffect } from "react";
 
 import type { ElementSelection, PatternDataMessage } from "@common";
-import type { Preset } from "~/settings";
 import { messageTypes, sleep } from "@common";
+
 import { AppState } from "~/settings";
-import { usePatternMessageContext } from "~/hooks/usePatternMessage";
+import { usePatternDataContext } from "~/hooks/usePatternData";
+import { useApplicationState } from "~/hooks/useApplicationState";
 
 export const pluginMessenger = {
   startGeneration: (patternData: PatternDataMessage) =>
@@ -55,10 +55,6 @@ export const pluginMessenger = {
 };
 
 type PluginMessagingContextType = {
-  loaded: boolean;
-  setLoaded: Dispatch<SetStateAction<boolean>>;
-  error?: string;
-  setError: Dispatch<SetStateAction<string | undefined>>;
   progress: {
     percentProgress: number;
     timeElapsed: number;
@@ -69,40 +65,28 @@ type PluginMessagingContextType = {
       timeElapsed: number;
     }>
   >;
-  appState: AppState;
-  setAppState: Dispatch<SetStateAction<AppState>>;
   selectionType: ElementSelection;
   pluginMessenger: typeof pluginMessenger;
-  applyPreset: (preset: Preset) => void;
   messageHandler: typeof onmessage;
 };
 
 export const PluginMessagingContext = createContext<PluginMessagingContextType>(
   {
-    loaded: false,
-    setLoaded: () => null,
-    error: undefined,
-    setError: () => null,
     progress: {
       percentProgress: 0,
       timeElapsed: 0,
     },
     setProgress: () => null,
-    appState: AppState.IDLE,
-    setAppState: () => null,
     selectionType: { type: "none" },
     pluginMessenger,
-    applyPreset: () => null,
     messageHandler: () => null,
   },
 );
 
 export function PluginMessagingProvider({ children }: PropsWithChildren) {
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState<string>();
-  const { setPatternMessage } = usePatternMessageContext();
+  const { loaded, setLoaded, setAppState, setError } = useApplicationState();
+  const { setPatternData: setPatternMessage } = usePatternDataContext();
 
-  const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [progress, setProgress] = useState({
     percentProgress: 0,
     timeElapsed: 0,
@@ -110,16 +94,9 @@ export function PluginMessagingProvider({ children }: PropsWithChildren) {
   const [selectionType, setSelectionType] = useState<ElementSelection>({
     type: "none",
   });
-  const applyPreset = (value: Preset) =>
-    setPatternMessage((prev) => ({
-      ...prev,
-      ...value,
-    }));
 
   const messageHandler = useCallback(
     async ({ data: { pluginMessage } }: MessageEvent) => {
-      console.log("Plugin message received:", pluginMessage);
-
       switch (pluginMessage?.type) {
         case messageTypes.generationProgress:
           setProgress(pluginMessage.data);
@@ -158,7 +135,7 @@ export function PluginMessagingProvider({ children }: PropsWithChildren) {
           break;
       }
     },
-    [setPatternMessage],
+    [setPatternMessage, setAppState, setError],
   );
 
   useEffect(() => {
@@ -168,22 +145,15 @@ export function PluginMessagingProvider({ children }: PropsWithChildren) {
     pluginMessenger.onLoad();
 
     setLoaded(true);
-  }, [loaded]);
+  }, [loaded, setLoaded]);
 
   return (
     <PluginMessagingContext.Provider
       value={{
-        loaded,
-        setLoaded,
         pluginMessenger,
-        error,
-        setError,
         progress,
         setProgress,
-        appState,
-        setAppState,
         selectionType,
-        applyPreset,
         messageHandler,
       }}
     >
