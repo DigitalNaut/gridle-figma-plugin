@@ -4,19 +4,15 @@ import Button from "../Button";
 import { Subsection, Footer } from "../Layout";
 import { NotificationStopped, NotificationError } from "../Notifications";
 
+const titleMessages: Partial<Record<AppState, string>> = {
+  [AppState.STOPPED]: "Generation stopped",
+  [AppState.ERROR]: "Generation error",
+};
+
 export function ErrorSection() {
   const { appState, error, setAppState, setError } = useApplicationState();
 
-  let title = "Unknown error";
-
-  switch (appState) {
-    case AppState.STOPPED:
-      title = "Generation stopped";
-      break;
-    case AppState.ERROR:
-      title = "Generation error";
-      break;
-  }
+  const title = titleMessages[appState] ?? "Unknown error";
 
   return (
     <>
