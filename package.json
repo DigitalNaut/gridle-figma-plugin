@@ -22,7 +22,7 @@
     "dev": "concurrently -n tsc,build,vite 'npm:tsc:watch' 'npm:build:watch' 'vite'"
   },
   "author": "DigitalNaut",
-  "license": "Copyright 2023 DigitalNaut",
+  "license": "CC BY-NC-SA 4.0",
   "dependencies": {
     "@dnd-kit/core": "^6.0.8",
     "@dnd-kit/modifiers": "^6.0.1",
